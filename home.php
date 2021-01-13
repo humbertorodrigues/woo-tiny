@@ -10,6 +10,12 @@ defined('ABSPATH') or die('No script kiddies please!');
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  **/
 // Register new status
+include('classes/class.notas_fiscais.php');
+include('classes/class.pedidos.php');
+include('classes/class.tiny.php');
+$tiny = new tiny();
+new pedidos();
+$notasFiscais = new notasFiscais();
 function criar_status_pedidos() {
     
     register_post_status( 'wc-shipping', array(
