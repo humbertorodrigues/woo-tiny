@@ -29,6 +29,7 @@ class notasFiscais{
         $xml = simplexml_load_string($retorno); 
         if($xml->status_processamento=="3"){
             $xml_nf = $xml->xml_nfe->asXML();
+            do_action("xml_nf_obtido", $id_pedido);
             update_post_meta($id_pedido,"tiny_xml_nf",$xml_nf);
             return true;
         }else{

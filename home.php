@@ -11,11 +11,13 @@ defined('ABSPATH') or die('No script kiddies please!');
  **/
 // Register new status
 include('classes/class.notas_fiscais.php');
+include('classes/class.contas_pagar.php');
 include('classes/class.pedidos.php');
 include('classes/class.tiny.php');
 $tiny = new tiny();
-new pedidos();
+$pedidos = new pedidos();
 $notasFiscais = new notasFiscais();
+$contasPagar = new contasPagar();
 function criar_status_pedidos() {
     
     register_post_status( 'wc-shipping', array(
