@@ -10,11 +10,13 @@ defined('ABSPATH') or die('No script kiddies please!');
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  **/
 // Register new status
+include('classes/class.estoque.php');
 include('classes/class.notas_fiscais.php');
 include('classes/class.contas_pagar.php');
 include('classes/class.pedidos.php');
 include('classes/class.tiny.php');
 $tiny = new tiny();
+$estoque = new estoque();
 $pedidos = new pedidos();
 $notasFiscais = new notasFiscais();
 $contasPagar = new contasPagar();
@@ -47,29 +49,40 @@ add_filter( 'wc_order_statuses', 'atualiza_status_woocommerce' );
 
 
 global $jal_db_version;
-$jal_db_version = '1.0';
+$jal_db_version = '1.1';
 register_activation_hook( __FILE__, 'criar_tabelas' );
 function criar_tabelas() {
 	global $wpdb;
 	global $jal_db_version;
+	$installed_ver = get_option( "jal_db_version" );
+	if ( $installed_ver != $jal_db_version ) {
 
-	$table_name = $wpdb->prefix . 'acoes_tiny';
-	
-	$charset_collate = $wpdb->get_charset_collate();
+		$table_name = $wpdb->prefix . 'acoes_tiny';
+		
+		$charset_collate = $wpdb->get_charset_collate();
 
-	$sql = "CREATE TABLE $table_name (
-		id int(11) NOT NULL AUTO_INCREMENT,
-		acao varchar(100) DEFAULT '' NOT NULL,
-		id_pedido bigint(11) NOT NULL,
-		id_tiny varchar(100) DEFAULT '' NOT NULL,
-		data timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-		data_execucao datetime NULL DEFAULT NULL,
-		status varchar(100) DEFAULT 'pending' NOT NULL,
-		PRIMARY KEY  (id)
-	);";
+		$sql = "CREATE TABLE $table_name (
+			id int(11) NOT NULL AUTO_INCREMENT,
+			acao varchar(100) DEFAULT '' NOT NULL,
+			id_pedido bigint(11) NOT NULL,
+			id_produto bigint(11) NULL DEFAULT NULL,
+			id_tiny varchar(100) DEFAULT '' NOT NULL,
+			data timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+			data_execucao datetime NULL DEFAULT NULL,
+			status varchar(100) DEFAULT 'pending' NOT NULL,
+			PRIMARY KEY  (id)
+		);";
 
-	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-	dbDelta( $sql );
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		dbDelta( $sql );
 
-	add_option( 'jal_db_version', $jal_db_version );
+		update_option( 'jal_db_version', $jal_db_version );
+	}
 }
+function myplugin_update_db_check() {
+    global $jal_db_version;
+    if ( get_site_option( 'jal_db_version' ) != $jal_db_version ) {
+        criar_tabelas();
+    }
+}
+add_action( 'plugins_loaded', 'myplugin_update_db_check' );
