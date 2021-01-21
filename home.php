@@ -49,7 +49,7 @@ add_filter( 'wc_order_statuses', 'atualiza_status_woocommerce' );
 
 
 global $jal_db_version;
-$jal_db_version = '1.1';
+$jal_db_version = '1.2';
 register_activation_hook( __FILE__, 'criar_tabelas' );
 function criar_tabelas() {
 	global $wpdb;

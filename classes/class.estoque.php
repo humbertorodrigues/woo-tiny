@@ -15,12 +15,13 @@ class estoque {
 
             $product->save();
         });
-        add_action( 'init', (array($this,'acao_atualizar_estoque')) );
-        if ( ! wp_next_scheduled( 'atualizar_estoque_tiny' ) ) {
-            wp_schedule_event( time(), 'hourly', 'atualizar_estoque_tiny' );
-        }
+        add_action( 'init', function(){
+            if ( ! wp_next_scheduled( 'atualizar_estoque_tiny' ) ) {
+                wp_schedule_event( time(), 'hourly', 'atualizar_estoque_tiny' );
+            }
+        } );
     }
-    public function acao_atualizar_estoque(){
+    public function atualizar_estoque_tiny(){
         global $wpdb;
         $query = new WC_Product_Query( array(
             'limit' => -1,

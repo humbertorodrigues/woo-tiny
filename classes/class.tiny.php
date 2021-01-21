@@ -42,7 +42,7 @@ class tiny{
         global $wpdb;
         global $notasFiscais;
         global $estoque;
-        $acoes = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."acoes_tiny WHERE status='pendente' ORDER BY id ASC, data ASC LIMIT 10");
+        $acoes = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."acoes_tiny WHERE status='pendente' ORDER BY id ASC, data ASC LIMIT 50");
         foreach ($acoes as $key => $acao) {
             $id_acao = $acao->id;
             $texto_acao = $acao->acao;
