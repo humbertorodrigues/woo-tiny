@@ -53,7 +53,7 @@ class estoque {
             <tr>
                 <td style="padding-right:20px"><?php echo get_the_title($dado_estoque['id_produto']) ?></td>
                 <td>
-                    <table>
+                    <table style="width:100%">
                         <?php foreach( $dado_estoque['estoque'] as $deposito): 
                             if($deposito->deposito->saldo==0){
                                 continue;
@@ -67,7 +67,7 @@ class estoque {
                         <?php endforeach; ?>
                         <tr style="font-weight: bold;">
                             <td>Total</td>
-                            <td><?php echo $total_estoque ?></td>
+                            <td style="text-align: right;"><?php echo $total_estoque ?></td>
                         </tr>
                     </table>
                 </td>
