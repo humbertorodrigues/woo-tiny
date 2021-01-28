@@ -20,6 +20,7 @@ $estoque = new estoque();
 $pedidos = new pedidos();
 $notasFiscais = new notasFiscais();
 $contasPagar = new contasPagar();
+
 function criar_status_pedidos() {
     
     register_post_status( 'wc-shipping', array(
@@ -49,7 +50,7 @@ add_filter( 'wc_order_statuses', 'atualiza_status_woocommerce' );
 
 
 global $jal_db_version;
-$jal_db_version = '1.2';
+$jal_db_version = '1.3';
 register_activation_hook( __FILE__, 'criar_tabelas' );
 function criar_tabelas() {
 	global $wpdb;
@@ -69,6 +70,7 @@ function criar_tabelas() {
 			id_tiny varchar(100) DEFAULT '' NOT NULL,
 			data timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			data_execucao datetime NULL DEFAULT NULL,
+			ultima_execucao datetime NULL DEFAULT NULL,
 			status varchar(100) DEFAULT 'pending' NOT NULL,
 			PRIMARY KEY  (id)
 		);";
@@ -86,3 +88,31 @@ function myplugin_update_db_check() {
     }
 }
 add_action( 'plugins_loaded', 'myplugin_update_db_check' );
+
+add_filter( 'manage_edit-shop_order_columns', 'set_coluna_codigo_tiny' );
+function set_coluna_codigo_tiny($columns) {
+    
+    $columns['codigo_tiny'] = 'Código tiny';
+
+    return $columns;
+}
+
+// Add the data to the custom columns for the book post type:
+add_action( 'manage_shop_order_posts_custom_column' , 'mostra_valor_coluna_codigo_tiny', 0, 2 );
+function mostra_valor_coluna_codigo_tiny( $column, $post_id ) {
+    switch ( $column ) {
+
+        case 'codigo_tiny' :
+            $codigo_tiny = get_post_meta( $post_id , 'codigo_tiny' , true );
+            if(!empty($codigo_tiny)){
+
+				echo "<a target=\"_blank\" href=\"https://erp.tiny.com.br/vendas#edit/".$codigo_tiny."\">Ver pedido ($codigo_tiny) </a>";
+			}
+
+			
+			break;
+
+        
+
+    }
+}

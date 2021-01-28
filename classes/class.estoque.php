@@ -22,6 +22,21 @@ class estoque {
             }
         } );
         add_shortcode('estoque',array($this,"shortcode_estoque"));
+        add_action("woocommerce_before_single_product",array($this,'custom_css'));
+    }
+    public function custom_css(){
+        global $product;
+        $id = $product->get_id();
+        $pre_venda = get_post_meta($id,"bw_pre_venda",true);
+        if($pre_venda=="yes"){
+            ?>
+            <style>
+            .stock.in-stock{
+                display: none !important;
+            }
+            </style>
+            <?php
+        }
     }
     public function shortcode_estoque(){
 
@@ -55,7 +70,10 @@ class estoque {
                 <td>
                     <table style="width:100%">
                         <?php foreach( $dado_estoque['estoque'] as $deposito): 
-                            if($deposito->deposito->saldo==0){
+                            if($deposito->deposito->nome == "Almoxarifado"){
+                                continue;
+                            }
+                            if($deposito->deposito->nome == "Transud Marketing"){
                                 continue;
                             }
                             ?>
@@ -65,7 +83,7 @@ class estoque {
                                 <td style="text-align:right"><?php echo ($deposito->deposito->saldo) ?></td>
                             </tr>        
                         <?php endforeach; ?>
-                        <tr style="font-weight: bold;">
+                        <tr style="font-weight: bold; <?php echo ($total_estoque<0)?'color:red;':'' ?> ">
                             <td>Total</td>
                             <td style="text-align: right;"><?php echo $total_estoque ?></td>
                         </tr>
