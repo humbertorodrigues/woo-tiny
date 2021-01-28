@@ -42,7 +42,8 @@ class tiny{
         global $wpdb;
         global $notasFiscais;
         global $estoque;
-        $acoes = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."acoes_tiny WHERE status='pendente' ORDER BY id ASC, data ASC LIMIT 50");
+        global $contasPagar;
+        $acoes = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."acoes_tiny WHERE status='pendente' ORDER BY ultima_execucao ASC LIMIT 50");
         foreach ($acoes as $key => $acao) {
             $id_acao = $acao->id;
             $texto_acao = $acao->acao;
@@ -53,6 +54,9 @@ class tiny{
                 if($resultado===true){
                     $this->marcarConcluido($id_acao);
                     $wpdb->query("UPDATE ".$wpdb->prefix."acoes_tiny SET status='concluido', data_execucao=NOW() WHERE id=".$id_acao."");
+                }else{
+                    
+                    $this->marcarExecutado($id_acao);
                 }
             }
             if($texto_acao=="atualizar_estoque"){
@@ -62,6 +66,19 @@ class tiny{
 
                     $this->marcarConcluido($id_acao);
                     
+                }else{
+                    
+                    $this->marcarExecutado($id_acao);
+                }
+            }
+
+            if($texto_acao=="lancar_imposto_ipi"){
+                
+                $retorno_imposto = $contasPagar->lancarImposto($acao->id_pedido, 'ipi');
+                if($retorno_estoque!==false){
+                    $this->marcarConcluido($id_acao);
+                }else{
+                    $this->marcarExecutado($id_acao);
                 }
             }
         }
@@ -70,6 +87,11 @@ class tiny{
     public function marcarConcluido($id_acao){
         global $wpdb;
         $wpdb->query("UPDATE ".$wpdb->prefix."acoes_tiny SET status='concluido', data_execucao=NOW() WHERE id=".$id_acao."");
+
+    }
+    public function marcarExecutado($id_acao){
+        global $wpdb;
+        $wpdb->query("UPDATE ".$wpdb->prefix."acoes_tiny SET ultima_execucao=NOW() WHERE id=".$id_acao."");
 
     }
 
