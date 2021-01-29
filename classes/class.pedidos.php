@@ -10,27 +10,47 @@ class pedidos {
         $produtos_com_estoque = 0;
         $produtos_sem_estoque = 0;
         $order = wc_get_order($order_id);
+        $id_produtos_sem_estoque = array();
         foreach ($order->get_items() as $item_id => $item) {
-
+            
             $product = wc_get_product($item['product_id']);
             $estoque = $product->get_stock_quantity();
             $pre_venda = get_post_meta($item['product_id'],"bw_pre_venda",true);
-
+            
             if ($pre_venda == "yes") {
+                $id_produtos_sem_estoque[]= $item['product_id'];
                 $produtos_sem_estoque++;
             } else {
                 $produtos_com_estoque++;
             }
         }
-        if($produtos_sem_estoque>0 && $produtos_com_estoque>0){
-            $order_id_sem_estoque = $this->duplicate_order( $order );
-            
+        if($produtos_sem_estoque>0){
+            $order_id_sem_estoque = array();
+            for ($i=0; $i < $produtos_sem_estoque ; $i++) { 
+                $order_id_sem_estoque[$i] = $this->duplicate_order( $order );
+                
+                $this->removerProdutosComEstoque($order_id_sem_estoque[$i]);
+                $this->removerFretePedidoSemEstoque($order_id_sem_estoque[$i]);
+            }
+            $j = 0;
+            foreach ($order_id_sem_estoque as $key => $sem_estoque_id) {
+                $produto_remover = false;
+                foreach ($id_produtos_sem_estoque as $key_produto_sem_estoque => $id_produto_sem_estoque) {
+                    if($j != $key_produto_sem_estoque){
+                        $this->orderRemoverProduto($sem_estoque_id,$id_produto_sem_estoque);
+                    }
+                }
+                
+                $j++;
+                
+                update_post_meta($order_id_sem_estoque,"bw_pedido_pai",$order_id);
+            }
+
             $this->removerProdutosSemEstoque($order_id);
-            $this->removerProdutosComEstoque($order_id_sem_estoque);
-            $this->removerFretePedidoSemEstoque($order_id_sem_estoque);
-            update_post_meta($order_id_sem_estoque,"bw_pedido_pai",$order_id);
+            
             update_post_meta($order_id,"bw_pedido_filho",$order_id_sem_estoque);
         }
+        // exit("Pronto");
     }
     
     public function removerFretePedidoSemEstoque($order_id){
@@ -45,6 +65,23 @@ class pedidos {
         }
         $order->calculate_totals();
         
+    }
+    public function orderRemoverProduto($order_id,$id_produto){
+        $order = wc_get_order($order_id);
+
+        foreach ($order->get_items() as $item_id => $item) {
+
+            // $product = wc_get_product($item['product_id']);
+
+            if($item['product_id']==$id_produto){
+                $order->remove_item($item_id);
+
+            }
+
+        }
+        $order->calculate_totals();
+
+
     }
     public function removerProdutosSemEstoque($order_id){
         $order = wc_get_order($order_id);
