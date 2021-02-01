@@ -24,7 +24,7 @@ class pedidos {
                 $produtos_com_estoque++;
             }
         }
-        if($produtos_sem_estoque>0){
+        if(($produtos_sem_estoque>0 && $produtos_com_estoque>0) || $produtos_sem_estoque > 1 ){
             $order_id_sem_estoque = array();
             for ($i=0; $i < $produtos_sem_estoque ; $i++) { 
                 $order_id_sem_estoque[$i] = $this->duplicate_order( $order );
