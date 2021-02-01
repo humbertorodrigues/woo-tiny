@@ -24,18 +24,31 @@ class pedidos {
                 $produtos_com_estoque++;
             }
         }
-        if(($produtos_sem_estoque>0 && $produtos_com_estoque>0) || $produtos_sem_estoque > 1 ){
+        if(($produtos_sem_estoque > 0 && $produtos_com_estoque > 0) || $produtos_sem_estoque > 1 ){
             $order_id_sem_estoque = array();
             for ($i=0; $i < $produtos_sem_estoque ; $i++) { 
+                if($produtos_com_estoque == 0 & $i==0){
+                    $order_id_sem_estoque[$i] = $order_id;
+                    continue;
+                }
                 $order_id_sem_estoque[$i] = $this->duplicate_order( $order );
                 
                 $this->removerProdutosComEstoque($order_id_sem_estoque[$i]);
-                $this->removerFretePedidoSemEstoque($order_id_sem_estoque[$i]);
+                if($produtos_com_estoque > 0){
+
+                    $this->removerFretePedidoSemEstoque($order_id_sem_estoque[$i]);
+                }else{
+                    //Só temos produtos sem estoque. Logo, mantemos o frete no primeiro produto.
+                    if($i>0){                        
+                        $this->removerFretePedidoSemEstoque($order_id_sem_estoque[$i]);
+                    }
+                }
             }
             $j = 0;
             foreach ($order_id_sem_estoque as $key => $sem_estoque_id) {
                 $produto_remover = false;
                 foreach ($id_produtos_sem_estoque as $key_produto_sem_estoque => $id_produto_sem_estoque) {
+                    
                     if($j != $key_produto_sem_estoque){
                         $this->orderRemoverProduto($sem_estoque_id,$id_produto_sem_estoque);
                     }
@@ -43,10 +56,11 @@ class pedidos {
                 
                 $j++;
                 
-                update_post_meta($order_id_sem_estoque,"bw_pedido_pai",$order_id);
+                update_post_meta($sem_estoque_id,"bw_pedido_pai",$order_id);
             }
-
-            $this->removerProdutosSemEstoque($order_id);
+            if($produtos_com_estoque > 0){
+                $this->removerProdutosSemEstoque($order_id);
+            }
             
             update_post_meta($order_id,"bw_pedido_filho",$order_id_sem_estoque);
         }
