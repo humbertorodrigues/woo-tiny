@@ -15,7 +15,12 @@ class tiny{
             }else{
                 $empresa="bueno";
             }
-    
+            
+            /*Tivemos uma excessão onde todos pedidos foram encaminhados para a vinicola. Pedidos nessas condições tem a tratativa especial abaixo */
+            $excessao = get_post_meta($id_pedido,"excessao_cnpj",true);
+            if($excessao == "vinicola"){
+                $empresa = "vinicola";
+            }
             $this->token = get_option("token_tiny_".$empresa);
         }else{ // Ao invés de passar o id do pedido, passamos qual empresa queremos
             if($id_pedido=="bueno"){
