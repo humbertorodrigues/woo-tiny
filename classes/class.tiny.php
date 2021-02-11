@@ -1,6 +1,7 @@
 <?php 
 class tiny{
     private $token;
+    private $empresa;
     public function __construct(){
     }
     public function setEmpresa($id_pedido){
@@ -21,6 +22,7 @@ class tiny{
             if($excessao == "vinicola"){
                 $empresa = "vinicola";
             }
+            $this->empresa = $empresa;
             $this->token = get_option("token_tiny_".$empresa);
         }else{ // Ao invés de passar o id do pedido, passamos qual empresa queremos
             if($id_pedido=="bueno"){
@@ -33,6 +35,9 @@ class tiny{
 
             $this->token = get_option("token_tiny_".$empresa);
         }
+    }
+    public function getEmpresa(){
+        return $this->empresa;
     }
     public function getToken(){
 
@@ -64,8 +69,7 @@ class tiny{
                     $this->marcarExecutado($id_acao);
                 }
             }
-            if($texto_acao=="atualizar_estoque"){
-                
+            if($texto_acao=="atualizar_estoque"){                
                 $retorno_estoque = $estoque->atualizarEstoque($acao->id_produto);
                 if($retorno_estoque!==false){
 
@@ -77,10 +81,58 @@ class tiny{
                 }
             }
 
-            if($texto_acao=="lancar_imposto_ipi"){
-                
-                $retorno_imposto = $contasPagar->lancarImposto($acao->id_pedido, 'ipi');
-                if($retorno_estoque!==false){
+            if($texto_acao=="lancar_imposto_icms_uf_destino"){                
+                $retorno_imposto = $contasPagar->lancarImposto($acao->id_pedido, 'icms_uf_destino');
+                if($retorno_imposto!==false){
+                    $this->marcarConcluido($id_acao);
+                }else{
+                    $this->marcarExecutado($id_acao);
+                }
+            }
+            if($texto_acao=="lancar_imposto_icms_uf_origem"){                
+                $retorno_imposto = $contasPagar->lancarImposto($acao->id_pedido, 'icms_uf_origem');
+                if($retorno_imposto!==false){
+                    $this->marcarConcluido($id_acao);
+                }else{
+                    $this->marcarExecutado($id_acao);
+                }
+            }
+            if($texto_acao=="lancar_imposto_icms_st"){                
+                $retorno_imposto = $contasPagar->lancarImposto($acao->id_pedido, 'icms_st');
+                if($retorno_imposto!==false){
+                    $this->marcarConcluido($id_acao);
+                }else{
+                    $this->marcarExecutado($id_acao);
+                }
+            }
+            if($texto_acao=="lancar_imposto_fcp"){                
+                $retorno_imposto = $contasPagar->lancarImposto($acao->id_pedido, 'fcp');
+                if($retorno_imposto!==false){
+                    $this->marcarConcluido($id_acao);
+                }else{
+                    $this->marcarExecutado($id_acao);
+                }
+            }
+            if($texto_acao=="lancar_imposto_fcp_uf_destino"){                
+                $retorno_imposto = $contasPagar->lancarImposto($acao->id_pedido, 'fcp_uf_destino');
+                if($retorno_imposto!==false){
+                    $this->marcarConcluido($id_acao);
+                }else{
+                    $this->marcarExecutado($id_acao);
+                }
+            }
+            if($texto_acao=="lancar_imposto_fcp_st"){                
+                $retorno_imposto = $contasPagar->lancarImposto($acao->id_pedido, 'fcp_st');
+                if($retorno_imposto!==false){
+                    $this->marcarConcluido($id_acao);
+                }else{
+                    $this->marcarExecutado($id_acao);
+                }
+            }
+            if($texto_acao=="lancar_imposto_icms"){       
+                $empresa = $acao->empresa;         
+                $retorno_imposto = $contasPagar->lancar_icms_mensal($empresa);
+                if($retorno_imposto!==false){
                     $this->marcarConcluido($id_acao);
                 }else{
                     $this->marcarExecutado($id_acao);

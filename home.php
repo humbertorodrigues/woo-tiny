@@ -20,6 +20,11 @@ $estoque = new estoque();
 $pedidos = new pedidos();
 $notasFiscais = new notasFiscais();
 $contasPagar = new contasPagar();
+add_action('init',function(){
+    // global $contasPagar;
+    // $contasPagar->lancar_icms_mensal("vinicola");
+    // do_action('lancar_icms_mensal');
+});
 
 function criar_status_pedidos() {
     
@@ -35,9 +40,7 @@ function criar_status_pedidos() {
 add_action( 'init', 'criar_status_pedidos' );
 function atualiza_status_woocommerce( $order_statuses ) {
  
-    $new_order_statuses = array();
- 
-    
+    $new_order_statuses = array();    
     $order_statuses['wc-pending'] = 'Pedido realizado';
     $order_statuses['wc-on-hold'] = 'Pedido realizado';
     $order_statuses['wc-processing'] = 'Pagamento aprovado';
@@ -50,7 +53,7 @@ add_filter( 'wc_order_statuses', 'atualiza_status_woocommerce' );
 
 
 global $jal_db_version;
-$jal_db_version = '1.3';
+$jal_db_version = '1.4';
 register_activation_hook( __FILE__, 'criar_tabelas' );
 function criar_tabelas() {
 	global $wpdb;
@@ -65,6 +68,7 @@ function criar_tabelas() {
 		$sql = "CREATE TABLE $table_name (
 			id int(11) NOT NULL AUTO_INCREMENT,
 			acao varchar(100) DEFAULT '' NOT NULL,
+			empresa varchar(100) NULL DEFAULT NULL,
 			id_pedido bigint(11) NOT NULL,
 			id_produto bigint(11) NULL DEFAULT NULL,
 			id_tiny varchar(100) DEFAULT '' NOT NULL,
@@ -76,8 +80,8 @@ function criar_tabelas() {
 		);";
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		dbDelta( $sql );
-
+		$r = dbDelta( $sql );
+        
 		update_option( 'jal_db_version', $jal_db_version );
 	}
 }
