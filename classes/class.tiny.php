@@ -138,6 +138,33 @@ class tiny{
                     $this->marcarExecutado($id_acao);
                 }
             }
+            if($texto_acao=="lancar_imposto_pis"){       
+                $empresa = $acao->empresa;         
+                $retorno_imposto = $contasPagar->lancar_pis_mensal($empresa);
+                if($retorno_imposto!==false){
+                    $this->marcarConcluido($id_acao);
+                }else{
+                    $this->marcarExecutado($id_acao);
+                }
+            }
+            if($texto_acao=="lancar_imposto_cofins"){       
+                $empresa = $acao->empresa;         
+                $retorno_imposto = $contasPagar->lancar_cofins_mensal($empresa);
+                if($retorno_imposto!==false){
+                    $this->marcarConcluido($id_acao);
+                }else{
+                    $this->marcarExecutado($id_acao);
+                }
+            }
+            if($texto_acao=="lancar_imposto_ipi"){       
+                $empresa = $acao->empresa;         
+                $retorno_imposto = $contasPagar->lancar_ipi_mensal($empresa);
+                if($retorno_imposto!==false){
+                    $this->marcarConcluido($id_acao);
+                }else{
+                    $this->marcarExecutado($id_acao);
+                }
+            }
         }
         
     }

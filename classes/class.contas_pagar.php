@@ -21,6 +21,48 @@ class contasPagar{
                 $wpdb->insert($wpdb->prefix."acoes_tiny",$dados);
     
             }
+            if($_GET["calcular"] == 'pis') {
+                global $wpdb;
+    
+                $dados['acao'] = "lancar_imposto_pis";
+                $dados['empresa'] = "bueno";
+                $dados['status'] = "pendente";
+                $wpdb->insert($wpdb->prefix."acoes_tiny",$dados);
+    
+                $dados['acao'] = "lancar_imposto_pis";
+                $dados['empresa'] = "vinicola";
+                $dados['status'] = "pendente";
+                $wpdb->insert($wpdb->prefix."acoes_tiny",$dados);
+    
+            }
+            if($_GET["calcular"] == 'cofins') {
+                global $wpdb;
+    
+                $dados['acao'] = "lancar_imposto_cofins";
+                $dados['empresa'] = "bueno";
+                $dados['status'] = "pendente";
+                $wpdb->insert($wpdb->prefix."acoes_tiny",$dados);
+    
+                $dados['acao'] = "lancar_imposto_cofins";
+                $dados['empresa'] = "vinicola";
+                $dados['status'] = "pendente";
+                $wpdb->insert($wpdb->prefix."acoes_tiny",$dados);
+    
+            }
+            if($_GET["calcular"] == 'ipi') {
+                global $wpdb;
+    
+                $dados['acao'] = "lancar_imposto_ipi";
+                $dados['empresa'] = "bueno";
+                $dados['status'] = "pendente";
+                $wpdb->insert($wpdb->prefix."acoes_tiny",$dados);
+    
+                $dados['acao'] = "lancar_imposto_ipi";
+                $dados['empresa'] = "vinicola";
+                $dados['status'] = "pendente";
+                $wpdb->insert($wpdb->prefix."acoes_tiny",$dados);
+    
+            }
         }
 
     }
@@ -126,6 +168,369 @@ class contasPagar{
                     'vencimento' => $vencimento_rs->format('d/m/Y'),
                     'valor' => $icms_rs,
                     'historico' => "ICMS",
+                    'categoria' => 'Impostos',
+                    'ocorrencia' => 'U',
+                ),
+            );
+        }
+        $tiny->setEmpresa($empresa);
+        $token = $tiny->getToken();
+        $dados_url = "token=$token&conta=".json_encode($data)."&formato=json";
+        $retorno = json_decode($tiny->enviarREST($url, $dados_url));
+        
+        
+        if($retorno->retorno->status_processamento=="3"){
+            return true;
+        }else{
+            return false;
+        }
+        return false;
+        
+    }
+    public function lancar_pis_mensal($empresa){
+        global $tiny;
+        $url = 'https://api.tiny.com.br/api2/conta.pagar.incluir.php';
+
+        $data_atual = new DateTime();
+        $data_final = $data_atual->format("Y-m-d");
+        $data_inicial = $data_atual->modify('-2 month')->format("Y-m-d");
+        $data_atual = new DateTime();
+        $mes_lancamento = $data_atual->modify('-1 month')->format('m');
+        
+        $vencimento_sp = new DateTime();
+        $vencimento_rs = new DateTime();
+        $vencimento_sp = $vencimento_sp->modify("first day of this month");
+        $vencimento_sp = $vencimento_sp->modify("+19 days");
+        
+        $vencimento_rs = $vencimento_rs->modify("first day of this month");
+        $vencimento_rs = $vencimento_rs->modify("+19 days");
+        
+        
+        while ($vencimento_sp->format('N')>=6) {
+            $vencimento_sp = $vencimento_sp->modify("-1 day");
+        }
+        while ($vencimento_rs->format('N')>=6) {
+            $vencimento_rs = $vencimento_rs->modify("-1 day");
+        }
+
+        $pis_sp = 0;
+        $pis_rs = 0;
+        $pedido_sp = [];
+        $pedido_rs = [];
+        $query = new WC_Order_Query( array(
+            'limit' => -1,
+            'date_paid' => $data_inicial.'...'.$data_final,
+            'meta_key'     => 'tiny_xml_nf', // The postmeta key field
+            'meta_compare' => 'EXISTS',
+        ) );
+        $orders = $query->get_orders();
+
+        foreach ($orders as $key => $order) {
+            $order_id = $order->data['id'];
+            $tiny->setEmpresa($order_id);
+            $xml_nf = get_post_meta($order_id,'tiny_xml_nf',true);
+            $impostos = simplexml_load_string($xml_nf)->nfeProc->NFe->infNFe->total->ICMSTot;
+        
+            $numero_nf = simplexml_load_string($xml_nf)->nfeProc->NFe->infNFe->ide->nNF;
+            $data_emissao_nf = simplexml_load_string($xml_nf)->nfeProc->NFe->infNFe->ide->dhEmi;
+
+            $ipi = floatval($impostos->vIPI);
+            $pis = floatval($impostos->vPIS);
+            $cofins = floatval($impostos->vCOFINS);
+
+            $icms = floatval($impostos->vICMS);
+            $icms_uf_destino = floatval($impostos->vICMSUFDest);
+            $icms_uf_origem = floatval($impostos->vICMSUFRemet);
+            $icms_st = floatval($impostos->vST);
+
+            $fcp = floatval($impostos->vFCP);
+            $fcp_uf_destino = floatval($impostos->vFCPUFDest);
+            $fcp_st = floatval($impostos->vFCPST);
+            $data_nf = new DateTime($data_emissao_nf);
+            $data_atual = new DateTime();
+
+            if($data_nf->format('m') != $mes_lancamento){
+                //Trata-se de uma nota emitida em outro mês. Seguimos em frente
+                continue;
+            }
+
+            if($tiny->getEmpresa()=="vinicola"){
+                $pis_rs += $pis;
+            }else{
+                $pis_sp += $pis;
+            }
+
+            
+        }
+        if($empresa == "bueno"){
+            $data = array (
+                'conta' => 
+                array (
+                    'cliente' => 
+                    array (
+                        'nome' => 'MINISTÉRIO DA FAZENDA'
+                    ),
+                    'vencimento' => $vencimento_sp->format('d/m/Y'),
+                    'valor' => $pis_sp,
+                    'historico' => "PIS",
+                    'categoria' => 'Impostos',
+                    'ocorrencia' => 'U',
+                ),
+            );
+        }
+        if($empresa == "vinicola"){
+            $data = array (
+                'conta' => 
+                array (
+                    'cliente' => 
+                    array (
+                        'nome' => 'MINISTÉRIO DA FAZENDA'
+                    ),
+                    'vencimento' => $vencimento_rs->format('d/m/Y'),
+                    'valor' => $pis_rs,
+                    'historico' => "PIS",
+                    'categoria' => 'Impostos',
+                    'ocorrencia' => 'U',
+                ),
+            );
+        }
+        $tiny->setEmpresa($empresa);
+        $token = $tiny->getToken();
+        $dados_url = "token=$token&conta=".json_encode($data)."&formato=json";
+        $retorno = json_decode($tiny->enviarREST($url, $dados_url));
+        
+        
+        if($retorno->retorno->status_processamento=="3"){
+            return true;
+        }else{
+            return false;
+        }
+        return false;
+        
+    }
+    public function lancar_cofins_mensal($empresa){
+        global $tiny;
+        $url = 'https://api.tiny.com.br/api2/conta.pagar.incluir.php';
+
+        $data_atual = new DateTime();
+        $data_final = $data_atual->format("Y-m-d");
+        $data_inicial = $data_atual->modify('-2 month')->format("Y-m-d");
+        $data_atual = new DateTime();
+        $mes_lancamento = $data_atual->modify('-1 month')->format('m');
+        
+        $vencimento_sp = new DateTime();
+        $vencimento_rs = new DateTime();
+        $vencimento_sp = $vencimento_sp->modify("first day of this month");
+        $vencimento_sp = $vencimento_sp->modify("+19 days");
+        
+        $vencimento_rs = $vencimento_rs->modify("first day of this month");
+        $vencimento_rs = $vencimento_rs->modify("+19 days");
+        
+        
+        while ($vencimento_sp->format('N')>=6) {
+            $vencimento_sp = $vencimento_sp->modify("-1 day");
+        }
+        while ($vencimento_rs->format('N')>=6) {
+            $vencimento_rs = $vencimento_rs->modify("-1 day");
+        }
+
+        $cofins_sp = 0;
+        $cofins_rs = 0;
+        $pedido_sp = [];
+        $pedido_rs = [];
+        $query = new WC_Order_Query( array(
+            'limit' => -1,
+            'date_paid' => $data_inicial.'...'.$data_final,
+            'meta_key'     => 'tiny_xml_nf', // The postmeta key field
+            'meta_compare' => 'EXISTS',
+        ) );
+        $orders = $query->get_orders();
+
+        foreach ($orders as $key => $order) {
+            $order_id = $order->data['id'];
+            $tiny->setEmpresa($order_id);
+            $xml_nf = get_post_meta($order_id,'tiny_xml_nf',true);
+            $impostos = simplexml_load_string($xml_nf)->nfeProc->NFe->infNFe->total->ICMSTot;
+        
+            $numero_nf = simplexml_load_string($xml_nf)->nfeProc->NFe->infNFe->ide->nNF;
+            $data_emissao_nf = simplexml_load_string($xml_nf)->nfeProc->NFe->infNFe->ide->dhEmi;
+
+            $ipi = floatval($impostos->vIPI);
+            $pis = floatval($impostos->vPIS);
+            $cofins = floatval($impostos->vCOFINS);
+
+            $icms = floatval($impostos->vICMS);
+            $icms_uf_destino = floatval($impostos->vICMSUFDest);
+            $icms_uf_origem = floatval($impostos->vICMSUFRemet);
+            $icms_st = floatval($impostos->vST);
+
+            $fcp = floatval($impostos->vFCP);
+            $fcp_uf_destino = floatval($impostos->vFCPUFDest);
+            $fcp_st = floatval($impostos->vFCPST);
+            $data_nf = new DateTime($data_emissao_nf);
+            $data_atual = new DateTime();
+
+            if($data_nf->format('m') != $mes_lancamento){
+                //Trata-se de uma nota emitida em outro mês. Seguimos em frente
+                continue;
+            }
+
+            if($tiny->getEmpresa()=="vinicola"){
+                $cofins_rs += $cofins;
+            }else{
+                $cofins_sp += $cofins;
+            }
+
+            
+        }
+        if($empresa == "bueno"){
+            $data = array (
+                'conta' => 
+                array (
+                    'cliente' => 
+                    array (
+                        'nome' => 'MINISTÉRIO DA FAZENDA'
+                    ),
+                    'vencimento' => $vencimento_sp->format('d/m/Y'),
+                    'valor' => $cofins_sp,
+                    'historico' => "COFINS",
+                    'categoria' => 'Impostos',
+                    'ocorrencia' => 'U',
+                ),
+            );
+        }
+        if($empresa == "vinicola"){
+            $data = array (
+                'conta' => 
+                array (
+                    'cliente' => 
+                    array (
+                        'nome' => 'MINISTÉRIO DA FAZENDA'
+                    ),
+                    'vencimento' => $vencimento_rs->format('d/m/Y'),
+                    'valor' => $cofins_rs,
+                    'historico' => "COFINS",
+                    'categoria' => 'Impostos',
+                    'ocorrencia' => 'U',
+                ),
+            );
+        }
+        $tiny->setEmpresa($empresa);
+        $token = $tiny->getToken();
+        $dados_url = "token=$token&conta=".json_encode($data)."&formato=json";
+        $retorno = json_decode($tiny->enviarREST($url, $dados_url));
+        
+        
+        if($retorno->retorno->status_processamento=="3"){
+            return true;
+        }else{
+            return false;
+        }
+        return false;
+        
+    }
+    public function lancar_ipi_mensal($empresa){
+        global $tiny;
+        $url = 'https://api.tiny.com.br/api2/conta.pagar.incluir.php';
+
+        $data_atual = new DateTime();
+        $data_final = $data_atual->format("Y-m-d");
+        $data_inicial = $data_atual->modify('-2 month')->format("Y-m-d");
+        $data_atual = new DateTime();
+        $mes_lancamento = $data_atual->modify('-1 month')->format('m');
+        
+        $vencimento_sp = new DateTime();
+        $vencimento_rs = new DateTime();
+        $vencimento_sp = $vencimento_sp->modify("first day of this month");
+        $vencimento_sp = $vencimento_sp->modify("+19 days");
+        
+        $vencimento_rs = $vencimento_rs->modify("first day of this month");
+        $vencimento_rs = $vencimento_rs->modify("+19 days");
+        
+        
+        while ($vencimento_sp->format('N')>=6) {
+            $vencimento_sp = $vencimento_sp->modify("-1 day");
+        }
+        while ($vencimento_rs->format('N')>=6) {
+            $vencimento_rs = $vencimento_rs->modify("-1 day");
+        }
+
+        $ipi_sp = 0;
+        $ipi_rs = 0;
+        $pedido_sp = [];
+        $pedido_rs = [];
+        $query = new WC_Order_Query( array(
+            'limit' => -1,
+            'date_paid' => $data_inicial.'...'.$data_final,
+            'meta_key'     => 'tiny_xml_nf', // The postmeta key field
+            'meta_compare' => 'EXISTS',
+        ) );
+        $orders = $query->get_orders();
+
+        foreach ($orders as $key => $order) {
+            $order_id = $order->data['id'];
+            $tiny->setEmpresa($order_id);
+            $xml_nf = get_post_meta($order_id,'tiny_xml_nf',true);
+            $impostos = simplexml_load_string($xml_nf)->nfeProc->NFe->infNFe->total->ICMSTot;
+        
+            $numero_nf = simplexml_load_string($xml_nf)->nfeProc->NFe->infNFe->ide->nNF;
+            $data_emissao_nf = simplexml_load_string($xml_nf)->nfeProc->NFe->infNFe->ide->dhEmi;
+
+            $ipi = floatval($impostos->vIPI);
+            $pis = floatval($impostos->vPIS);
+            $cofins = floatval($impostos->vCOFINS);
+
+            $icms = floatval($impostos->vICMS);
+            $icms_uf_destino = floatval($impostos->vICMSUFDest);
+            $icms_uf_origem = floatval($impostos->vICMSUFRemet);
+            $icms_st = floatval($impostos->vST);
+
+            $fcp = floatval($impostos->vFCP);
+            $fcp_uf_destino = floatval($impostos->vFCPUFDest);
+            $fcp_st = floatval($impostos->vFCPST);
+            $data_nf = new DateTime($data_emissao_nf);
+            $data_atual = new DateTime();
+
+            if($data_nf->format('m') != $mes_lancamento){
+                //Trata-se de uma nota emitida em outro mês. Seguimos em frente
+                continue;
+            }
+
+            if($tiny->getEmpresa()=="vinicola"){
+                $ipi_rs += $ipi;
+            }else{
+                $ipi_sp += $ipi;
+            }
+
+            
+        }
+        if($empresa == "bueno"){
+            $data = array (
+                'conta' => 
+                array (
+                    'cliente' => 
+                    array (
+                        'nome' => 'MINISTÉRIO DA FAZENDA'
+                    ),
+                    'vencimento' => $vencimento_sp->format('d/m/Y'),
+                    'valor' => $ipi_sp,
+                    'historico' => "IPI",
+                    'categoria' => 'Impostos',
+                    'ocorrencia' => 'U',
+                ),
+            );
+        }
+        if($empresa == "vinicola"){
+            $data = array (
+                'conta' => 
+                array (
+                    'cliente' => 
+                    array (
+                        'nome' => 'MINISTÉRIO DA FAZENDA'
+                    ),
+                    'vencimento' => $vencimento_rs->format('d/m/Y'),
+                    'valor' => $ipi_rs,
+                    'historico' => "IPI",
                     'categoria' => 'Impostos',
                     'ocorrencia' => 'U',
                 ),
