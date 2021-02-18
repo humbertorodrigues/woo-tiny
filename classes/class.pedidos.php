@@ -188,6 +188,9 @@ class pedidos {
         update_post_meta($order_id, '_billing_first_name',     get_post_meta($original_order_id, '_billing_first_name', true));
         update_post_meta($order_id, '_billing_last_name',      get_post_meta($original_order_id, '_billing_last_name', true));
         update_post_meta($order_id, '_billing_company',        get_post_meta($original_order_id, '_billing_company', true));
+        update_post_meta($order_id, '_billing_cpf',            get_post_meta($original_order_id, '_billing_cpf', true));
+        update_post_meta($order_id, '_billing_cnpj',           get_post_meta($original_order_id, '_billing_cnpj', true));
+        update_post_meta($order_id, '_billing_persontype',     get_post_meta($original_order_id, '_billing_persontype', true));
     }
 
     private function duplicate_shipping_fieds($original_order_id, $order_id) {
