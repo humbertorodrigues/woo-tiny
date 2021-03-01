@@ -15,16 +15,13 @@ include('classes/class.notas_fiscais.php');
 include('classes/class.contas_pagar.php');
 include('classes/class.pedidos.php');
 include('classes/class.tiny.php');
+include('classes/class.canais_venda.php');
 $tiny = new tiny();
 $estoque = new estoque();
 $pedidos = new pedidos();
 $notasFiscais = new notasFiscais();
 $contasPagar = new contasPagar();
-add_action('init',function(){
-    // global $contasPagar;
-    // $contasPagar->lancar_icms_mensal("vinicola");
-    // do_action('lancar_icms_mensal');
-});
+$canaisVenda = new canaisVenda();
 
 function criar_status_pedidos() {
     
