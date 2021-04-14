@@ -10,18 +10,25 @@ defined('ABSPATH') or die('No script kiddies please!');
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  **/
 // Register new status
+
+define("WOO_TINY_DIR", plugin_dir_path( __FILE__ ));
+define("WOO_TINY_URL",plugin_dir_url(__FILE__));
 include('classes/class.estoque.php');
 include('classes/class.notas_fiscais.php');
 include('classes/class.contas_pagar.php');
 include('classes/class.pedidos.php');
 include('classes/class.tiny.php');
 include('classes/class.canais_venda.php');
+include('classes/class.vendedores.php');
+
+
 $tiny = new tiny();
 $estoque = new estoque();
 $pedidos = new pedidos();
 $notasFiscais = new notasFiscais();
 $contasPagar = new contasPagar();
 $canaisVenda = new canaisVenda();
+$vendedores = new vendedores();
 
 function criar_status_pedidos() {
     

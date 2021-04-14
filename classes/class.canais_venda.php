@@ -44,12 +44,19 @@ class canaisVenda {
             'numberposts' => -1
         ));
         $dados_salvos = get_post_meta($post_id, 'canais_venda', true);
+        $bonificacao = get_post_meta($post_id, 'bonificacao', true);
 
 ?>
 
         <div id="canais_venda" class="panel woocommerce_options_panel">
             <?php
-
+            woocommerce_wp_text_input(array(
+                'id'            => 'bonificacao',
+                'name'            => 'bonificacao',
+                'label'         => "Bonificação",
+                'value'       => isset($bonificacao) ? $bonificacao : "",
+                'desc_tip'      => false,
+            ));
             foreach ($canais_vendas as $key => $canal_venda) :
                 $canal_id = $canal_venda->ID;
                 $nome_canal = $canal_venda->post_title;
@@ -68,8 +75,12 @@ class canaisVenda {
     public function salvar_dados_aba_canais_venda($post_id) {
         // Custom Product Text Field
         $canais_venda = $_POST['canais_venda'];
+        $bonificacao = $_POST['bonificacao'];
         if (isset($canais_venda)) {
             update_post_meta($post_id, 'canais_venda', $canais_venda);
+        }
+        if (isset($bonificacao)) {
+            update_post_meta($post_id, 'bonificacao', $bonificacao);
         }
     }
 }
