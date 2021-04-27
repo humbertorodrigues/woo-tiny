@@ -11,6 +11,14 @@ class vendedores{
         add_action('profile_update', [$this,'salva_dados_vendedor']);
         add_action( 'personal_options_update', [$this,'salva_dados_vendedor'] );
         add_action( 'edit_user_profile_update', [$this,'salva_dados_vendedor'] );
+        add_filter( 'login_redirect', [$this,'login_redirect'], 1, 3 );
+    }
+    function login_redirect( $redirect_to, $request, $user ){
+        if(isset($user->roles)){
+            if(array_search("vendedores_bw",$user->roles)!==false){
+                return site_url("vendedores");
+            }
+        }
     }
     public function role_vendedores() {
         
@@ -34,7 +42,7 @@ class vendedores{
         // Get out of stock products.
         $args = array(
             'limit' => -1,
-            'stock_status' => 'instock',
+            // 'stock_status' => 'instock',
         );
         $produtos = wc_get_products( $args );
         

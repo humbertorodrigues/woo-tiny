@@ -175,6 +175,11 @@ foreach ($canais_vendas as $canal_venda) {
             <div class="row">
                 <div class="col-12 mt-3">
                     <h1>Nova venda</h1>
+                    <?php if(isset($order_id)): ?>
+                    <div class="alert alert-success" role="alert">
+                        <strong>Pedido <?php echo $order_id ?> gerado com sucesso</strong>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
             <div class="row mt-3">
@@ -368,6 +373,9 @@ foreach ($canais_vendas as $canal_venda) {
                             </thead>
                             <?php
                             foreach ($produtos as $key => $produto) {
+                                if(stripos($produto->get_title(),"kit")!==false || stripos($produto->get_title(),"let's")!==false){
+                                    continue;
+                                }
                                 $preco_bonificacao = get_post_meta($produto->get_id(),"bonificacao","true");
                                 $preco_bonificacao = str_replace(",", ".", $preco_bonificacao);
                             ?>
@@ -443,7 +451,7 @@ foreach ($canais_vendas as $canal_venda) {
                 nome_fantasia:{required:"Informe o nome fantasia"},
                 cpf_cnpj:{required:"Informe o CPF/CNPJ"},
                 rg_inscricao:{required:"Informe o RG ou inscrição estadual"},
-                endereco:{required:true},
+                endereco:{required:"Informe o endereço"},
                 cep:{required:"Informe o CEP"},
                 bairro:{required:"Informe o bairro"},
                 cidade:{required:"Informe a cidade"},
