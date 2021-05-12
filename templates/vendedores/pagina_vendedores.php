@@ -389,7 +389,7 @@ foreach ($canais_vendas as $canal_venda) {
                                 $preco_bonificacao = get_post_meta($produto->get_id(),"bonificacao","true");
                                 $preco_bonificacao = str_replace(",", ".", $preco_bonificacao);
                             ?>
-                                <tr>
+                                <tr data-product-id="<?= $produto->get_id() ?>">
                                     <td>
                                         <input type="hidden" name="id_produto[]" value="<?php echo $produto->get_id() ?>">
                                         <?php echo $produto->get_id() ?>
@@ -440,7 +440,7 @@ foreach ($canais_vendas as $canal_venda) {
         jQuery("#form_pedido_venda").validate({
             rules:{
                 nome:{required:true},
-                
+
                 nome_fantasia:{required:true},
                 cpf_cnpj:{required:true,"cpfcnpj":true},
                 rg_inscricao:{required:true},
@@ -451,13 +451,13 @@ foreach ($canais_vendas as $canal_venda) {
                 estado:{required:true},
                 telefone:{required:true},
                 celular:{required:true},
-                
+
                 email:{required:true, email:true},
                 canal_venda:{required:true}
             },
 			messages:{
 				nome:{required:"Informe o nome do cliente"},
-                
+
                 nome_fantasia:{required:"Informe o nome fantasia"},
                 cpf_cnpj:{required:"Informe o CPF/CNPJ"},
                 rg_inscricao:{required:"Informe o RG ou inscrição estadual"},
@@ -484,34 +484,6 @@ foreach ($canais_vendas as $canal_venda) {
                     jQuery("#preco_unitario_" + produto).val(precos_por_canal[produto][id_canal_venda]);
 
                 }
-            }
-            calcula_subtotal();
-        })
-        jQuery(".qtd").on("input", function(event) {
-            var oldValue = jQuery(this).data('old');
-            if(!limita5porcento()){
-                
-                alert("Bonificação limitada a 5% do total do pedido")
-                
-                jQuery(this).val(oldValue);
-            }else{
-                jQuery(this).data('old', jQuery(this).val());
-                
-            }
-            calcula_subtotal();
-        })
-        
-        jQuery(".qtd_bonificacao").on("input", function() {
-            
-            var oldValue = jQuery(this).data('old');
-            
-            if(!limita5porcento()){
-                
-                alert("Bonificação limitada a 5% do total do pedido")
-                jQuery(this).val(oldValue);
-            }else{
-                jQuery(this).data('old', jQuery(this).val());
-                
             }
             calcula_subtotal();
         })
@@ -564,34 +536,12 @@ foreach ($canais_vendas as $canal_venda) {
             preco_unitario_bonificacao = jQuery("#preco_unitario_bonificacao_" + id_produto).val();
             qtd = jQuery("#qtd_" + id_produto).val();
             qtd_bonificacao = jQuery("#qtd_bonificacao_" + id_produto).val();
-            
-            
+
+
             subtotal = (preco_unitario * qtd) + (preco_unitario_bonificacao * qtd_bonificacao);
             jQuery("#subtotal_" + id_produto).val(subtotal.toFixed(2));
             total = total + subtotal;
         })
         jQuery("#total").html("R$ " + total.toFixed(2));
-    }
-    //Nao permite bonificação maior q 5 porcento
-    function limita5porcento(element){
-        let qtd = 0;
-        let qtd_bonificacao = 0;
-        let limite = 5;
-        jQuery(".qtd").each(function(index) {
-            qtd = qtd +  parseInt(jQuery(this).val());
-        })
-        jQuery(".qtd_bonificacao").each(function(index) {
-            qtd_bonificacao = qtd_bonificacao + parseInt(jQuery(this).val());
-        })
-
-        if(qtd==0){
-            return false;
-        }
-        
-        if(((qtd_bonificacao/(qtd)) * 100) > limite){
-            return false
-        }else{
-            return true;
-        }
     }
 </script>

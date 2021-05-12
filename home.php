@@ -126,7 +126,6 @@ function mostra_valor_coluna_codigo_tiny( $column, $post_id ) {
 }
 
 /*
- * Todo Limitar bonificação
  * Todo Formas de pagamento (com desconto?)
  * Todo Todos os pedidos precisam de liberação (Status personalizado)
  * */
