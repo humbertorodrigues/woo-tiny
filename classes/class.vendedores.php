@@ -35,6 +35,7 @@ class vendedores{
             wp_enqueue_script( 'validate',WOO_TINY_URL.'/templates/vendedores/assets/js/jquery.validate.min.js',array("jquery")  );
             wp_enqueue_script( 'validate-cpf-cnpj',WOO_TINY_URL.'/templates/vendedores/assets/js/brdocs.cpfcnpjValidator.js',array("jquery","validate")  );
             wp_enqueue_script( 'mask',WOO_TINY_URL.'/templates/vendedores/assets/js/jquery.mask.min.js',array("jquery")  );
+            wp_enqueue_script( 'viacep',WOO_TINY_URL.'/templates/vendedores/assets/js/jquery.viacep.js',array("jquery")  );
         }
         
     }
@@ -85,10 +86,8 @@ class vendedores{
         </table>
     <?php }
     public function salva_dados_vendedor($user_id){
-        $bw_id_vendedor_tiny_vinicola = $_POST['bw_id_vendedor_tiny_vinicola'];
-        $bw_id_vendedor_tiny_bw = $_POST['bw_id_vendedor_tiny_bw'];
-        update_user_meta($user_id,"bw_id_vendedor_tiny_vinicola",$bw_id_vendedor_tiny_vinicola);
-        update_user_meta($user_id,"bw_id_vendedor_tiny_bw",$bw_id_vendedor_tiny_bw);
+        update_user_meta($user_id,"bw_id_vendedor_tiny_vinicola",$_POST['bw_id_vendedor_tiny_vinicola'] ?? '');
+        update_user_meta($user_id,"bw_id_vendedor_tiny_bw", $_POST['bw_id_vendedor_tiny_bw'] ?? '');
     }
 }
 ?>

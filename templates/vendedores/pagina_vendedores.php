@@ -1,5 +1,5 @@
 <?php
-if(!is_user_logged_in(  )){
+if(!is_user_logged_in()){
 
     wp_redirect( wp_login_url(site_url("vendedores")) ); exit;
 
@@ -13,6 +13,7 @@ if(isset($_POST['nome'])){
     $rg_inscricao = $_POST["rg_inscricao"];
     $cep = $_POST["cep"];
     $endereco = $_POST["endereco"];
+    $complemento = $_POST["complemento"] ?? '';
     $numero = $_POST["numero"];
     $bairro = $_POST["bairro"];
     $cidade = $_POST["cidade"];
@@ -32,7 +33,7 @@ if(isset($_POST['nome'])){
     $qtd_bonificacao = $_POST["qtd_bonificacao"];
     $preco_unitario_bonificacao = $_POST["preco_unitario_bonificacao"];
 
-    $user_id = get_current_user_id(  );
+    $user_id = get_current_user_id();
     
 
 	$address = array(
@@ -42,6 +43,7 @@ if(isset($_POST['nome'])){
 		'phone'         => $telefone,
 		'cellphone'     => $celular,
 		'address_1'     => $endereco,
+		'address_2'     => $complemento,
 		'neighborhood'  => $bairro,
 		'city'          => $cidade,
         'number'        => $numero,
@@ -169,7 +171,7 @@ foreach ($canais_vendas as $canal_venda) {
 		text-align: right;
 	}
 </style>
-<form action="" id="form_pedido_venda" method="post">
+<form action="" id="form_pedido_venda" method="post" class="form-address">
     <div class="container-fluid">
         <div class="container">
             <div class="row">
@@ -183,7 +185,7 @@ foreach ($canais_vendas as $canal_venda) {
                 </div>
             </div>
             <div class="row mt-3">
-                <form>
+                <div class="col-lg-12">
                     <div class="row">
                         <div class="col-lg-8">
                             <div class="form-group">
@@ -216,34 +218,42 @@ foreach ($canais_vendas as $canal_venda) {
                     <div class="row mt-3">
                         <div class="col-lg-2">
                             <div class="form-group">
-                                <input type="text" class="form-control" name="cep" id="cep" placeholder="CEP">
+                                <input type="text" class="form-control" name="cep" id="cep" placeholder="CEP" data-load-address="">
                             </div>
                         </div>
-                        <div class="col-lg-6">
+                        <div class="col-lg-8">
                             <div class="form-group">
-                                <input type="text" class="form-control" name="endereco" placeholder="Endereço">
-                            </div>
-                        </div>
-                        <div class="col-lg-2">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="numero" placeholder="Número">
+                                <input type="text" class="form-control" name="endereco" placeholder="Endereço" data-address="logradouro">
                             </div>
                         </div>
                         <div class="col-lg-2">
                             <div class="form-group">
-                                <input type="text" class="form-control" name="bairro" placeholder="Bairro">
+                                <input type="text" class="form-control" name="numero" placeholder="Número" data-address="addressnumber">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <input type="text" class="form-control" name="bairro" placeholder="Bairro" data-address="bairro">
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="form-group">
+                                <input type="text" class="form-control" name="complemento" placeholder="Complemento" data-address="complemento">
                             </div>
                         </div>
                     </div>
                     <div class="row mt-3">
                         <div class="col-lg-3">
                             <div class="form-group">
-                                <input type="text" class="form-control" name="cidade" placeholder="Cidade">
+                                <input type="text" class="form-control" name="cidade" placeholder="Cidade" data-address="localidade">
                             </div>
                         </div>
                         <div class="col-lg-3">
                             <div class="form-group">
-                                <select class="form-control" name="estado" placeholder="Estado">
+                                <input type="text" class="form-control" name="estado" placeholder="Estado" data-address="uf">
+                                <!--<select class="form-control" name="estado" placeholder="Estado">
                                     <option value="">Estado</option>
                                     <option value="AC">Acre</option>
                                     <option value="AL">Alagoas</option>
@@ -272,7 +282,7 @@ foreach ($canais_vendas as $canal_venda) {
                                     <option value="SP">São Paulo</option>
                                     <option value="SE">Sergipe</option>
                                     <option value="TO">Tocantins</option>
-                                </select>
+                                </select>-->
                             </div>
                         </div>
                         <div class="col-lg-3">
@@ -353,7 +363,7 @@ foreach ($canais_vendas as $canal_venda) {
                             </div>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
             <div class="row">
                 <div class="col-12">
