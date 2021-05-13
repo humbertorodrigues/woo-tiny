@@ -33,6 +33,8 @@ if(isset($_POST['nome'])){
     $qtd_bonificacao = $_POST["qtd_bonificacao"];
     $preco_unitario_bonificacao = $_POST["preco_unitario_bonificacao"];
 
+    $payment_option_id = $_POST['bw_payment_option'];
+
     $user_id = get_current_user_id();
     
 
@@ -60,10 +62,9 @@ if(isset($_POST['nome'])){
     }
   
 	// Now we create the order
-	$order = wc_create_order();
+	$order = wc_create_order(['status' => 'wc-revision']);
     $order_id = $order->get_id();
 
-    
     update_post_meta($order_id,"bw_codigo",$codigo);
     update_post_meta($order_id,"bw_id_vendedor",$user_id);
     update_post_meta($order_id,"bw_rg_inscricao",$rg_inscricao);
@@ -71,7 +72,9 @@ if(isset($_POST['nome'])){
     update_post_meta($order_id,"bw_canal_venda",$canal_venda);
     update_post_meta($order_id,"bw_canal_venda_descricao",get_the_title($canal_venda));
     update_post_meta($order_id,"bw_obs",$obs);
-    
+    update_post_meta($order_id,"bw_forma_pagamento_id",$payment_option_id);
+    update_post_meta($order_id,"bw_forma_pagamento_descricao",get_the_title($payment_option_id));
+
     $order->add_order_note( $obs );
 
   
@@ -90,19 +93,24 @@ if(isset($_POST['nome'])){
 	$order->set_address( $address, 'billing' );
 	$order->set_address( $address, 'shipping' );
 	// //
-	$order->calculate_totals();
+    $order->calculate_totals();
 
-    if(isset($_POST['revisao'])){
-        $order->update_status("wc-pending", 'Pedido por vendedor', TRUE);  
-    }else{
-        $order->update_status("wc-processing", 'Pedido por vendedor', TRUE);  
+    /*if(isset($_POST['revisao'])){
+            $order->update_status("wc-pending", 'Pedido por vendedor', TRUE);
+        }else{
 
-    }
+            $order->update_status("wc-processing", 'Pedido por vendedor', TRUE);
+        }*/
 
+
+    add_action('woocommerce_order_after_calculate_totals', function ($payment_option_id, $order){
+        $discount = (float) (((int) bw_get_meta_field('discount', $payment_option_id) * $order->get_subtotal()) / 100);
+        $order->set_discount_total(round( $discount, wc_get_price_decimals() ));
+    }, 10, 2);
 
     //Temos bonificacao, vamos montar um pedido à parte
     if(array_sum($qtd_bonificacao)>0){
-        $order_bonificacao = wc_create_order();
+        $order_bonificacao = wc_create_order(['status' => 'wc-revision']);
         $order_bonificacao_id = $order_bonificacao->get_id();
 
         update_post_meta($order_bonificacao_id,"bw_codigo",$codigo);
@@ -137,7 +145,6 @@ if(isset($_POST['nome'])){
             $order_bonificacao->update_status("wc-processing", 'Pedido por vendedor', TRUE);  
         }*/
 
-        $order_bonificacao->update_status("wc-revision", 'Pedido por vendedor', TRUE);
     }
 
 
@@ -261,36 +268,6 @@ $payment_options = get_posts(array(
                         <div class="col-lg-3">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="estado" placeholder="Estado" data-address="uf">
-                                <!--<select class="form-control" name="estado" placeholder="Estado">
-                                    <option value="">Estado</option>
-                                    <option value="AC">Acre</option>
-                                    <option value="AL">Alagoas</option>
-                                    <option value="AP">Amapá</option>
-                                    <option value="AM">Amazonas</option>
-                                    <option value="BA">Bahia</option>
-                                    <option value="CE">Ceará</option>
-                                    <option value="DF">Distrito Federal</option>
-                                    <option value="ES">Espírito Santo</option>
-                                    <option value="GO">Goiás</option>
-                                    <option value="MA">Maranhão</option>
-                                    <option value="MT">Mato Grosso</option>
-                                    <option value="MS">Mato Grosso do Sul</option>
-                                    <option value="MG">Minas Gerais</option>
-                                    <option value="PA">Pará</option>
-                                    <option value="PB">Paraíba</option>
-                                    <option value="PR">Paraná</option>
-                                    <option value="PE">Pernambuco</option>
-                                    <option value="PI">Piauí</option>
-                                    <option value="RJ">Rio de Janeiro</option>
-                                    <option value="RN">Rio Grande do Norte</option>
-                                    <option value="RS">Rio Grande do Sul</option>
-                                    <option value="RO">Rondônia</option>
-                                    <option value="RR">Roraima</option>
-                                    <option value="SC">Santa Catarina</option>
-                                    <option value="SP">São Paulo</option>
-                                    <option value="SE">Sergipe</option>
-                                    <option value="TO">Tocantins</option>
-                                </select>-->
                             </div>
                         </div>
                         <div class="col-lg-3">
