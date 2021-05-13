@@ -165,6 +165,10 @@ foreach ($canais_vendas as $canal_venda) {
     }
 }
 
+$payment_options = get_posts(array(
+    'post_type' => 'bw-payment-options',
+    'numberposts' => -1
+));
 ?>
 <style>
     #pedido_venda input {
@@ -313,7 +317,7 @@ foreach ($canais_vendas as $canal_venda) {
                         </div>
                     </div>
                     <div class="row mt-3">
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <div class="form-group">
                                 <label for="">Canal de venda</label>
                                 <select class="form-control" name="canal_venda" id="canal_venda">
@@ -322,6 +326,19 @@ foreach ($canais_vendas as $canal_venda) {
                                     ?>
                                         <option value="<?php echo $canal_venda->ID ?>"><?php echo $canal_venda->post_title ?></option>
                                     <?php
+                                    } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label for="">Forma de pagamento</label>
+                                <select class="form-control" name="bw_payment_option" id="bw_payment_option" required>
+                                    <option value="" data-bw-order-discount="0" selected>Escolha uma forma de pagamento</option>
+                                    <?php foreach ($payment_options as $payment_option) {
+                                        ?>
+                                        <option value="<?php echo $payment_option->ID ?>" data-bw-order-discount="<?= bw_get_meta_field('discount', $payment_option->ID) ?>"><?= $payment_option->post_title . ' (Desconto de ' . bw_get_meta_field('discount', $payment_option->ID) . '%)' ?></option>
+                                        <?php
                                     } ?>
                                 </select>
                             </div>
@@ -417,8 +434,8 @@ foreach ($canais_vendas as $canal_venda) {
                             </tbody>
                             <tfoot>
                                 <tr class="font-weight-bold">
-                                    <td colspan="4" class="text-right">Total</td>
-                                    <td id="total">R$0,00</td>
+                                    <td colspan="6" class="text-right"><b>Desconto:</b> <span id="desconto">R$0,00</span></td>
+                                    <td colspan="1" class="text-right"><b>Total:</b> <span id="total">R$0,00</span></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -457,7 +474,8 @@ foreach ($canais_vendas as $canal_venda) {
                 celular:{required:true},
 
                 email:{required:true, email:true},
-                canal_venda:{required:true}
+                canal_venda:{required:true},
+                bw_payment_option:{required:true}
             },
 			messages:{
 				nome:{required:"Informe o nome do cliente"},
@@ -491,6 +509,11 @@ foreach ($canais_vendas as $canal_venda) {
             }
             calcula_subtotal();
         })
+
+        jQuery("#bw_payment_option").change(function() {
+            calcula_subtotal();
+        })
+
         jQuery("#adicionar_produto").click(function() {
             let linha = document.createElement('tr');
             let col_id_produto = document.createElement('td');
@@ -543,9 +566,17 @@ foreach ($canais_vendas as $canal_venda) {
 
 
             subtotal = (preco_unitario * qtd) + (preco_unitario_bonificacao * qtd_bonificacao);
+
             jQuery("#subtotal_" + id_produto).val(subtotal.toFixed(2));
             total = total + subtotal;
         })
+
+        let discount = Number(jQuery('#bw_payment_option>option:selected').data('bw-order-discount'));
+        discount = (discount * total)/100;
+        jQuery('#desconto').html("R$ " + discount.toFixed(2));
+        total -= discount;
+        if(total < 0) total = 0;
+
         jQuery("#total").html("R$ " + total.toFixed(2));
     }
 </script>

@@ -7,6 +7,7 @@ $(document).on('change', '[data-product-id]', function (e) {
    e.preventDefault();
    let target = $(e.target);
    let limitBonus = $(this).limitBonus();
+    calcula_subtotal();
 });
 
 

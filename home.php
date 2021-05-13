@@ -14,7 +14,7 @@ defined('ABSPATH') or die('No script kiddies please!');
 define("WOO_TINY_DIR", plugin_dir_path( __FILE__ ));
 define("WOO_TINY_URL",plugin_dir_url(__FILE__));
 
-require WOO_TINY_DIR . 'includes/woocommerce/order-statuses.php';
+require WOO_TINY_DIR . 'bootstrap.php';
 
 include('classes/class.estoque.php');
 include('classes/class.notas_fiscais.php');
