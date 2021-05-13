@@ -13,6 +13,9 @@ defined('ABSPATH') or die('No script kiddies please!');
 
 define("WOO_TINY_DIR", plugin_dir_path( __FILE__ ));
 define("WOO_TINY_URL",plugin_dir_url(__FILE__));
+
+require WOO_TINY_DIR . 'includes/woocommerce/order-statuses.php';
+
 include('classes/class.estoque.php');
 include('classes/class.notas_fiscais.php');
 include('classes/class.contas_pagar.php');
@@ -127,7 +130,6 @@ function mostra_valor_coluna_codigo_tiny( $column, $post_id ) {
 
 /*
  * Todo Formas de pagamento (com desconto?)
- * Todo Todos os pedidos precisam de liberação (Status personalizado)
  * */
 
 

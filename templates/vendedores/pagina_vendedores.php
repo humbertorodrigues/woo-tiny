@@ -91,6 +91,7 @@ if(isset($_POST['nome'])){
 	$order->set_address( $address, 'shipping' );
 	// //
 	$order->calculate_totals();
+
     if(isset($_POST['revisao'])){
         $order->update_status("wc-pending", 'Pedido por vendedor', TRUE);  
     }else{
@@ -128,12 +129,15 @@ if(isset($_POST['nome'])){
         $order_bonificacao->set_address( $address, 'shipping' );
         // //
         $order_bonificacao->calculate_totals();
-        if(isset($_POST['revisao'])){
+
+        /*if(isset($_POST['revisao'])){
             $order_bonificacao->update_status("wc-pending", 'Pedido por vendedor', TRUE);  
         }else{
 
             $order_bonificacao->update_status("wc-processing", 'Pedido por vendedor', TRUE);  
-        }
+        }*/
+
+        $order_bonificacao->update_status("wc-revision", 'Pedido por vendedor', TRUE);
     }
 
 
