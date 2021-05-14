@@ -13,6 +13,11 @@ $(document).on('keyup blur', '[data-load-address]', function (e) {
         $.get('https://viacep.com.br/ws/' + zipCode + '/json/', function (res) {
             inputs.each(function (i, value) {
                 let input = $(value);
+                
+                if(input.attr('data-readonly')=="false"){
+                    
+                    input.prop('readonly', false);
+                }
                 input.val('');
                 let key = input.data('address');
                 input.val(res[key]);
