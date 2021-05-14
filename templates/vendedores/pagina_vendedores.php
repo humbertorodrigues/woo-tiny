@@ -88,7 +88,7 @@ if(isset($_POST['nome'])){
         $produto_add = wc_get_product($produto);
         $produto_add->set_price( $preco_unitario[$key_produto] );
 
-        $order->add_product( $produto_add, $qtd[$key_produto]); 
+        $order->add_product( $produto_add, $qtd[$key_produto]);
     }
 	$order->set_address( $address, 'billing' );
 	$order->set_address( $address, 'shipping' );
@@ -102,11 +102,6 @@ if(isset($_POST['nome'])){
             $order->update_status("wc-processing", 'Pedido por vendedor', TRUE);
         }*/
 
-
-    add_action('woocommerce_order_after_calculate_totals', function ($payment_option_id, $order){
-        $discount = (float) (((int) bw_get_meta_field('discount', $payment_option_id) * $order->get_subtotal()) / 100);
-        $order->set_discount_total(round( $discount, wc_get_price_decimals() ));
-    }, 10, 2);
 
     //Temos bonificacao, vamos montar um pedido à parte
     if(array_sum($qtd_bonificacao)>0){
