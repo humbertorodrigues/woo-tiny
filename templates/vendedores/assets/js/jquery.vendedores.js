@@ -16,7 +16,7 @@ $(document).on('click', '#apply-coupon', function (e) {
         action: 'woo_tiny_get_coupon',
         code: $(this).parent().parent().find('[name=coupon]').val()
     };
-    $.get('/wp-admin/admin-ajax.php', data, function (res) {
+    $.get(woo_tiny.ajax_url, data, function (res) {
         if(res.discount_type){
             let dataCoupon = $('#data-coupon');
             dataCoupon.attr('data-coupon-type', res.discount_type);

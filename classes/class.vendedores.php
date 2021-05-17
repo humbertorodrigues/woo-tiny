@@ -45,6 +45,10 @@ class vendedores
             wp_enqueue_script('mask', WOO_TINY_URL . '/templates/vendedores/assets/js/jquery.mask.min.js', array("jquery"));
             wp_enqueue_script('viacep', WOO_TINY_URL . '/templates/vendedores/assets/js/jquery.viacep.js', ['jquery']);
             wp_enqueue_script('vendedores', WOO_TINY_URL . '/templates/vendedores/assets/js/jquery.vendedores.js', ['jquery']);
+            wp_localize_script( 'vendedores', 'woo_tiny', [
+                    'ajax_url' => admin_url( 'admin-ajax.php' )
+                ]
+            );
         }
 
     }
