@@ -10,6 +10,22 @@ $(document).on('change', '[data-product-id]', function (e) {
     calcula_subtotal();
 });
 
+$(document).on('click', '#apply-coupon', function (e) {
+    e.preventDefault();
+    let data = {
+        action: 'woo_tiny_get_coupon',
+        code: $(this).parent().parent().find('[name=coupon]').val()
+    };
+    $.get('/wp-admin/admin-ajax.php', data, function (res) {
+        if(res.discount_type){
+            let dataCoupon = $('#data-coupon');
+            dataCoupon.attr('data-coupon-type', res.discount_type);
+            dataCoupon.attr('data-coupon-amount', res.amount);
+            calcula_subtotal();
+        }
+    });
+});
+
 
 $.fn.extend({
     limitBonus: function (limit = 5) {
