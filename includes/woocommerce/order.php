@@ -3,6 +3,7 @@
 add_action('woocommerce_order_after_calculate_totals', 'woo_tiny_order_after_calculate_totals', 10, 2);
 add_action( 'init', 'woo_tiny_register_new_order_statuses' );
 add_filter( 'wc_order_statuses', 'woo_tiny_new_wc_order_statuses' );
+add_filter( 'wc_order_is_editable', 'woo_tiny_wc_order_is_editable', 10, 2 );
 add_action('wp_ajax_woo_tiny_get_coupon', 'woo_tiny_ajax_get_coupon_by_code');
 
 function woo_tiny_order_after_calculate_totals($and_taxes, $order){
@@ -29,6 +30,13 @@ function woo_tiny_new_wc_order_statuses( $order_statuses ) {
     $order_statuses['wc-revision'] = _x( 'Em revisão', 'Order status', 'woocommerce' );
 
     return $order_statuses;
+}
+
+function woo_tiny_wc_order_is_editable($editable, $order){
+    if($order->get_status() == 'revision'){
+        $editable = true;
+    }
+    return $editable;
 }
 
 function woo_tiny_ajax_get_coupon_by_code()

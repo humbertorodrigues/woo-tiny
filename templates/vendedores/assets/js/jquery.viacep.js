@@ -16,7 +16,7 @@ $(document).on('keyup blur', '[data-load-address]', function (e) {
                 input.val('');
                 let key = input.data('address');
                 input.val(res[key]);
-                if (!input.val()) {
+                if (!input.val() || input.hasClass('no-focus')) {
                     input.prop('readonly', false);
                 }
             }).firstEmptyFieldFocus();

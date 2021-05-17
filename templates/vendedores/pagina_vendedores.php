@@ -264,7 +264,7 @@ $payment_options = get_posts(array(
                         </div>
                         <div class="col-lg-8">
                             <div class="form-group">
-                                <input type="text" class="form-control" name="complemento" placeholder="Complemento"
+                                <input type="text" class="form-control no-focus" name="complemento" placeholder="Complemento"
                                        data-address="complemento">
                             </div>
                         </div>
