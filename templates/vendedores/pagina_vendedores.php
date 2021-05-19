@@ -1,202 +1,14 @@
-<?php
-if (!is_user_logged_in()) {
-
-    wp_redirect(wp_login_url(site_url("vendedores")));
-    exit;
-
-}
-if (isset($_POST['nome'])) {
-    global $woocommerce;
-    $nome = $_POST["nome"];
-    $codigo = $_POST["codigo"];
-    $nome_fantasia = $_POST["nome_fantasia"];
-    $cpf_cnpj = $_POST["cpf_cnpj"];
-    $rg_inscricao = $_POST["rg_inscricao"];
-    $cep = $_POST["cep"];
-    $endereco = $_POST["endereco"];
-    $complemento = $_POST["complemento"] ?? '';
-    $numero = $_POST["numero"];
-    $bairro = $_POST["bairro"];
-    $cidade = $_POST["cidade"];
-    $estado = $_POST["estado"];
-    $telefone = $_POST["telefone"];
-    $celular = $_POST["celular"];
-    $nome_contato = $_POST["nome_contato"];
-    $email = $_POST["email"];
-    $canal_venda = $_POST["canal_venda"];
-    $obs = $_POST["obs"];
-
-    $id_produto = $_POST["id_produto"];
-    $qtd = $_POST["qtd"];
-    $preco_unitario = $_POST["preco_unitario"];
-    $subtotal = $_POST["subtotal"];
-
-    $qtd_bonificacao = $_POST["qtd_bonificacao"];
-    $preco_unitario_bonificacao = $_POST["preco_unitario_bonificacao"];
-
-    $payment_option_id = $_POST['bw_payment_option'];
-
-    $user_id = get_current_user_id();
-
-
-    $address = array(
-        'first_name' => $nome,
-        'company' => $nome_fantasia,
-        'email' => $email,
-        'phone' => $telefone,
-        'cellphone' => $celular,
-        'address_1' => $endereco,
-        'address_2' => $complemento,
-        'neighborhood' => $bairro,
-        'city' => $cidade,
-        'number' => $numero,
-        'state' => $estado,
-        'postcode' => $cep,
-        'country' => "BR"
-    );
-    if (strlen($cpf_cnpj) == 11) {
-        $address['cpf'] = $cpf_cnpj;
-        $address['rg'] = $rg_inscricao;
-    } else {
-        $address['cnpj'] = $cpf_cnpj;
-        $address['inscricao_estadual'] = $rg_inscricao;
-    }
-
-    // Now we create the order
-    $order = wc_create_order(['status' => 'wc-revision']);
-    $order_id = $order->get_id();
-
-    update_post_meta($order_id, "bw_codigo", $codigo);
-    update_post_meta($order_id, "bw_id_vendedor", $user_id);
-    update_post_meta($order_id, "bw_rg_inscricao", $rg_inscricao);
-    update_post_meta($order_id, "bw_nome_contato", $nome_contato);
-    update_post_meta($order_id, "bw_canal_venda", $canal_venda);
-    update_post_meta($order_id, "bw_canal_venda_descricao", get_the_title($canal_venda));
-    update_post_meta($order_id, "bw_obs", $obs);
-    update_post_meta($order_id, "bw_forma_pagamento_id", $payment_option_id);
-    update_post_meta($order_id, "bw_forma_pagamento_descricao", get_the_title($payment_option_id));
-
-    $order->add_order_note($obs);
-
-
-    // // The add_product() function below is located in /plugins/woocommerce/includes/abstracts/abstract_wc_order.php
-
-    foreach ($id_produto as $key_produto => $produto) {
-        if ($qtd[$key_produto] == 0) {
-            continue;
-        }
-
-        $produto_add = wc_get_product($produto);
-        $produto_add->set_price($preco_unitario[$key_produto]);
-
-        $order->add_product($produto_add, $qtd[$key_produto]);
-    }
-    $order->set_address($address, 'billing');
-    $order->set_address($address, 'shipping');
-    // //
-
-    if(isset($_POST['coupon'])){
-        $order->apply_coupon($_POST['coupon']);
-    }
-
-    $order->calculate_totals();
-
-    /*if(isset($_POST['revisao'])){
-            $order->update_status("wc-pending", 'Pedido por vendedor', TRUE);
-        }else{
-
-            $order->update_status("wc-processing", 'Pedido por vendedor', TRUE);
-        }*/
-
-
-    //Temos bonificacao, vamos montar um pedido à parte
-    if (array_sum($qtd_bonificacao) > 0) {
-        $order_bonificacao = wc_create_order(['status' => 'wc-revision']);
-        $order_bonificacao_id = $order_bonificacao->get_id();
-
-        update_post_meta($order_bonificacao_id, "bw_codigo", $codigo);
-        update_post_meta($order_bonificacao_id, "bw_id_vendedor", $user_id);
-        update_post_meta($order_bonificacao_id, "bw_rg_inscricao", $rg_inscricao);
-        update_post_meta($order_bonificacao_id, "bw_nome_contato", $nome_contato);
-        update_post_meta($order_bonificacao_id, "bw_canal_venda", $canal_venda);
-        update_post_meta($order_bonificacao_id, "bw_canal_venda_descricao", get_the_title($canal_venda));
-        update_post_meta($order_bonificacao_id, "bw_bonificacao_pedido_pai", $order_id);
-
-        $order_bonificacao->add_order_note($obs);
-
-        foreach ($id_produto as $key_produto => $produto) {
-            if ($qtd_bonificacao[$key_produto] == 0) {
-                continue;
-            }
-
-            $produto_add = wc_get_product($produto);
-            $produto_add->set_price($preco_unitario_bonificacao[$key_produto]);
-
-            $order_bonificacao->add_product($produto_add, $qtd_bonificacao[$key_produto]);
-        }
-        $order_bonificacao->set_address($address, 'billing');
-        $order_bonificacao->set_address($address, 'shipping');
-        // //
-        $order_bonificacao->calculate_totals();
-
-        /*if(isset($_POST['revisao'])){
-            $order_bonificacao->update_status("wc-pending", 'Pedido por vendedor', TRUE);  
-        }else{
-
-            $order_bonificacao->update_status("wc-processing", 'Pedido por vendedor', TRUE);  
-        }*/
-
-    }
-
-
-}
-$canais_vendas = get_posts(array(
-    'post_type' => 'canal_venda',
-    'numberposts' => -1
-));
-$precos_por_canal = array();
-
-foreach ($canais_vendas as $canal_venda) {
-    $id_canal_venda = $canal_venda->ID;
-    foreach ($produtos as $key => $produto) {
-        $id_produto = $produto->get_ID();
-        $precos_canal_venda = get_post_meta($id_produto, 'canais_venda', true);
-        if (is_array($precos_canal_venda)) {
-            if (isset($precos_canal_venda[$id_canal_venda]) && $precos_canal_venda[$id_canal_venda] > 0) {
-                $precos_por_canal[$id_produto][$id_canal_venda] = str_replace(",", ".", $precos_canal_venda[$id_canal_venda]);
-            } else {
-                $precos_por_canal[$id_produto][$id_canal_venda] = $produto->get_price();
-            }
-        } else {
-            $precos_por_canal[$id_produto][$id_canal_venda] = $produto->get_price();
-        }
-    }
-}
-
-$payment_options = get_posts(array(
-    'post_type' => 'bw-payment-options',
-    'numberposts' => -1
-));
-?>
-<style>
-    #pedido_venda input {
-        max-width: 100px;
-        width: 100px;
-    }
-
-    .text-right {
-        text-align: right;
-    }
-</style>
-<form action="" id="form_pedido_venda" method="post" class="form-address">
+<form action="<?= admin_url('admin-post.php') ?>" id="form_pedido_venda" method="post" class="form-address">
+    <input type="hidden" name="action" value="woo_tiny_save_order"/>
+    <?php wp_nonce_field('woo_tiny_shop_order'); ?>
     <div class="container-fluid">
         <div class="container">
             <div class="row">
                 <div class="col-12 mt-3">
                     <h1>Nova venda</h1>
-                    <?php if (isset($order_id)): ?>
-                        <div class="alert alert-success" role="alert">
-                            <strong>Pedido <?php echo $order_id ?> gerado com sucesso</strong>
+                    <?php if (isset($_GET['class'])): ?>
+                        <div class="alert alert-<?= $_GET['class'] ?>" role="alert">
+                            <strong><?= $_GET['message'] ?></strong>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -207,7 +19,7 @@ $payment_options = get_posts(array(
                         <div class="col-lg-8">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="nome"
-                                       placeholder="Nome do cliente ou razão social">
+                                       placeholder="Nome do cliente ou razão social" data-filled="first_name">
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -220,18 +32,18 @@ $payment_options = get_posts(array(
                         <div class="col-lg-4">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="nome_fantasia"
-                                       placeholder="Nome fantasia">
+                                       placeholder="Nome fantasia" data-filled="billing_company">
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="form-group">
-                                <input type="text" class="form-control" name="cpf_cnpj" placeholder="CPF/CNPJ">
+                                <input type="text" class="form-control" name="cpf_cnpj" placeholder="CPF/CNPJ" data-filled="billing_vat">
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="rg_inscricao"
-                                       placeholder="RG/Inscrição Estadual">
+                                       placeholder="RG/Inscrição Estadual" data-filled="billing_doc">
                             </div>
                         </div>
                     </div>
@@ -239,19 +51,19 @@ $payment_options = get_posts(array(
                         <div class="col-lg-2">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="cep" id="cep" placeholder="CEP"
-                                       data-load-address="">
+                                       data-load-address="" data-filled="billing_postcode">
                             </div>
                         </div>
                         <div class="col-lg-8">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="endereco" placeholder="Endereço"
-                                       data-address="logradouro">
+                                       data-address="logradouro" data-filled="billing_address_1">
                             </div>
                         </div>
                         <div class="col-lg-2">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="numero" placeholder="Número"
-                                       data-address="addressnumber">
+                                       data-address="addressnumber" data-filled="billing_number">
                             </div>
                         </div>
                     </div>
@@ -259,13 +71,13 @@ $payment_options = get_posts(array(
                         <div class="col-lg-4">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="bairro" placeholder="Bairro"
-                                       data-address="bairro">
+                                       data-address="bairro" data-filled="billing_neighborhood">
                             </div>
                         </div>
                         <div class="col-lg-8">
                             <div class="form-group">
                                 <input type="text" class="form-control no-focus" name="complemento" placeholder="Complemento"
-                                       data-address="complemento">
+                                       data-address="complemento" data-filled="billing_address_2">
                             </div>
                         </div>
                     </div>
@@ -273,19 +85,19 @@ $payment_options = get_posts(array(
                         <div class="col-lg-3">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="cidade" placeholder="Cidade"
-                                       data-address="localidade">
+                                       data-address="localidade" data-filled="billing_city">
                             </div>
                         </div>
                         <div class="col-lg-3">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="estado" placeholder="Estado"
-                                       data-address="uf">
+                                       data-address="uf" data-filled="billing_state">
                             </div>
                         </div>
                         <div class="col-lg-3">
                             <div class="form-group">
                                 <input type="text" class="form-control" id="telefone" name="telefone"
-                                       placeholder="Telefone">
+                                       placeholder="Telefone" data-filled="billing_phone">
                             </div>
                         </div>
                         <div class="col-lg-3">
@@ -304,7 +116,7 @@ $payment_options = get_posts(array(
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group">
-                                <input type="email" class="form-control" name="email" placeholder="Email">
+                                <input type="email" class="form-control" name="email" placeholder="Email" data-filled="billing_email">
                             </div>
                         </div>
                     </div>

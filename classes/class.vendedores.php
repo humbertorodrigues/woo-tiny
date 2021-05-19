@@ -40,6 +40,7 @@ class vendedores
         if ($post->ID == url_to_postid(site_url('vendedores'))) {
 
             wp_enqueue_style('bootstrap', WOO_TINY_URL . '/templates/vendedores/assets/bootstrap/css/bootstrap.min.css');
+            wp_enqueue_style('vendedores', WOO_TINY_URL . '/templates/vendedores/assets/css/vendedores.css', ['bootstrap']);
             wp_enqueue_script('validate', WOO_TINY_URL . '/templates/vendedores/assets/js/jquery.validate.min.js', array("jquery"));
             wp_enqueue_script('validate-cpf-cnpj', WOO_TINY_URL . '/templates/vendedores/assets/js/brdocs.cpfcnpjValidator.js', array("jquery", "validate"));
             wp_enqueue_script('mask', WOO_TINY_URL . '/templates/vendedores/assets/js/jquery.mask.min.js', array("jquery"));
@@ -62,9 +63,34 @@ class vendedores
         );
         $produtos = wc_get_products($args);
 
-        ?>
+        $canais_vendas = get_posts(array(
+            'post_type' => 'canal_venda',
+            'numberposts' => -1
+        ));
+        $precos_por_canal = array();
 
-        <?php
+        foreach ($canais_vendas as $canal_venda) {
+            $id_canal_venda = $canal_venda->ID;
+            foreach ($produtos as $key => $produto) {
+                $id_produto = $produto->get_ID();
+                $precos_canal_venda = get_post_meta($id_produto, 'canais_venda', true);
+                if (is_array($precos_canal_venda)) {
+                    if (isset($precos_canal_venda[$id_canal_venda]) && $precos_canal_venda[$id_canal_venda] > 0) {
+                        $precos_por_canal[$id_produto][$id_canal_venda] = str_replace(",", ".", $precos_canal_venda[$id_canal_venda]);
+                    } else {
+                        $precos_por_canal[$id_produto][$id_canal_venda] = $produto->get_price();
+                    }
+                } else {
+                    $precos_por_canal[$id_produto][$id_canal_venda] = $produto->get_price();
+                }
+            }
+        }
+
+        $payment_options = get_posts(array(
+            'post_type' => 'bw-payment-options',
+            'numberposts' => -1
+        ));
+
         include(WOO_TINY_DIR . "/templates/vendedores/pagina_vendedores.php");
 
     }
