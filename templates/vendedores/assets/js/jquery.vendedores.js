@@ -50,10 +50,27 @@ $(document).on('keyup blur change', '[name=cpf_cnpj]', function (e) {
                     default:
                         break;
                 }
+                if(key == 'shipping_postcode'){
+                    $('#has-shipping').attr('checked', false);
+                    $('#has-shipping').trigger('click');
+                }
                 $('[data-filled=' + key + ']').val(value);
             }
         }
     });
+});
+
+$(document).on('click', '#has-shipping', function (e){
+    this.toggleAttribute('checked');
+   if($(this).is(':checked')){
+       $('#form-shipping').show();
+   }else{
+       $('#form-shipping').hide();
+       $('#form-shipping').find('input').each(function (i, el) {
+           $(el).val('');
+           $(el).prop('readonly', false);
+       });
+   }
 });
 
 $(document).on('change', '#canal_venda', function (e) {

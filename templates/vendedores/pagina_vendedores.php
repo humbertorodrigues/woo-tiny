@@ -1,4 +1,4 @@
-<form action="<?= admin_url('admin-post.php') ?>" id="form_pedido_venda" method="post" class="form-address">
+<form action="<?= admin_url('admin-post.php') ?>" id="form_pedido_venda" method="post">
     <input type="hidden" name="action" value="woo_tiny_save_order"/>
     <?php wp_nonce_field('woo_tiny_shop_order'); ?>
     <div class="container-fluid">
@@ -47,63 +47,65 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-lg-2">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="cep" id="cep" placeholder="CEP"
-                                       data-load-address="" data-filled="billing_postcode">
+                    <div class="form-address">
+                        <div class="row mt-3">
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="cep" id="cep" placeholder="CEP"
+                                           data-load-address="" data-filled="billing_postcode">
+                                </div>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="endereco" placeholder="Endereço"
+                                           data-address="logradouro" data-filled="billing_address_1">
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="numero" placeholder="Número"
+                                           data-address="addressnumber" data-filled="billing_number">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-lg-8">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="endereco" placeholder="Endereço"
-                                       data-address="logradouro" data-filled="billing_address_1">
+                        <div class="row mt-3">
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="bairro" placeholder="Bairro"
+                                           data-address="bairro" data-filled="billing_neighborhood">
+                                </div>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="form-group">
+                                    <input type="text" class="form-control no-focus" name="complemento" placeholder="Complemento"
+                                           data-address="complemento" data-filled="billing_address_2">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="numero" placeholder="Número"
-                                       data-address="addressnumber" data-filled="billing_number">
+                        <div class="row mt-3">
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="cidade" placeholder="Cidade"
+                                           data-address="localidade" data-filled="billing_city">
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-lg-4">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="bairro" placeholder="Bairro"
-                                       data-address="bairro" data-filled="billing_neighborhood">
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="estado" placeholder="Estado"
+                                           data-address="uf" data-filled="billing_state">
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-lg-8">
-                            <div class="form-group">
-                                <input type="text" class="form-control no-focus" name="complemento" placeholder="Complemento"
-                                       data-address="complemento" data-filled="billing_address_2">
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="telefone" name="telefone"
+                                           placeholder="Telefone" data-filled="billing_phone">
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-lg-3">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="cidade" placeholder="Cidade"
-                                       data-address="localidade" data-filled="billing_city">
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="estado" placeholder="Estado"
-                                       data-address="uf" data-filled="billing_state">
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
-                            <div class="form-group">
-                                <input type="text" class="form-control" id="telefone" name="telefone"
-                                       placeholder="Telefone" data-filled="billing_phone">
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
-                            <div class="form-group">
-                                <input type="text" class="form-control" id="celular" name="celular"
-                                       placeholder="Celular">
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="celular" name="celular"
+                                           placeholder="Celular" data-filled="billing_cellphone">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -117,6 +119,66 @@
                         <div class="col-lg-6">
                             <div class="form-group">
                                 <input type="email" class="form-control" name="email" placeholder="Email" data-filled="billing_email">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-12">
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" id="has-shipping">
+                                    Entregar em um endereço diferente
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-address" id="form-shipping" style="display: none;">
+                        <div class="row mt-3">
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="shipping[postcode]" id="cep" placeholder="CEP"
+                                           data-load-address="" data-filled="shipping_postcode">
+                                </div>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="shipping[address_1]" placeholder="Endereço"
+                                           data-address="logradouro" data-filled="shipping_address_1">
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="shipping[number]" placeholder="Número"
+                                           data-address="addressnumber" data-filled="shipping_number">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="shipping[neighborhood]" placeholder="Bairro"
+                                           data-address="bairro" data-filled="shipping_neighborhood">
+                                </div>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="form-group">
+                                    <input type="text" class="form-control no-focus" name="shipping[address_2]" placeholder="Complemento"
+                                           data-address="complemento" data-filled="shipping_address_2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="shipping[city]" placeholder="Cidade"
+                                           data-address="localidade" data-filled="shipping_city">
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="shipping[state]" placeholder="Estado"
+                                           data-address="uf" data-filled="shipping_state">
+                                </div>
                             </div>
                         </div>
                     </div>

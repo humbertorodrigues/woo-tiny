@@ -250,3 +250,59 @@ if(!function_exists('set_alert')){
         return '?' . http_build_query($alert);
     }
 }
+
+if(!function_exists('wc_serialize_address')){
+    function wc_serialize_address($address, $type = '')
+    {
+        $field_defaults = [
+            'billing' => [
+                'first_name' => '',
+                'last_name' => '',
+                'company' => '',
+                'address_1' => '',
+                'address_2' => '',
+                'city' => '',
+                'state' => '',
+                'postcode' => '',
+                'country' => 'BR',
+                'email' => '',
+                'phone' => '',
+
+                /* Extra fields */
+                'neighborhood' => '',
+                'number' => '',
+                'cellphone' => '',
+                'cpf' => '',
+                'cnpj' => '',
+                'rg' => '',
+                'ie' => '',
+                'persontype' => '',
+            ],
+            'shipping' => [
+                'first_name' => '',
+                'last_name' => '',
+                'company' => '',
+                'address_1' => '',
+                'address_2' => '',
+                'city' => '',
+                'state' => '',
+                'postcode' => '',
+                'country' => 'BR',
+
+                /* Extra fields */
+                'neighborhood' => '',
+                'number' => '',
+            ],
+        ];
+
+        if(empty($address)) return $field_defaults;
+
+        if($type == ''){
+            return [
+                'billing' => wp_parse_args($address, $field_defaults['billing']),
+                'shipping' => wp_parse_args($address, $field_defaults['shipping'])
+            ];
+        }
+        return wp_parse_args($address, $field_defaults[$type]);
+    }
+}

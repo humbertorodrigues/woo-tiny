@@ -53,14 +53,15 @@ function woo_tiny_ajax_get_coupon_by_code()
     wp_send_json($coupon->get_data(), 200);
 }
 
-function woo_tiny_save_order(){
+function woo_tiny_save_order()
+{
     if ('POST' != $_SERVER['REQUEST_METHOD'] || !wp_verify_nonce($_POST['_wpnonce'], 'woo_tiny_shop_order')) die('Requisição Inválida');
-    $referer = $_POST['_wp_http_referer'] ?? $_SERVER['HTTP_REFERER'];
-    $referer = substr_replace($referer, '', strpos($referer, '?'));
+    $referer = 'vendedores';
     if (!is_user_logged_in()) {
-        wp_redirect(wp_login_url(site_url("vendedores")));
+        wp_redirect(wp_login_url(site_url($referer)));
         exit;
     }
+
     if (isset($_POST['nome'])) {
         $nome = $_POST["nome"];
         $codigo = $_POST["codigo"];
@@ -105,8 +106,7 @@ function woo_tiny_save_order(){
             'city' => $cidade,
             'number' => $numero,
             'state' => $estado,
-            'postcode' => $cep,
-            'country' => "BR"
+            'postcode' => $cep
         );
         if (strlen($cpf_cnpj) == 11) {
             $address['cpf'] = $cpf_cnpj;
@@ -114,12 +114,16 @@ function woo_tiny_save_order(){
             $address['persontype'] = 1;
         } else {
             $address['cnpj'] = $cpf_cnpj;
-            $address['inscricao_estadual'] = $rg_inscricao;
             $address['ie'] = $rg_inscricao;
             $address['persontype'] = 2;
         }
+        $address['billing'] = wc_serialize_address($address, 'billing');
+        $address['shipping'] = wc_serialize_address((!empty($_POST['shipping']['postcode']) ? $_POST['shipping'] : $address['billing']), 'shipping');
+        $address['shipping']['first_name'] = $address['billing']['first_name'];
+        $address['shipping']['last_name'] = $address['billing']['last_name'];
+        $address['shipping']['company'] = $address['billing']['company'];
         $customer = woo_tiny_save_customer_meta_data(woo_tiny_get_customer_data($address));
-        if(!$customer){
+        if (!$customer) {
             $referer .= set_alert('danger', 'Falha ao processar');
             wp_redirect($referer);
             exit;
@@ -158,11 +162,11 @@ function woo_tiny_save_order(){
 
             $order->add_product($produto_add, $qtd[$key_produto]);
         }
-        $order->set_address($address, 'billing');
-        $order->set_address($address, 'shipping');
+        $order->set_address($address['billing'], 'billing');
+        $order->set_address($address['shipping'], 'shipping');
         // //
 
-        if(isset($_POST['coupon'])){
+        if (isset($_POST['coupon'])) {
             $order->apply_coupon($_POST['coupon']);
         }
 
@@ -201,8 +205,8 @@ function woo_tiny_save_order(){
 
                 $order_bonificacao->add_product($produto_add, $qtd_bonificacao[$key_produto]);
             }
-            $order_bonificacao->set_address($address, 'billing');
-            $order_bonificacao->set_address($address, 'shipping');
+            $order_bonificacao->set_address($address['billing'], 'billing');
+            $order_bonificacao->set_address($address['shipping'], 'shipping');
             // //
             $order_bonificacao->calculate_totals();
 
@@ -220,4 +224,6 @@ function woo_tiny_save_order(){
     $referer .= $order_id > 0 ? set_alert('success', "Pedido #{$order_id} salvo com sucesso") : set_alert('danger', 'Falha ao processar');
     wp_redirect($referer);
 }
+
+
 
