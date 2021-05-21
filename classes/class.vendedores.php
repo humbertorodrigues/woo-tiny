@@ -5,7 +5,8 @@ class vendedores
     public function __construct()
     {
         add_shortcode('pagina_vendedores', [$this, 'pagina_vendedores']);
-        add_action('wp_enqueue_scripts', [$this, 'enqueue_css']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
+        add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts']);
         add_action('init', [$this, 'role_vendedores']);
         add_action('show_user_profile', [$this, 'extra_user_profile_fields']);
         add_action('edit_user_profile', [$this, 'extra_user_profile_fields']);
@@ -33,24 +34,36 @@ class vendedores
 
     }
 
-    public function enqueue_css()
+    public function enqueue_scripts()
     {
         global $post;
 
         if ($post->ID == url_to_postid(site_url('vendedores'))) {
 
             wp_enqueue_style('bootstrap', WOO_TINY_URL . '/templates/vendedores/assets/bootstrap/css/bootstrap.min.css');
+            wp_enqueue_style('vendedores', WOO_TINY_URL . '/templates/vendedores/assets/css/vendedores.css', ['bootstrap']);
             wp_enqueue_script('validate', WOO_TINY_URL . '/templates/vendedores/assets/js/jquery.validate.min.js', array("jquery"));
             wp_enqueue_script('validate-cpf-cnpj', WOO_TINY_URL . '/templates/vendedores/assets/js/brdocs.cpfcnpjValidator.js', array("jquery", "validate"));
             wp_enqueue_script('mask', WOO_TINY_URL . '/templates/vendedores/assets/js/jquery.mask.min.js', array("jquery"));
             wp_enqueue_script('viacep', WOO_TINY_URL . '/templates/vendedores/assets/js/jquery.viacep.js', ['jquery']);
             wp_enqueue_script('vendedores', WOO_TINY_URL . '/templates/vendedores/assets/js/jquery.vendedores.js', ['jquery']);
             wp_localize_script( 'vendedores', 'woo_tiny', [
-                    'ajax_url' => admin_url( 'admin-ajax.php' )
+                    'ajax_url' => admin_url( 'admin-ajax.php' ),
+                    'nonce' => wp_create_nonce('woo-tiny-ajax')
                 ]
             );
         }
 
+    }
+
+    public function admin_enqueue_scripts(){
+        wp_enqueue_style('vendedores', WOO_TINY_URL . '/templates/vendedores/assets/admin/css/vendedores.css', ['login']);
+        wp_enqueue_script('vendedores', WOO_TINY_URL . '/templates/vendedores/assets/admin/js/jquery.vendedores.js', ['jquery']);
+        wp_localize_script( 'vendedores', 'woo_tiny', [
+                'admin_ajax_url' => admin_url( 'admin-ajax.php' ),
+                'admin_nonce' => wp_create_nonce('woo-tiny-admin-ajax')
+            ]
+        );
     }
 
     public function pagina_vendedores()
@@ -62,47 +75,72 @@ class vendedores
         );
         $produtos = wc_get_products($args);
 
-        ?>
+        $canais_vendas = get_posts(array(
+            'post_type' => 'canal_venda',
+            'numberposts' => -1
+        ));
+        $precos_por_canal = array();
 
-        <?php
+        foreach ($canais_vendas as $canal_venda) {
+            $id_canal_venda = $canal_venda->ID;
+            foreach ($produtos as $key => $produto) {
+                $id_produto = $produto->get_ID();
+                $precos_canal_venda = get_post_meta($id_produto, 'canais_venda', true);
+                if (is_array($precos_canal_venda)) {
+                    if (isset($precos_canal_venda[$id_canal_venda]) && $precos_canal_venda[$id_canal_venda] > 0) {
+                        $precos_por_canal[$id_produto][$id_canal_venda] = str_replace(",", ".", $precos_canal_venda[$id_canal_venda]);
+                    } else {
+                        $precos_por_canal[$id_produto][$id_canal_venda] = $produto->get_price();
+                    }
+                } else {
+                    $precos_por_canal[$id_produto][$id_canal_venda] = $produto->get_price();
+                }
+            }
+        }
+
+        $payment_options = get_posts(array(
+            'post_type' => 'bw-payment-options',
+            'numberposts' => -1
+        ));
+
         include(WOO_TINY_DIR . "/templates/vendedores/pagina_vendedores.php");
 
     }
 
 
     function extra_user_profile_fields($user)
-    { ?>
-        <h3>Dados do vendedor no tiny</h3>
-        <?php
+    {
+        $args = array(
+            'limit' => -1,
+            // 'stock_status' => 'instock',
+        );
+        $produtos = wc_get_products($args);
+
+        $canais = get_posts(array(
+            'post_type' => 'canal_venda',
+            'numberposts' => -1
+        ));
+
+        $bw_id_vendedor_tiny_vinicola = "";
+        $bw_id_vendedor_tiny_bw = "";
 
         if (isset($user->ID)) {
-
             $bw_id_vendedor_tiny_vinicola = get_user_meta($user->ID, "bw_id_vendedor_tiny_vinicola", true);
             $bw_id_vendedor_tiny_bw = get_user_meta($user->ID, "bw_id_vendedor_tiny_bw", true);
-        } else {
-            $bw_id_vendedor_tiny_vinicola = "";
-            $bw_id_vendedor_tiny_bw = "";
         }
-        ?>
-        <table class="form-table">
-            <tr>
-                <th><label for="bw_id_vendedor_tiny_bw">Código vendedor (conta Bueno Wines)</label></th>
-                <td>
-                    <input type="text" name="bw_id_vendedor_tiny_bw" id="bw_id_vendedor_tiny_bw"
-                           value="<?php echo $bw_id_vendedor_tiny_bw ?>" class="regular-text"/><br/>
 
-                </td>
-            </tr>
-            <tr>
-                <th><label for="bw_id_vendedor_tiny_vinicola">Código vendedor (conta Vinícola)</label></th>
-                <td>
-                    <input type="text" name="bw_id_vendedor_tiny_vinicola" id="bw_id_vendedor_tiny_vinicola"
-                           value="<?php echo $bw_id_vendedor_tiny_vinicola ?>" class="regular-text"/><br/>
+        $custom_products_prices = [];
+        if(isset($user->ID)){
+            $custom_products_prices = get_user_meta($user->ID, 'bw_custom_product_prices', true);
+            $custom_products_prices = array_map(function ($item){
+                $item['product_name'] = get_the_title($item['product_id']);
+                $item['channel_name'] = get_the_title($item['channel_id']);
+                return $item;
+            }, $custom_products_prices);
+        }
 
-                </td>
-            </tr>
-        </table>
-    <?php }
+        include WOO_TINY_DIR . '/templates/vendedores/form-customer.php';
+    }
 
     public function salva_dados_vendedor($user_id)
     {

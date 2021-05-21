@@ -128,8 +128,4 @@ function mostra_valor_coluna_codigo_tiny( $column, $post_id ) {
     }
 }
 
-/*
- * Todo Formas de pagamento (com desconto?)
- * */
-
 
