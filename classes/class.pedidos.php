@@ -218,21 +218,18 @@ class pedidos {
             ));
 
             wc_add_order_item_meta($item_id, '_qty', $qty);
-            // TODO: Is it ok to uncomment this?
             wc_add_order_item_meta($item_id, '_tax_class', $originalOrderItem['tax_class']);
             wc_add_order_item_meta($item_id, '_product_id', $productID);
-            // TODO: Is it ok to uncomment this?
             wc_add_order_item_meta($item_id, '_variation_id', $originalOrderItem['variation_id']);
             wc_add_order_item_meta($item_id, '_line_subtotal', wc_format_decimal($lineTotal));
             wc_add_order_item_meta($item_id, '_line_total', wc_format_decimal($lineTotal));
             /* wc_add_order_item_meta( $item_id, '_line_tax', wc_format_decimal( '0' ) ); */
             wc_add_order_item_meta($item_id, '_line_tax', wc_format_decimal($lineTax));
-            // TODO: Is it ok to uncomment this?
             /* wc_add_order_item_meta( $item_id, '_line_subtotal_tax', wc_format_decimal( '0' ) ); */
             wc_add_order_item_meta($item_id, '_line_subtotal_tax', wc_format_decimal($originalOrderItem['line_subtotal_tax']));
         }
 
-        // TODO This is what is in order_again of class-wc-form-handler.php  
+
         // Can it be reused or refactored into own function?
         //
         // Copy products from the order to the cart
@@ -265,7 +262,6 @@ class pedidos {
                 wc_add_order_item_meta($item_id, 'method_id', $original_order_shipping_item['method_id']);
                 wc_add_order_item_meta($item_id, 'cost', wc_format_decimal($original_order_shipping_item['cost']));
 
-                // TODO: Does not store the shipping taxes
                 /* wc_add_order_item_meta( $item_id, 'taxes', $original_order_shipping_item['taxes'] ); */
             }
         }

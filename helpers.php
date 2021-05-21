@@ -251,8 +251,8 @@ if(!function_exists('set_alert')){
     }
 }
 
-if(!function_exists('wc_serialize_address')){
-    function wc_serialize_address($address, $type = '')
+if(!function_exists('wc_serialize_br_address')){
+    function wc_serialize_br_address($address, $type = '')
     {
         $field_defaults = [
             'billing' => [
@@ -267,8 +267,7 @@ if(!function_exists('wc_serialize_address')){
                 'country' => 'BR',
                 'email' => '',
                 'phone' => '',
-
-                /* Extra fields */
+                /* Extra fields br */
                 'neighborhood' => '',
                 'number' => '',
                 'cellphone' => '',
@@ -288,8 +287,7 @@ if(!function_exists('wc_serialize_address')){
                 'state' => '',
                 'postcode' => '',
                 'country' => 'BR',
-
-                /* Extra fields */
+                /* Extra fields br */
                 'neighborhood' => '',
                 'number' => '',
             ],

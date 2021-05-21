@@ -117,8 +117,8 @@ function woo_tiny_save_order()
             $address['ie'] = $rg_inscricao;
             $address['persontype'] = 2;
         }
-        $address['billing'] = wc_serialize_address($address, 'billing');
-        $address['shipping'] = wc_serialize_address((!empty($_POST['shipping']['postcode']) ? $_POST['shipping'] : $address['billing']), 'shipping');
+        $address['billing'] = wc_serialize_br_address($address, 'billing');
+        $address['shipping'] = wc_serialize_br_address((!empty($_POST['shipping']['postcode']) ? $_POST['shipping'] : $address['billing']), 'shipping');
         $address['shipping']['first_name'] = $address['billing']['first_name'];
         $address['shipping']['last_name'] = $address['billing']['last_name'];
         $address['shipping']['company'] = $address['billing']['company'];
