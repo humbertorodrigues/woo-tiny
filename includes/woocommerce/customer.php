@@ -1,9 +1,25 @@
 <?php
 add_action('wp_ajax_woo_tiny_get_customer', 'woo_tiny_ajax_get_customer_by_vat');
 add_action('wp_ajax_woo_tiny_update_price_product_by_user', 'woo_tiny_update_price_product_by_user');
+add_action('wp_ajax_woo_tiny_delete_price_product_by_user', 'woo_tiny_delete_price_product_by_user');
 add_action('wp_ajax_woo_tiny_customer_load_content_custom_product_price', 'woo_tiny_customer_load_content_custom_product_price');
 
 global $woocommerce;
+
+function woo_tiny_delete_price_product_by_user(){
+    if ('POST' != $_SERVER['REQUEST_METHOD']) wp_send_json_error('Requisição inválida');
+    $data_store = filter_input_array(INPUT_POST);
+    if(!wp_verify_nonce($data_store['nonce'], 'woo-tiny-admin-ajax') && empty($data_store['userid'])) wp_send_json_error('Requisição inválida');
+    $user_id = $data_store['userid'];
+    $data = get_user_meta($user_id, 'bw_custom_product_prices', true);
+    $key = $data_store['productprice'];
+    if(isset($data, $key)){
+        unset($data[$key]);
+        update_user_meta($user_id, 'bw_custom_product_prices', $data);
+        wp_send_json_success();
+    }
+    wp_send_json_error();
+}
 
 function woo_tiny_update_price_product_by_user(){
     if ('POST' != $_SERVER['REQUEST_METHOD']) wp_send_json_error('Requisição inválida');
@@ -32,12 +48,12 @@ function woo_tiny_customer_load_content_custom_product_price(){
         return $item;
     }, $data);
     $content = '';
-    foreach ($data as $item){
+    foreach ($data as $key => $item){
         $content .= '<tr>';
         $content .= '<td>' . $item['product_name'] . '</td>';
         $content .= '<td>' . $item['channel_name'] . '</td>';
         $content .= '<td>' . $item['new_price'] . '</td>';
-        $content .= '<td><a>&times;</a></td>';
+        $content .= '<td><a href="javascript:;" data-productPrice="' . $key . '" data-userId="'. $user_id .'" id="delete-bw-custom-product-price">&times;</a></td>';
         $content .= '</tr>';
     }
     wp_send_json_success($content);

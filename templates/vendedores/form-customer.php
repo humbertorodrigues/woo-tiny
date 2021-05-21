@@ -54,7 +54,7 @@
             <tr>
                 <th scope="row"></th>
                 <td class="button-container bw-custom-product-price">
-                    <button type="button" class="button button-primary" id="action-bw-custom-product-price">Adicionar</button>
+                    <button type="button" class="button button-primary" id="add-bw-custom-product-price">Adicionar</button>
                 </td>
             </tr>
         </table>
@@ -69,12 +69,12 @@
             <th>Ação</th>
             </thead>
             <tbody id="content-bw-custom-product-price" data-action="woo_tiny_customer_load_content_custom_product_price" data-userId="<?= $user->ID ?>">
-                <?php foreach ($custom_products_prices as $products_price): ?>
+                <?php foreach ($custom_products_prices as $key => $products_price): ?>
                 <tr>
                     <td><?= $products_price['product_name'] ?></td>
                     <td><?= $products_price['channel_name'] ?></td>
                     <td><?= $products_price['new_price'] ?></td>
-                    <td><a>&times;</a></td>
+                    <td><a href="javascript:;" data-productPrice="<?= $key ?>" data-userId="<?= $user->ID ?>" id="delete-bw-custom-product-price">&times;</a></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
