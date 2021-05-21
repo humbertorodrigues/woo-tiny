@@ -108,7 +108,7 @@ function woo_tiny_save_order()
             'state' => $estado,
             'postcode' => $cep
         );
-        if (strlen(str_replace(array('.','-'),"",$cpf_cnpj)) == 11) {
+        if (strlen(only_numbers($cpf_cnpj)) == 11) {
             $address['cpf'] = $cpf_cnpj;
             $address['rg'] = $rg_inscricao;
             $address['persontype'] = 1;
