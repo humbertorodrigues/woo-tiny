@@ -16,30 +16,32 @@
             <div class="row mt-3">
                 <div class="col-lg-12">
                     <div class="row">
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <input type="text" class="form-control" name="cpf_cnpj" placeholder="CPF/CNPJ" data-filled="billing_vat">
+                            </div>
+                        </div>
                         <div class="col-lg-8">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="nome"
                                        placeholder="Nome do cliente ou razão social" data-filled="first_name">
                             </div>
                         </div>
-                        <div class="col-lg-4">
+                        
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-2">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="codigo" placeholder="Código">
                             </div>
                         </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-lg-4">
+                        <div class="col-lg-6">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="nome_fantasia"
                                        placeholder="Nome fantasia" data-filled="billing_company">
                             </div>
                         </div>
-                        <div class="col-lg-4">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="cpf_cnpj" placeholder="CPF/CNPJ" data-filled="billing_vat">
-                            </div>
-                        </div>
+                        
                         <div class="col-lg-4">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="rg_inscricao"
