@@ -304,3 +304,15 @@ if(!function_exists('wc_serialize_br_address')){
         return wp_parse_args($address, $field_defaults[$type]);
     }
 }
+
+if(!function_exists('get_custom_product_price_by_user_id')){
+    function get_custom_product_price_by_user_id($user_id, $product_id, $channel_id){
+        $data = get_user_meta($user_id, 'bw_custom_product_prices', true);
+        foreach ($data as $item){
+            if($item['product_id'] == $product_id && $item['channel_id'] == $channel_id){
+                return $item['new_price'];
+            }
+        }
+        return false;
+    }
+}
