@@ -403,7 +403,12 @@
                 jQuery(".subtotal").val("");
             } else {
                 for (produto in precos_por_canal) {
-                    jQuery("#preco_unitario_" + produto).val(precos_por_canal[produto][id_canal_venda]);
+                    let userPrice = get_product_price_by_user(produto, id_canal_venda);
+                    let finalPrice = precos_por_canal[produto][id_canal_venda];
+                    if(userPrice > 0){
+                        finalPrice = userPrice;
+                    }
+                    jQuery("#preco_unitario_" + produto).val(finalPrice);
 
                 }
             }
@@ -433,7 +438,11 @@
             qtd_produto.name = "qtd[]";
             qtd_produto.type = "number";
             qtd_produto.value = "1";
-            let preco_unitario = precos_por_canal[id_produto][canal_venda];
+            let userPrice = get_product_price_by_user(produto, id_canal_venda);
+            let preco_unitario = precos_por_canal[produto][id_canal_venda];
+            if(userPrice > 0){
+                preco_unitario = userPrice;
+            }
             let subtotal = preco_unitario * qtd_produto.value;
 
             col_id_produto.append(id_produto);
@@ -503,5 +512,21 @@
         discount = (discount * total) / 100;
         jQuery('#desconto').html("R$ " + discount.toFixed(2));
         return discount;
+    }
+
+    function get_product_price_by_user(product_id, channel_id){
+        let data = {
+            action: 'woo_tiny_get_product_price_by_user',
+            vat: $('[name=cpf_cnpj]').val() ?? '',
+            product_id: product_id,
+            channel_id: channel_id
+        };
+        let user_price = 0
+        jQuery.get(woo_tiny.ajax_url, data, function (res) {
+            if(res.success){
+                user_price = res.data;
+            }
+        });
+        return user_price;
     }
 </script>

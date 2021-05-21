@@ -132,6 +132,7 @@ class vendedores
         $custom_products_prices = [];
         if(isset($user->ID)){
             $custom_products_prices = get_user_meta($user->ID, 'bw_custom_product_prices', true);
+            if(empty($custom_products_prices) && !is_array($custom_products_prices)) $custom_products_prices = [];
             $custom_products_prices = array_map(function ($item){
                 $item['product_name'] = get_the_title($item['product_id']);
                 $item['channel_name'] = get_the_title($item['channel_id']);

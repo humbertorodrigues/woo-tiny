@@ -2,9 +2,24 @@
 add_action('wp_ajax_woo_tiny_get_customer', 'woo_tiny_ajax_get_customer_by_vat');
 add_action('wp_ajax_woo_tiny_update_price_product_by_user', 'woo_tiny_update_price_product_by_user');
 add_action('wp_ajax_woo_tiny_delete_price_product_by_user', 'woo_tiny_delete_price_product_by_user');
+add_action('wp_ajax_woo_tiny_get_product_price_by_user', 'woo_tiny_get_product_price_by_user');
 add_action('wp_ajax_woo_tiny_customer_load_content_custom_product_price', 'woo_tiny_customer_load_content_custom_product_price');
 
 global $woocommerce;
+
+function woo_tiny_get_product_price_by_user(){
+    $data = filter_input_array(INPUT_GET);
+    if(isset($data['vat'], $data['product_id'], $data['channel_id'])){
+        $user_id = woo_tiny_get_user_id_by_cpf_cnpj($data['vat']);
+        if($user_id) {
+            $price = get_custom_product_price_by_user_id($user_id, $data['product_id'], $data['channel_id']);
+            if ($price) {
+                wp_send_json_success($price);
+            }
+        }
+    }
+    wp_send_json_error();
+}
 
 function woo_tiny_delete_price_product_by_user(){
     if ('POST' != $_SERVER['REQUEST_METHOD']) wp_send_json_error('Requisição inválida');
@@ -27,7 +42,8 @@ function woo_tiny_update_price_product_by_user(){
     if(!wp_verify_nonce($data_store['nonce'], 'woo-tiny-admin-ajax') && empty($data_store['user_id'])) wp_send_json_error('Requisição inválida');
     $user_id = $data_store['user_id'];
     unset($data_store['nonce'], $data_store['action'], $data_store['user_id']);
-    $data = get_user_meta($user_id, 'bw_custom_product_prices', true) ?? [];
+    $data = get_user_meta($user_id, 'bw_custom_product_prices', true);
+    if(empty($data) && !is_array($data)) $data = [];
     foreach ($data as $key => $item){
         if($item['product_id'] == $data_store['product_id'] && $item['channel_id'] == $data_store['channel_id']){
             unset($data[$key]);
@@ -42,6 +58,7 @@ function woo_tiny_customer_load_content_custom_product_price(){
     $user_id = filter_input(INPUT_GET, 'userid', FILTER_VALIDATE_INT);
     if(empty($user_id)) wp_send_json_error('Requisição inválida');
     $data = get_user_meta($user_id, 'bw_custom_product_prices', true);
+    if(empty($data) && !is_array($data)) $data = [];
     $data = array_map(function ($item){
         $item['product_name'] = get_the_title($item['product_id']);
         $item['channel_name'] = get_the_title($item['channel_id']);
