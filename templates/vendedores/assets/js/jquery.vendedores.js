@@ -54,6 +54,9 @@ $(document).on('keyup blur change', '[name=cpf_cnpj]', function (e) {
                     $('#has-shipping').attr('checked', false);
                     $('#has-shipping').trigger('click');
                 }
+                if(key == 'bw_custom_product_prices'){
+                    $('#canal_venda').attr('data-user-prices', JSON.stringify(value))
+                }
                 $('[data-filled=' + key + ']').val(value);
             }
         }
@@ -72,22 +75,6 @@ $(document).on('click', '#has-shipping', function (e){
        });
    }
 });
-
-$(document).on('change', '#canal_venda', function (e) {
-    e.preventDefault();
-    id_canal_venda = jQuery("#canal_venda").val();
-
-    if (id_canal_venda == "") {
-        jQuery(".preco_unitario").val("");
-        jQuery(".subtotal").val("");
-    } else {
-        for (produto in precos_por_canal) {
-            jQuery("#preco_unitario_" + produto).val(precos_por_canal[produto][id_canal_venda]);
-
-        }
-    }
-    calcula_subtotal();
-})
 
 
 $.fn.extend({

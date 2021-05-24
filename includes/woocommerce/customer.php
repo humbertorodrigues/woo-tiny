@@ -113,6 +113,9 @@ function woo_tiny_ajax_get_customer_by_vat()
             foreach ($private_keys as $key) {
                 unset($customer_data[$key]);
             }
+            if(array_key_exists('bw_custom_product_prices', $customer_data)){
+                $customer_data['bw_custom_product_prices'] = get_user_meta($customer, 'bw_custom_product_prices', true);
+            }
             wp_send_json_success($customer_data);
         }
         wp_send_json_error('Usuário não cadastrado');

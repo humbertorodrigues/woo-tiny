@@ -351,7 +351,7 @@
     </div>
 </form>
 <script>
-    var precos_por_canal = <?php echo json_encode($precos_por_canal); ?>;
+    const precos_por_canal = <?= json_encode($precos_por_canal) ?>;
     jQuery.validator.addMethod("cpfcnpj", brdocs.cpfcnpjValidator, "Informe um documento válido.");
 
     jQuery(document).ready(function () {
@@ -395,73 +395,68 @@
                 canal_venda: {required: "Informe um canal de venda"}
             }
         })
-        jQuery("#canal_venda").change(function () {
-            id_canal_venda = jQuery("#canal_venda").val();
-
-            if (id_canal_venda == "") {
-                jQuery(".preco_unitario").val("");
-                jQuery(".subtotal").val("");
-            } else {
-                for (produto in precos_por_canal) {
-                    let userPrice = get_product_price_by_user(produto, id_canal_venda);
-                    let finalPrice = precos_por_canal[produto][id_canal_venda];
-                    if(userPrice > 0){
-                        finalPrice = userPrice;
-                    }
-                    jQuery("#preco_unitario_" + produto).val(finalPrice);
-
-                }
-            }
-            calcula_subtotal();
-        })
-
-        jQuery("#bw_payment_option").change(function () {
-            calcula_subtotal();
-        })
-
-        jQuery("#adicionar_produto").click(function () {
-            let linha = document.createElement('tr');
-            let col_id_produto = document.createElement('td');
-            let col_desc_produto = document.createElement('td');
-            let col_qtd_produto = document.createElement('td');
-            let col_preco_unitario = document.createElement('td');
-            let col_sub_total = document.createElement('td');
-            let col_remover = document.createElement('td');
-
-            col_preco_unitario.classList.add("preco_unitario");
-            col_sub_total.classList.add("subtotal");
-
-            let id_produto = jQuery("#produto").val();
-            let canal_venda = jQuery("#canal_venda").val();
-            let descricao_produto = jQuery("#produto option:selected").data().descricao;
-            let qtd_produto = document.createElement('input');
-            qtd_produto.name = "qtd[]";
-            qtd_produto.type = "number";
-            qtd_produto.value = "1";
-            let userPrice = get_product_price_by_user(produto, id_canal_venda);
-            let preco_unitario = precos_por_canal[produto][id_canal_venda];
-            if(userPrice > 0){
-                preco_unitario = userPrice;
-            }
-            let subtotal = preco_unitario * qtd_produto.value;
-
-            col_id_produto.append(id_produto);
-            col_desc_produto.append(descricao_produto)
-            col_qtd_produto.append(qtd_produto)
-            col_preco_unitario.append(preco_unitario)
-            col_sub_total.append(subtotal)
-            col_remover.append("X")
-
-            linha.append(col_id_produto);
-            linha.append(col_desc_produto);
-            linha.append(col_qtd_produto);
-            linha.append(col_preco_unitario);
-            linha.append(col_sub_total);
-            linha.append(col_remover);
-            jQuery("#pedido_venda tbody").append(linha);
-
-        })
     })
+
+    jQuery(document).on('change', '#canal_venda', function (e) {
+        e.preventDefault();
+        let id_canal_venda = jQuery(this).val();
+
+        if (id_canal_venda === "") {
+            jQuery(".preco_unitario").val("");
+            jQuery(".subtotal").val("");
+        } else {
+            for (let id_produto of Object.keys(precos_por_canal)) {
+                let userPrice = getProductPriceByUser(id_produto, id_canal_venda);
+                let finalPrice = userPrice > 0 ? userPrice : precos_por_canal[id_produto][id_canal_venda];
+                jQuery("#preco_unitario_" + id_produto).val(finalPrice);
+            }
+        }
+        calcula_subtotal();
+    })
+
+    jQuery(document).on('change', '#bw_payment_option', function () {
+        calcula_subtotal();
+    })
+
+    jQuery(document).on('click', '#adicionar_produto', function () {
+        let linha = document.createElement('tr');
+        let col_id_produto = document.createElement('td');
+        let col_desc_produto = document.createElement('td');
+        let col_qtd_produto = document.createElement('td');
+        let col_preco_unitario = document.createElement('td');
+        let col_sub_total = document.createElement('td');
+        let col_remover = document.createElement('td');
+
+        col_preco_unitario.classList.add("preco_unitario");
+        col_sub_total.classList.add("subtotal");
+
+        let id_produto = jQuery("#produto").val();
+        let id_canal_venda = jQuery("#canal_venda").val();
+        let descricao_produto = jQuery("#produto option:selected").data().descricao;
+        let qtd_produto = document.createElement('input');
+        qtd_produto.name = "qtd[]";
+        qtd_produto.type = "number";
+        qtd_produto.value = "1";
+        let userPrice = getProductPriceByUser(id_produto, id_canal_venda);
+        let preco_unitario = userPrice > 0 ? userPrice : precos_por_canal[id_produto][id_canal_venda];
+        let subtotal = preco_unitario * qtd_produto.value;
+
+        col_id_produto.append(id_produto);
+        col_desc_produto.append(descricao_produto)
+        col_qtd_produto.append(qtd_produto)
+        col_preco_unitario.append(preco_unitario)
+        col_sub_total.append(subtotal)
+        col_remover.append("X")
+
+        linha.append(col_id_produto);
+        linha.append(col_desc_produto);
+        linha.append(col_qtd_produto);
+        linha.append(col_preco_unitario);
+        linha.append(col_sub_total);
+        linha.append(col_remover);
+        jQuery("#pedido_venda tbody").append(linha);
+
+    });
 
     function calcula_subtotal() {
         total = 0;
@@ -514,19 +509,16 @@
         return discount;
     }
 
-    function get_product_price_by_user(product_id, channel_id){
-        let data = {
-            action: 'woo_tiny_get_product_price_by_user',
-            vat: $('[name=cpf_cnpj]').val() ?? '',
-            product_id: product_id,
-            channel_id: channel_id
-        };
-        let user_price = 0
-        jQuery.get(woo_tiny.ajax_url, data, function (res) {
-            if(res.success){
-                user_price = res.data;
-            }
-        });
-        return user_price;
+    function getProductPriceByUser(product_id, channel_id){
+        let prices = jQuery('#canal_venda').data('user-prices');
+        let userPrice = 0;
+        if(prices !== undefined) {
+            prices.forEach(function (price) {
+                if (price.product_id === product_id && price.channel_id === channel_id) {
+                    userPrice = Number(price.new_price);
+                }
+            });
+        }
+        return userPrice;
     }
 </script>
