@@ -137,10 +137,18 @@ function woo_tiny_get_user_id_by_cpf_cnpj($cpf_cnpj)
 
 function woo_tiny_save_customer_meta_data($customer_data)
 {
-    $customer_id = get_user_by_email($customer_data['email']);
+    $customer_id = get_user_by('email',$customer_data['email']);
+    
     if (!$customer_id) {
-        $customer_id = woo_tiny_get_user_id_by_cpf_cnpj($customer_data['vat']) ?? wc_create_new_customer($customer_data['email']);
+        $senha = wp_generate_password();
+        
+        $customer_id = woo_tiny_get_user_id_by_cpf_cnpj($customer_data['vat']);
+        if($customer_id===false){
+
+            $customer_id = wc_create_new_customer($customer_data['email'],$customer_data['email'],$senha);
+        }
     }
+    
     $customer_id = is_a($customer_id, 'WP_User') ? $customer_id->ID : $customer_id;
     try {
         $customer = new WC_Customer($customer_id);
@@ -165,6 +173,7 @@ function woo_tiny_save_customer_meta_data($customer_data)
         woo_tiny_save_customer_extra_meta($customer, $customer_data);
         return $customer;
     } catch (Exception $e) {
+        var_dump($e);
         return false;
     }
 }

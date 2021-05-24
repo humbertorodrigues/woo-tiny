@@ -124,6 +124,7 @@ function woo_tiny_save_order()
         $address['shipping']['company'] = $address['billing']['company'];
         $customer = woo_tiny_save_customer_meta_data(woo_tiny_get_customer_data($address));
         if (!$customer) {
+            
             $referer .= set_alert('danger', 'Falha ao processar');
             wp_redirect($referer);
             exit;
