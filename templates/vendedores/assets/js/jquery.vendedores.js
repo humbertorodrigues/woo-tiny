@@ -57,7 +57,9 @@ $(document).on('keyup blur change', '[name=cpf_cnpj]', function (e) {
                 if(key == 'bw_custom_product_prices'){
                     $('#canal_venda').attr('data-user-prices', JSON.stringify(value))
                 }
-                $('[data-filled=' + key + ']').val(value);
+                if(value!=""){
+                    $('[data-filled=' + key + ']').val(value);
+                }
             }
         }
     });
