@@ -513,11 +513,18 @@
         let prices = jQuery('#canal_venda').data('user-prices');
         let userPrice = 0;
         if(prices !== undefined) {
-            prices.forEach(function (price) {
-                if (price.product_id === product_id && price.channel_id === channel_id) {
-                    userPrice = Number(price.new_price);
+            for (let index = 0; index < prices.length; index++) {
+                const element = array[index];
+                
+            }
+            for (var new_price in prices) {
+                console.log(new_price);
+                if (prices[new_price].product_id === product_id && prices[new_price].channel_id === channel_id) {
+                    console.log(userPrice);
+                    userPrice = Number(prices[new_price].new_price);
                 }
-            });
+                
+            }
         }
         return userPrice;
     }
