@@ -220,7 +220,7 @@ function woo_tiny_save_order()
                 $order_bonificacao->update_status("wc-processing", 'Pedido por vendedor', TRUE);
             }*/
 
-            woo_tiny_trigger_order_revision_email( $order );
+            woo_tiny_trigger_order_revision_email( $order_bonificacao );
         }
 
 

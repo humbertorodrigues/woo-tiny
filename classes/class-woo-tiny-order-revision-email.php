@@ -15,7 +15,7 @@ class Woo_Tiny_Order_Revision_Email extends WC_Email {
     private $message;
 
     /**
-     * Initialize tracking template.
+     * Initialize revision template.
      */
     public function __construct() {
         $this->id               = 'in_revision';
