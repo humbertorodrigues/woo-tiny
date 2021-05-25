@@ -513,10 +513,11 @@
         let prices = jQuery('#canal_venda').data('user-prices');
         let userPrice = 0;
         if(prices !== undefined) {
-            for (let index = 0; index < prices.length; index++) {
+            // esse for está causando erro ao tentar carregar os preços
+            /*for (let index = 0; index < prices.length; index++) {
                 const element = array[index];
                 
-            }
+            }*/
             for (var new_price in prices) {
                 console.log(new_price);
                 if (prices[new_price].product_id === product_id && prices[new_price].channel_id === channel_id) {

@@ -184,7 +184,7 @@ function woo_tiny_save_customer_extra_meta($customer, $customer_data)
     $vat = only_numbers($customer_data['vat']);
     $vat_key = 'billing_cpf';
     $doc_key = 'billing_rg';
-    $doc_value = $customer_data['rg'];
+    $doc_value = $customer_data['rg'] ?? '';
     $person_type = 1;
     if (strlen($vat) > 11) {
         $vat_key = 'billing_cnpj';
@@ -219,6 +219,14 @@ function woo_tiny_get_customer_data($customer_data)
         $customer_data['vat'] = ($customer_data['cpf'] ?? $customer_data['cnpj']) ?? '';
     }
     return $customer_data;
+}
+
+function woo_tiny_get_seller_data_by_order_id($order_id, $key = ''){
+    $seller_id = get_post_meta($order_id, 'bw_id_vendedor', true);
+    if(!$seller_id) return false;
+    $user = get_userdata($seller_id);
+    if($key == '' || !property_exists($user->data, $key)) return $user;
+    return $user->{$key};
 }
 
 
