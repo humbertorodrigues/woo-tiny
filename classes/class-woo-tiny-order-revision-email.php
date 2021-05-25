@@ -129,7 +129,6 @@ class Woo_Tiny_Order_Revision_Email extends WC_Email {
      * @param  WC_Order $order         Order data.
      */
     public function trigger( $order_id, $order = false) {
-        $this->setup_locale();
         if ( $order_id && ! is_a( $order, 'WC_Order' ) ) {
             $order = wc_get_order( $order_id );
         }
@@ -151,7 +150,6 @@ class Woo_Tiny_Order_Revision_Email extends WC_Email {
         if ( $this->is_enabled() && $this->get_recipient() ) {
             $this->send($this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments());
         }
-        $this->restore_locale();
     }
 
     /**
