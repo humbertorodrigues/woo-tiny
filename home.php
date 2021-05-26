@@ -100,15 +100,15 @@ function myplugin_update_db_check() {
 }
 add_action( 'plugins_loaded', 'myplugin_update_db_check' );
 
-add_filter( 'manage_edit-shop_order_columns', 'set_coluna_codigo_tiny' );
+/*add_filter( 'manage_edit-shop_order_columns', 'set_coluna_codigo_tiny' );
 function set_coluna_codigo_tiny($columns) {
     
     $columns['codigo_tiny'] = 'Código tiny';
 
     return $columns;
-}
+}*/
 
-// Add the data to the custom columns for the book post type:
+/*// Add the data to the custom columns for the book post type:
 add_action( 'manage_shop_order_posts_custom_column' , 'mostra_valor_coluna_codigo_tiny', 0, 2 );
 function mostra_valor_coluna_codigo_tiny( $column, $post_id ) {
     switch ( $column ) {
@@ -126,6 +126,6 @@ function mostra_valor_coluna_codigo_tiny( $column, $post_id ) {
         
 
     }
-}
+}*/
 
 
