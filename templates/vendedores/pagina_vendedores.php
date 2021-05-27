@@ -321,7 +321,7 @@
                                                id="qtd_bonificacao_<?php echo $produto->get_id() ?>" type="number"
                                                value="0" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
                                     <td><input class="preco_unitario"
-                                               id="preco_unitario_<?php echo $produto->get_id() ?>" readonly
+                                               id="preco_unitario_<?php echo $produto->get_id() ?>" min=""
                                                type="number" name="preco_unitario[]" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
                                     <td><input value="<?php echo $preco_bonificacao ?>"
                                                class="preco_unitario_bonificacao"
@@ -373,6 +373,9 @@
     </div>
 </form>
 <script>
+    jQuery(document).on("contextmenu keydown mousedown keypress",function(e){
+        if (e.keyCode === 123 || e.type === 'contextmenu') return false;
+    });
     const precos_por_canal = <?= json_encode($precos_por_canal) ?>;
     jQuery.validator.addMethod("cpfcnpj", brdocs.cpfcnpjValidator, "Informe um documento válido.");
 
@@ -431,6 +434,7 @@
                 let userPrice = getProductPriceByUser(id_produto, id_canal_venda);
                 let finalPrice = userPrice > 0 ? userPrice : precos_por_canal[id_produto][id_canal_venda];
                 jQuery("#preco_unitario_" + id_produto).val(finalPrice);
+                jQuery("#preco_unitario_" + id_produto).attr('min', finalPrice);
             }
         }
         calcula_subtotal();
@@ -541,9 +545,7 @@
                 
             }*/
             for (var new_price in prices) {
-                console.log(new_price);
                 if (prices[new_price].product_id === product_id && prices[new_price].channel_id === channel_id) {
-                    console.log(userPrice);
                     userPrice = Number(prices[new_price].new_price);
                 }
                 
