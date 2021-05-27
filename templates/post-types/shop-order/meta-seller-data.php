@@ -1,8 +1,5 @@
 <div class="clear"></div>
 <div class="woo-tiny-seller">
-
-    <h4>Informações do vendedor</h4>
-
     <p>
         <strong>Vendedor: </strong> <?= $seller ?>
         <br>

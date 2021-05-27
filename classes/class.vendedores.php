@@ -21,7 +21,7 @@ class vendedores
     function login_redirect($redirect_to, $request, $user)
     {
         if (isset($user->roles)) {
-            if (array_search("vendedores_bw", $user->roles) !== false) {
+            if (in_array("vendedores_bw", $user->roles) !== false) {
                 return site_url("vendedores");
             }
         }

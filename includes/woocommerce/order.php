@@ -93,7 +93,7 @@ function woo_tiny_save_order()
 
         $payment_option_id = $_POST['bw_payment_option'];
 
-        $user_id = get_current_user_id();
+        $user_id = $_POST['bw_id_vendedor'];
 
         $address = array(
             'first_name' => $nome,

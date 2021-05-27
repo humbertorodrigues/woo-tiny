@@ -13,6 +13,27 @@
                     <?php endif; ?>
                 </div>
             </div>
+            <?php
+            $user = wp_get_current_user();
+            if(in_array('bw_supervisor', $user->roles)):
+                $sellers = get_users(['role__in' => ['vendedores_bw']]);
+            ?>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="woo-tiny-seller">Vendedor</label>
+                        <select name="bw_id_vendedor" id="woo-tiny-seller" class="form-control" required>
+                            <option>Selecione um vendedor...</option>
+                            <?php foreach ($sellers as $seller): ?>
+                                <option value="<?= $seller->ID ?>"><?= $seller->display_name ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <?php else: ?>
+                <input type="hidden" name="bw_id_vendedor" value="<?= $user->ID ?>">
+            <?php endif; ?>
             <div class="row mt-3">
                 <div class="col-lg-12">
                     <div class="row">
