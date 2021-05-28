@@ -67,13 +67,17 @@ function woo_tiny_order_data_seller($order){
 }
 
 function woo_tiny_order_save_meta($order_id, $order){
-    $default_fields = [
-        'bw_id_vendedor' => '',
-        'bw_canal_venda' => '',
-        'bw_forma_pagamento_id' => '',
-    ];
-    $data = wp_parse_args($_POST, $default_fields);
-    foreach ($default_fields as $key => $val){
-        update_post_meta($order_id, $key, $data[$key]);
+    $user = wp_get_current_user();
+
+    if(in_array('bw_supervisor', $user->roles)) {
+        $default_fields = [
+            'bw_id_vendedor' => '',
+            'bw_canal_venda' => '',
+            'bw_forma_pagamento_id' => '',
+        ];
+        $data = wp_parse_args($_POST, $default_fields);
+        foreach ($default_fields as $key => $val) {
+            update_post_meta($order_id, $key, $data[$key]);
+        }
     }
 }
