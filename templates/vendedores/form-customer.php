@@ -18,7 +18,7 @@
     </tr>
 </table>
 
-
+<?php if(current_action() === 'edit_user_profile' && current_user_can( 'manage_woocommerce' )): ?>
 <div class="container bw-custom-product-price">
     <div class="col bw-custom-product-price">
         <h3>Alterar preços produtos</h3>
@@ -81,3 +81,4 @@
         </table>
     </div>
 </div>
+<?php endif; ?>

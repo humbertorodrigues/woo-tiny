@@ -16,5 +16,5 @@ function woo_tiny_add_woocommerce_roles()
         'woocommerce_view_order' => true,
         'edit_shop_order_terms' => true,
     ];
-    add_role('bw_supervisor', 'Supervisor', ['read' => true]);
+    add_role('bw_supervisor', 'Supervisor', [$capabilities]);
 }

@@ -2,6 +2,7 @@
 add_filter("manage_edit-shop_order_columns", "woo_tiny_shop_order_edit_columns");
 add_action("manage_posts_custom_column", "woo_tiny_shop_order_custom_columns");
 add_action( 'woocommerce_admin_order_data_after_order_details', 'woo_tiny_order_data_seller');
+add_action('woocommerce_update_order', 'woo_tiny_order_save_meta', 10, 2);
 
 function woo_tiny_shop_order_edit_columns($columns)
 {
@@ -49,8 +50,7 @@ function woo_tiny_order_data_seller($order){
     $channel = ($channel_id != '') ? get_the_title($channel_id) : '';
     $user = wp_get_current_user();
 
-    include WOO_TINY_DIR . 'templates/post-types/shop-order/meta-seller-data.php';
-    /*if(in_array('bw_supervisor', $user->roles)){
+    if(in_array('bw_supervisor', $user->roles)){
         $sellers = get_users(['role__in' => ['vendedores_bw']]);
         $channels = get_posts(array(
             'post_type' => 'canal_venda',
@@ -63,17 +63,17 @@ function woo_tiny_order_data_seller($order){
         include WOO_TINY_DIR . 'templates/post-types/shop-order/meta-seller-form.php';
     }else {
         include WOO_TINY_DIR . 'templates/post-types/shop-order/meta-seller-data.php';
-    }*/
+    }
 }
 
-function woo_tiny_order_save_meta($order_id, $metadata){
+function woo_tiny_order_save_meta($order_id, $order){
     $default_fields = [
         'bw_id_vendedor' => '',
         'bw_canal_venda' => '',
         'bw_forma_pagamento_id' => '',
     ];
-    $data = wp_parse_args($metadata, $default_fields);
-    foreach ($data as $key => $val){
-        update_post_meta($order_id, $key, $val);
+    $data = wp_parse_args($_POST, $default_fields);
+    foreach ($default_fields as $key => $val){
+        update_post_meta($order_id, $key, $data[$key]);
     }
 }
