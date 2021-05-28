@@ -15,11 +15,11 @@
             </div>
             <?php
             $user = wp_get_current_user();
-            if(in_array('bw_supervisor', $user->roles)):
+            if(in_array('bw_supervisor', $user->roles) || in_array('administrator', $user->roles)):
                 $sellers = get_users(['role__in' => ['vendedores_bw']]);
             ?>
             <div class="row mt-3">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="form-group">
                         <label for="woo-tiny-seller">Vendedor</label>
                         <select name="bw_id_vendedor" id="woo-tiny-seller" class="form-control" required>

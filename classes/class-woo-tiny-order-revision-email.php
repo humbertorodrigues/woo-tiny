@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Order revision email.
  */
 class Woo_Tiny_Order_Revision_Email extends WC_Email {
-    private string $revision_message;
+    private $revision_message;
     /**
      * @var mixed|string|void
      */
