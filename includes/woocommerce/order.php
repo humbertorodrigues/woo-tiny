@@ -9,6 +9,7 @@ add_action('admin_post_woo_tiny_save_order', 'woo_tiny_save_order');
 
 global $woocommerce;
 
+
 function woo_tiny_order_after_calculate_totals($and_taxes, $order)
 {
     $payment_option_id = (int)bw_get_meta_field('discount', (int)get_post_meta($order->get_id(), 'bw_forma_pagamento_id', true));
@@ -92,7 +93,7 @@ function woo_tiny_save_order()
 
         $payment_option_id = $_POST['bw_payment_option'];
 
-        $user_id = get_current_user_id();
+        $user_id = $_POST['bw_id_vendedor'];
 
         $address = array(
             'first_name' => $nome,
@@ -181,6 +182,7 @@ function woo_tiny_save_order()
             }*/
 
 
+        woo_tiny_trigger_order_revision_email( $order );
         //Temos bonificacao, vamos montar um pedido à parte
         if (array_sum($qtd_bonificacao) > 0) {
             $order_bonificacao = wc_create_order(['status' => 'wc-revision']);
@@ -218,6 +220,7 @@ function woo_tiny_save_order()
                 $order_bonificacao->update_status("wc-processing", 'Pedido por vendedor', TRUE);
             }*/
 
+            woo_tiny_trigger_order_revision_email( $order_bonificacao );
         }
 
 

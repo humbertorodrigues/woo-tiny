@@ -13,6 +13,27 @@
                     <?php endif; ?>
                 </div>
             </div>
+            <?php
+            $user = wp_get_current_user();
+            if(in_array('bw_supervisor', $user->roles) || in_array('administrator', $user->roles)):
+                $sellers = get_users(['role__in' => ['vendedores_bw']]);
+            ?>
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="woo-tiny-seller">Vendedor</label>
+                        <select name="bw_id_vendedor" id="woo-tiny-seller" class="form-control" required>
+                            <option>Selecione um vendedor...</option>
+                            <?php foreach ($sellers as $seller): ?>
+                                <option value="<?= $seller->ID ?>"><?= $seller->display_name ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <?php else: ?>
+                <input type="hidden" name="bw_id_vendedor" value="<?= $user->ID ?>">
+            <?php endif; ?>
             <div class="row mt-3">
                 <div class="col-lg-12">
                     <div class="row">
@@ -285,8 +306,9 @@
                                 }
                                 $preco_bonificacao = get_post_meta($produto->get_id(), "bonificacao", "true");
                                 $preco_bonificacao = str_replace(",", ".", $preco_bonificacao);
+                                $in_stock = $produto->get_stock_quantity() > 0;
                                 ?>
-                                <tr data-product-id="<?= $produto->get_id() ?>">
+                                <tr data-product-id="<?= $produto->get_id() ?>" <?php if(!$in_stock): ?> class="text-danger" <?php endif; ?>>
                                     <td>
                                         <input type="hidden" name="id_produto[]"
                                                value="<?php echo $produto->get_id() ?>">
@@ -294,20 +316,20 @@
                                     </td>
                                     <td><?php echo $produto->get_title() ?></td>
                                     <td><input min="0" class="qtd" name="qtd[]"
-                                               id="qtd_<?php echo $produto->get_id() ?>" type="number" value="0"></td>
+                                               id="qtd_<?php echo $produto->get_id() ?>" type="number" value="0" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
                                     <td><input min="0" class="qtd_bonificacao" name="qtd_bonificacao[]"
                                                id="qtd_bonificacao_<?php echo $produto->get_id() ?>" type="number"
-                                               value="0"></td>
+                                               value="0" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
                                     <td><input class="preco_unitario"
-                                               id="preco_unitario_<?php echo $produto->get_id() ?>" readonly
-                                               type="number" name="preco_unitario[]"></td>
+                                               id="preco_unitario_<?php echo $produto->get_id() ?>" min=""
+                                               type="number" name="preco_unitario[]" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
                                     <td><input value="<?php echo $preco_bonificacao ?>"
                                                class="preco_unitario_bonificacao"
                                                id="preco_unitario_bonificacao_<?php echo $produto->get_id() ?>" readonly
-                                               type="number" name="preco_unitario_bonificacao[]"></td>
+                                               type="number" name="preco_unitario_bonificacao[]" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
                                     <td><input class="subtotal" data-idproduto="<?php echo $produto->get_id() ?>"
                                                id="subtotal_<?php echo $produto->get_id() ?>" readonly type="number"
-                                               name="subtotal[]"></td>
+                                               name="subtotal[]" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
 
                                 </tr>
 
@@ -351,6 +373,9 @@
     </div>
 </form>
 <script>
+    jQuery(document).on("contextmenu keydown mousedown keypress",function(e){
+        if (e.keyCode === 123 || e.type === 'contextmenu') return false;
+    });
     const precos_por_canal = <?= json_encode($precos_por_canal) ?>;
     jQuery.validator.addMethod("cpfcnpj", brdocs.cpfcnpjValidator, "Informe um documento válido.");
 
@@ -409,6 +434,7 @@
                 let userPrice = getProductPriceByUser(id_produto, id_canal_venda);
                 let finalPrice = userPrice > 0 ? userPrice : precos_por_canal[id_produto][id_canal_venda];
                 jQuery("#preco_unitario_" + id_produto).val(finalPrice);
+                jQuery("#preco_unitario_" + id_produto).attr('min', finalPrice);
             }
         }
         calcula_subtotal();
@@ -513,14 +539,13 @@
         let prices = jQuery('#canal_venda').data('user-prices');
         let userPrice = 0;
         if(prices !== undefined) {
-            for (let index = 0; index < prices.length; index++) {
+            // esse for está causando erro ao tentar carregar os preços
+            /*for (let index = 0; index < prices.length; index++) {
                 const element = array[index];
                 
-            }
+            }*/
             for (var new_price in prices) {
-                console.log(new_price);
                 if (prices[new_price].product_id === product_id && prices[new_price].channel_id === channel_id) {
-                    console.log(userPrice);
                     userPrice = Number(prices[new_price].new_price);
                 }
                 
