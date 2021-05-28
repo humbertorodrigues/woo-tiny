@@ -53,6 +53,7 @@ class tiny{
         global $notasFiscais;
         global $estoque;
         global $contasPagar;
+        global $pedidos;
         $acoes = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."acoes_tiny WHERE status='pendente' ORDER BY ultima_execucao ASC LIMIT 50");
         foreach ($acoes as $key => $acao) {
             $id_acao = $acao->id;
@@ -161,6 +162,28 @@ class tiny{
                 $retorno_imposto = $contasPagar->lancar_ipi_mensal($empresa);
                 if($retorno_imposto!==false){
                     $this->marcarConcluido($id_acao);
+                }else{
+                    $this->marcarExecutado($id_acao);
+                }
+            }
+            if($texto_acao=="contratar_frete"){       
+                $retorno_frete = contratar_frete($id_pedido);
+                
+                if($retorno_frete !==false){
+                    $this->marcarConcluido($id_acao);
+                    $dados['acao'] = "atualizar_rastreio";
+                    $dados['id_pedido'] = $id_pedido;
+                    $dados['status'] = "pendente";
+                    $wpdb->insert($wpdb->prefix."acoes_tiny",$dados);
+                }else{
+                    $this->marcarExecutado($id_acao);
+                }
+            }
+            if($texto_acao=="atualizar_rastreio"){       
+                $retorno_rastreio = $pedidos->atualizarRastreio($id_pedido);
+                
+                if($retorno_rastreio !==false){
+                    $this->marcarConcluido($id_acao);                    
                 }else{
                     $this->marcarExecutado($id_acao);
                 }
