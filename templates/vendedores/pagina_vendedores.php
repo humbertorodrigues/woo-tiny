@@ -328,20 +328,26 @@
                                     </td>
                                     <td><?php echo $produto->get_title() ?></td>
                                     <td><input min="0" class="qtd" name="qtd[]"
-                                               id="qtd_<?php echo $produto->get_id() ?>" type="number" value="0" <?php if(!$in_stock): ?> readonly <?php endif; ?>></td>
+                                               id="qtd_<?php echo $produto->get_id() ?>" type="number"
+                                               value="0" <?php if (!$in_stock && $pre_sale != 'yes'): ?> readonly <?php endif; ?>></td>
                                     <td><input min="0" class="qtd_bonificacao" name="qtd_bonificacao[]"
                                                id="qtd_bonificacao_<?php echo $produto->get_id() ?>" type="number"
-                                               value="0" <?php if(!$in_stock): ?> readonly <?php endif; ?>></td>
+                                               value="0" <?php if (!$in_stock && $pre_sale != 'yes'): ?> readonly <?php endif; ?>></td>
                                     <td><input class="preco_unitario"
                                                id="preco_unitario_<?php echo $produto->get_id() ?>" min=""
-                                               type="number" name="preco_unitario[]" <?php if(!$in_stock): ?> readonly <?php endif; ?>></td>
+                                               type="number"
+                                               name="preco_unitario[]" <?php if (!$in_stock && $pre_sale != 'yes'): ?> readonly <?php endif; ?>>
+                                    </td>
                                     <td><input value="<?php echo $preco_bonificacao ?>"
                                                class="preco_unitario_bonificacao"
                                                id="preco_unitario_bonificacao_<?php echo $produto->get_id() ?>" readonly
-                                               type="number" name="preco_unitario_bonificacao[]" <?php if(!$in_stock): ?> readonly <?php endif; ?>></td>
+                                               type="number"
+                                               name="preco_unitario_bonificacao[]" <?php if (!$in_stock && $pre_sale != 'yes'): ?> readonly <?php endif; ?>>
+                                    </td>
                                     <td><input class="subtotal" data-idproduto="<?php echo $produto->get_id() ?>"
                                                id="subtotal_<?php echo $produto->get_id() ?>" readonly type="number"
-                                               name="subtotal[]" <?php if(!$in_stock): ?> readonly <?php endif; ?>></td>
+                                               name="subtotal[]" <?php if (!$in_stock && $pre_sale != 'yes'): ?> readonly <?php endif; ?>>
+                                    </td>
 
                                 </tr>
 
