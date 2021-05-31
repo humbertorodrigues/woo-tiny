@@ -19,7 +19,7 @@
                 $sellers = get_users(['role__in' => ['vendedores_bw']]);
                 ?>
                 <div class="row mt-3">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="form-group">
                             <label for="woo-tiny-seller">Vendedor</label>
                             <select name="bw_id_vendedor" id="woo-tiny-seller" class="form-control" required>
@@ -314,8 +314,13 @@
                                 $preco_bonificacao = get_post_meta($produto->get_id(), "bonificacao", "true");
                                 $preco_bonificacao = str_replace(",", ".", $preco_bonificacao);
                                 $in_stock = $produto->get_stock_quantity() > 0;
+                                $pre_sale = get_post_meta($produto->get_id(),"bw_pre_venda",true);
+                                $not_in_stock_and_pre_sale = !$in_stock && $pre_sale == 'yes';
                                 ?>
-                                <tr data-product-id="<?= $produto->get_id() ?>" <?php if (!$in_stock): ?> class="text-danger" <?php endif; ?>>
+                                <tr data-product-id="<?= $produto->get_id() ?>"
+                                    <?php if ($not_in_stock_and_pre_sale): ?> class="text-primary"
+                                    <?php elseif (!$in_stock && $pre_sale != 'yes'): ?> class="text-danger" <?php  endif; ?>
+                                >
                                     <td>
                                         <input type="hidden" name="id_produto[]"
                                                value="<?php echo $produto->get_id() ?>">
@@ -324,24 +329,24 @@
                                     <td><?php echo $produto->get_title() ?></td>
                                     <td><input min="0" class="qtd" name="qtd[]"
                                                id="qtd_<?php echo $produto->get_id() ?>" type="number"
-                                               value="0" <?php if (!$in_stock): ?> disabled <?php endif; ?>></td>
+                                               value="0" <?php if (!$in_stock && $pre_sale != 'yes'): ?> disabled <?php endif; ?>></td>
                                     <td><input min="0" class="qtd_bonificacao" name="qtd_bonificacao[]"
                                                id="qtd_bonificacao_<?php echo $produto->get_id() ?>" type="number"
-                                               value="0" <?php if (!$in_stock): ?> disabled <?php endif; ?>></td>
+                                               value="0" <?php if (!$in_stock && $pre_sale != 'yes'): ?> disabled <?php endif; ?>></td>
                                     <td><input class="preco_unitario"
                                                id="preco_unitario_<?php echo $produto->get_id() ?>" min=""
                                                type="number"
-                                               name="preco_unitario[]" <?php if (!$in_stock): ?> disabled <?php endif; ?>>
+                                               name="preco_unitario[]" <?php if (!$in_stock && $pre_sale != 'yes'): ?> disabled <?php endif; ?>>
                                     </td>
                                     <td><input value="<?php echo $preco_bonificacao ?>"
                                                class="preco_unitario_bonificacao"
                                                id="preco_unitario_bonificacao_<?php echo $produto->get_id() ?>" readonly
                                                type="number"
-                                               name="preco_unitario_bonificacao[]" <?php if (!$in_stock): ?> disabled <?php endif; ?>>
+                                               name="preco_unitario_bonificacao[]" <?php if (!$in_stock && $pre_sale != 'yes'): ?> disabled <?php endif; ?>>
                                     </td>
                                     <td><input class="subtotal" data-idproduto="<?php echo $produto->get_id() ?>"
                                                id="subtotal_<?php echo $produto->get_id() ?>" readonly type="number"
-                                               name="subtotal[]" <?php if (!$in_stock): ?> disabled <?php endif; ?>>
+                                               name="subtotal[]" <?php if (!$in_stock && $pre_sale != 'yes'): ?> disabled <?php endif; ?>>
                                     </td>
 
                                 </tr>
