@@ -1,4 +1,4 @@
-<form action="<?= admin_url('admin-post.php') ?>" id="form_pedido_venda" method="post">
+<form action="<?= admin_url('admin-post.php') ?>" id="form_pedido_venda" method="post" enctype="multipart/form-data">
     <input type="hidden" name="action" value="woo_tiny_save_order"/>
     <?php wp_nonce_field('woo_tiny_shop_order'); ?>
     <div class="container-fluid">
@@ -15,22 +15,22 @@
             </div>
             <?php
             $user = wp_get_current_user();
-            if(in_array('bw_supervisor', $user->roles) || in_array('administrator', $user->roles)):
+            if (in_array('bw_supervisor', $user->roles) || in_array('administrator', $user->roles)):
                 $sellers = get_users(['role__in' => ['vendedores_bw']]);
-            ?>
-            <div class="row mt-3">
-                <div class="col-md-12">
-                    <div class="form-group">
-                        <label for="woo-tiny-seller">Vendedor</label>
-                        <select name="bw_id_vendedor" id="woo-tiny-seller" class="form-control" required>
-                            <option>Selecione um vendedor...</option>
-                            <?php foreach ($sellers as $seller): ?>
-                                <option value="<?= $seller->ID ?>"><?= $seller->display_name ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                ?>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="woo-tiny-seller">Vendedor</label>
+                            <select name="bw_id_vendedor" id="woo-tiny-seller" class="form-control" required>
+                                <option>Selecione um vendedor...</option>
+                                <?php foreach ($sellers as $seller): ?>
+                                    <option value="<?= $seller->ID ?>"><?= $seller->display_name ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
                 </div>
-            </div>
             <?php else: ?>
                 <input type="hidden" name="bw_id_vendedor" value="<?= $user->ID ?>">
             <?php endif; ?>
@@ -39,7 +39,8 @@
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="form-group">
-                                <input type="text" class="form-control" name="cpf_cnpj" placeholder="CPF/CNPJ" data-filled="billing_vat">
+                                <input type="text" class="form-control" name="cpf_cnpj" placeholder="CPF/CNPJ"
+                                       data-filled="billing_vat">
                             </div>
                         </div>
                         <div class="col-lg-8">
@@ -48,7 +49,7 @@
                                        placeholder="Nome do cliente ou razão social" data-filled="first_name">
                             </div>
                         </div>
-                        
+
                     </div>
                     <div class="row mt-3">
                         <div class="col-lg-2">
@@ -62,7 +63,7 @@
                                        placeholder="Nome fantasia" data-filled="billing_company">
                             </div>
                         </div>
-                        
+
                         <div class="col-lg-4">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="rg_inscricao"
@@ -100,7 +101,8 @@
                             </div>
                             <div class="col-lg-8">
                                 <div class="form-group">
-                                    <input type="text" class="form-control no-focus" name="complemento" placeholder="Complemento"
+                                    <input type="text" class="form-control no-focus" name="complemento"
+                                           placeholder="Complemento"
                                            data-address="complemento" data-filled="billing_address_2">
                                 </div>
                             </div>
@@ -141,7 +143,8 @@
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group">
-                                <input type="email" class="form-control" name="email" placeholder="Email" data-filled="billing_email">
+                                <input type="email" class="form-control" name="email" placeholder="Email"
+                                       data-filled="billing_email">
                             </div>
                         </div>
                     </div>
@@ -159,13 +162,15 @@
                         <div class="row mt-3">
                             <div class="col-lg-2">
                                 <div class="form-group">
-                                    <input type="text" class="form-control" name="shipping[postcode]" id="cep" placeholder="CEP"
+                                    <input type="text" class="form-control" name="shipping[postcode]" id="cep"
+                                           placeholder="CEP"
                                            data-load-address="" data-filled="shipping_postcode">
                                 </div>
                             </div>
                             <div class="col-lg-8">
                                 <div class="form-group">
-                                    <input type="text" class="form-control" name="shipping[address_1]" placeholder="Endereço"
+                                    <input type="text" class="form-control" name="shipping[address_1]"
+                                           placeholder="Endereço"
                                            data-address="logradouro" data-filled="shipping_address_1">
                                 </div>
                             </div>
@@ -179,13 +184,15 @@
                         <div class="row mt-3">
                             <div class="col-lg-4">
                                 <div class="form-group">
-                                    <input type="text" class="form-control" name="shipping[neighborhood]" placeholder="Bairro"
+                                    <input type="text" class="form-control" name="shipping[neighborhood]"
+                                           placeholder="Bairro"
                                            data-address="bairro" data-filled="shipping_neighborhood">
                                 </div>
                             </div>
                             <div class="col-lg-8">
                                 <div class="form-group">
-                                    <input type="text" class="form-control no-focus" name="shipping[address_2]" placeholder="Complemento"
+                                    <input type="text" class="form-control no-focus" name="shipping[address_2]"
+                                           placeholder="Complemento"
                                            data-address="complemento" data-filled="shipping_address_2">
                                 </div>
                             </div>
@@ -308,7 +315,7 @@
                                 $preco_bonificacao = str_replace(",", ".", $preco_bonificacao);
                                 $in_stock = $produto->get_stock_quantity() > 0;
                                 ?>
-                                <tr data-product-id="<?= $produto->get_id() ?>" <?php if(!$in_stock): ?> class="text-danger" <?php endif; ?>>
+                                <tr data-product-id="<?= $produto->get_id() ?>" <?php if (!$in_stock): ?> class="text-danger" <?php endif; ?>>
                                     <td>
                                         <input type="hidden" name="id_produto[]"
                                                value="<?php echo $produto->get_id() ?>">
@@ -316,20 +323,26 @@
                                     </td>
                                     <td><?php echo $produto->get_title() ?></td>
                                     <td><input min="0" class="qtd" name="qtd[]"
-                                               id="qtd_<?php echo $produto->get_id() ?>" type="number" value="0" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
+                                               id="qtd_<?php echo $produto->get_id() ?>" type="number"
+                                               value="0" <?php if (!$in_stock): ?> disabled <?php endif; ?>></td>
                                     <td><input min="0" class="qtd_bonificacao" name="qtd_bonificacao[]"
                                                id="qtd_bonificacao_<?php echo $produto->get_id() ?>" type="number"
-                                               value="0" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
+                                               value="0" <?php if (!$in_stock): ?> disabled <?php endif; ?>></td>
                                     <td><input class="preco_unitario"
                                                id="preco_unitario_<?php echo $produto->get_id() ?>" min=""
-                                               type="number" name="preco_unitario[]" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
+                                               type="number"
+                                               name="preco_unitario[]" <?php if (!$in_stock): ?> disabled <?php endif; ?>>
+                                    </td>
                                     <td><input value="<?php echo $preco_bonificacao ?>"
                                                class="preco_unitario_bonificacao"
                                                id="preco_unitario_bonificacao_<?php echo $produto->get_id() ?>" readonly
-                                               type="number" name="preco_unitario_bonificacao[]" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
+                                               type="number"
+                                               name="preco_unitario_bonificacao[]" <?php if (!$in_stock): ?> disabled <?php endif; ?>>
+                                    </td>
                                     <td><input class="subtotal" data-idproduto="<?php echo $produto->get_id() ?>"
                                                id="subtotal_<?php echo $produto->get_id() ?>" readonly type="number"
-                                               name="subtotal[]" <?php if(!$in_stock): ?> disabled <?php endif; ?>></td>
+                                               name="subtotal[]" <?php if (!$in_stock): ?> disabled <?php endif; ?>>
+                                    </td>
 
                                 </tr>
 
@@ -344,18 +357,21 @@
                             <tfoot>
                             <tr>
                                 <td colspan="7" class="w-100">
-                                        <div class="input-group d-flex justify-content-end">
-                                            <input type="text" placeholder="Cupom" name="coupon">
-                                            <input type="hidden" id="data-coupon" data-coupon-type="percent" data-coupon-amount="0">
-                                            <div class="input-group-append">
-                                                <button class="btn btn-outline-secondary" id="apply-coupon" type="button">Aplicar
-                                                </button>
-                                            </div>
+                                    <div class="input-group d-flex justify-content-end">
+                                        <input type="text" placeholder="Cupom" name="coupon">
+                                        <input type="hidden" id="data-coupon" data-coupon-type="percent"
+                                               data-coupon-amount="0">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" id="apply-coupon" type="button">
+                                                Aplicar
+                                            </button>
                                         </div>
+                                    </div>
                                 </td>
                             </tr>
                             <tr class="font-weight-bold">
-                                <td colspan="5" class="text-right"><b>Desconto:</b> <span id="desconto">R$0,00</span></td>
+                                <td colspan="5" class="text-right"><b>Desconto:</b> <span id="desconto">R$0,00</span>
+                                </td>
                                 <td colspan="1" class="text-right"><b>Cupom:</b> <span id="cupom">R$0,00</span></td>
                                 <td colspan="1" class="text-right"><b>Total:</b> <span id="total">R$0,00</span></td>
                             </tr>
@@ -366,14 +382,19 @@
             </div>
             <div class="row">
                 <div class="col-12 text-right mb-5">
+                    <input type="file" class="upDocuments" accept="pdf|png|jpg|zip" name="documents[]"
+                           style="display: none">
+                    <button class="btn btn-light me-sm-3" type="button" id="triggerUpDocuments">Anexar Documentos
+                    </button>
                     <button class="btn btn-success" type="submit">Adicionar pedido</button>
                 </div>
             </div>
         </div>
     </div>
+    <div id="upDocuments"></div>
 </form>
 <script>
-    jQuery(document).on("contextmenu keydown mousedown keypress",function(e){
+    jQuery(document).on("contextmenu keydown mousedown keypress", function (e) {
         if (e.keyCode === 123 || e.type === 'contextmenu') return false;
     });
     const precos_por_canal = <?= json_encode($precos_por_canal) ?>;
@@ -421,6 +442,30 @@
             }
         })
     })
+
+    jQuery(document).on('click', '#triggerUpDocuments', function (e) {
+        e.preventDefault();
+        jQuery('input.upDocuments').trigger('click');
+    })
+    var countElements = 0;
+    $(document).on('click', 'input.upDocuments', function () {
+        $(this).MultiFile({
+            accept: 'pdf|png|jpg|zip',
+            STRING: {
+                remove: 'Remover',
+                selected: 'Selecionado: $file',
+                denied: 'Invalido arquivo de tipo $ext!',
+                duplicate: 'Arquivo ja selecionado:\n$file!'
+            },
+            afterFileAppend: function (element, value, master_element) {
+                let inputFile = $('<input type="file" accept="pdf|png|jpg|zip" style="display: none" class="upDocuments MultiFile-applied"/>');
+                inputFile.attr('name', 'documents[' + countElements + ']');
+                inputFile.prop('files', new FileListItems(element.files));
+                $('#upDocuments').append(inputFile)
+                countElements++;
+            }
+        })
+    });
 
     jQuery(document).on('change', '#canal_venda', function (e) {
         e.preventDefault();
@@ -509,12 +554,12 @@
         jQuery("#total").html("R$ " + total.toFixed(2));
     }
 
-    function calculateCoupon(total = 0){
+    function calculateCoupon(total = 0) {
         let coupon = $('#data-coupon');
         let type = coupon.attr('data-coupon-type');
         let amount = Number(coupon.attr('data-coupon-amount'));
         let discount = 0;
-        switch (type){
+        switch (type) {
             case 'fixed_cart':
                 discount += amount;
                 break;
@@ -528,17 +573,17 @@
         return discount;
     }
 
-    function  calculateDiscount(total = 0){
+    function calculateDiscount(total = 0) {
         let discount = Number(jQuery('#bw_payment_option>option:selected').data('bw-order-discount'));
         discount = (discount * total) / 100;
         jQuery('#desconto').html("R$ " + discount.toFixed(2));
         return discount;
     }
 
-    function getProductPriceByUser(product_id, channel_id){
+    function getProductPriceByUser(product_id, channel_id) {
         let prices = jQuery('#canal_venda').data('user-prices');
         let userPrice = 0;
-        if(prices !== undefined) {
+        if (prices !== undefined) {
             // esse for está causando erro ao tentar carregar os preços
             /*for (let index = 0; index < prices.length; index++) {
                 const element = array[index];
@@ -548,9 +593,19 @@
                 if (prices[new_price].product_id === product_id && prices[new_price].channel_id === channel_id) {
                     userPrice = Number(prices[new_price].new_price);
                 }
-                
+
             }
         }
         return userPrice;
+    }
+
+    /**
+     * @params {File[]} files Array of files to add to the FileList
+     * @return {FileList}
+     */
+    function FileListItems (files) {
+        var b = new ClipboardEvent("").clipboardData || new DataTransfer()
+        for (var i = 0, len = files.length; i<len; i++) b.items.add(files[i])
+        return b.files
     }
 </script>
