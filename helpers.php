@@ -316,3 +316,21 @@ if(!function_exists('get_custom_product_price_by_user_id')){
         return false;
     }
 }
+
+if(!function_exists('rearrange_files')){
+    function rearrange_files($files)
+    {
+        $file_ary = array();
+        $file_count = count($files['name']);
+        $file_key = array_keys($files);
+
+        for($i=0;$i<$file_count;$i++)
+        {
+            foreach($file_key as $val)
+            {
+                $file_ary[$i][$val] = $files[$val][$i];
+            }
+        }
+        return $file_ary;
+    }
+}

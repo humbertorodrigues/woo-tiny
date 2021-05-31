@@ -2,6 +2,7 @@
 add_filter("manage_edit-shop_order_columns", "woo_tiny_shop_order_edit_columns");
 add_action("manage_posts_custom_column", "woo_tiny_shop_order_custom_columns");
 add_action( 'woocommerce_admin_order_data_after_order_details', 'woo_tiny_order_data_seller');
+add_action( 'woocommerce_admin_order_data_after_shipping_address', 'woo_tiny_order_documents');
 add_action('woocommerce_update_order', 'woo_tiny_order_save_meta', 10, 2);
 
 function woo_tiny_shop_order_edit_columns($columns)
@@ -75,9 +76,28 @@ function woo_tiny_order_save_meta($order_id, $order){
             'bw_canal_venda' => '',
             'bw_forma_pagamento_id' => '',
         ];
+
+        if(array_key_exists('canal_venda', $_POST)){
+            $_POST['bw_canal_venda'] = $_POST['canal_venda'];
+        }
+
+        if(array_key_exists('bw_payment_option', $_POST)){
+            $_POST['bw_forma_pagamento_id'] = $_POST['bw_payment_option'];
+        }
+
         $data = wp_parse_args($_POST, $default_fields);
         foreach ($default_fields as $key => $val) {
             update_post_meta($order_id, $key, $data[$key]);
         }
     }
+}
+
+function woo_tiny_order_documents($order){
+    $attachments = get_posts([
+        'post_type'   => 'attachment',
+        'numberposts' => -1,
+        'post_status' => null,
+        'post_parent' => $order->get_id()
+    ]);
+    include WOO_TINY_DIR . 'templates/post-types/shop-order/documents-data.php';
 }

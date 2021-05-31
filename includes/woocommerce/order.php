@@ -125,7 +125,7 @@ function woo_tiny_save_order()
         $address['shipping']['company'] = $address['billing']['company'];
         $customer = woo_tiny_save_customer_meta_data(woo_tiny_get_customer_data($address));
         if (!$customer) {
-            
+
             $referer .= set_alert('danger', 'Falha ao processar');
             wp_redirect($referer);
             exit;
@@ -138,6 +138,7 @@ function woo_tiny_save_order()
         ]);
 
         $order_id = $order->get_id();
+
 
         update_post_meta($order_id, "bw_codigo", $codigo);
         update_post_meta($order_id, "bw_id_vendedor", $user_id);
@@ -182,7 +183,7 @@ function woo_tiny_save_order()
             }*/
 
 
-        woo_tiny_trigger_order_revision_email( $order );
+        woo_tiny_trigger_order_revision_email($order);
         //Temos bonificacao, vamos montar um pedido à parte
         if (array_sum($qtd_bonificacao) > 0) {
             $order_bonificacao = wc_create_order(['status' => 'wc-revision']);
@@ -220,13 +221,23 @@ function woo_tiny_save_order()
                 $order_bonificacao->update_status("wc-processing", 'Pedido por vendedor', TRUE);
             }*/
 
-            woo_tiny_trigger_order_revision_email( $order_bonificacao );
+            woo_tiny_trigger_order_revision_email($order_bonificacao);
         }
-
-
+        woo_tiny_order_upload_files($order_id, $_FILES['documents']);
     }
     $referer .= $order_id > 0 ? set_alert('success', "Pedido #{$order_id} salvo com sucesso") : set_alert('danger', 'Falha ao processar');
     wp_redirect($referer);
+}
+
+function woo_tiny_order_upload_files($order_id, $files)
+{
+    $_FILES = rearrange_files($files);
+    require_once(ABSPATH . "wp-admin" . '/includes/image.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/file.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/media.php');
+    foreach ($_FILES as $file_handler => $file){
+        media_handle_upload( $file_handler, $order_id);
+    }
 }
 
 
