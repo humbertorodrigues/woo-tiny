@@ -33,6 +33,8 @@ $contasPagar = new contasPagar();
 $canaisVenda = new canaisVenda();
 $vendedores = new vendedores();
 
+
+
 function criar_status_pedidos() {
     
     register_post_status( 'wc-shipping', array(

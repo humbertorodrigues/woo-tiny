@@ -4,6 +4,8 @@ class pedidos {
     public function __construct() {
         // add_action( 'woocommerce_order_status_processing', array($this,'enviar_pedido') ,1);
         add_action("woocommerce_order_status_processing", array($this, 'separar_pedidos'),0);
+        add_filter( 'woocommerce_my_account_my_orders_query', [$this,'exibir_pedidos_vendedor'], 10, 1 );
+        
     }
     public function separar_pedidos($order_id) {
         // var_dump($order_id);
@@ -329,6 +331,45 @@ class pedidos {
         $updateNote = 'This order was duplicated from order ' . $original_order_id . '.';
         /* $order->update_status('processing'); */
         $order->add_order_note($updateNote);
+    }
+    
+    public function exibir_pedidos_vendedor( $args ) {
+        
+        $user = wp_get_current_user();
+        
+        if ( in_array( 'vendedores_bw', (array) $user->roles ) ) {
+            
+                unset($args['customer']);            
+                $args['meta_key'] = 'bw_id_vendedor';
+                $args['meta_value'] = get_current_user_id();  
+        }
+        
+        return $args;
+    }
+    public function atualizarRastreio($id_pedido){
+        global $tiny;
+        
+        $url = 'https://api.tiny.com.br/api2/cadastrar.codigo.rastreamento.pedido.php';
+        $tiny->setEmpresa($id_pedido);
+        $token = $tiny->getToken();
+        $tracking_code = (wc_get_order_item_meta($id_pedido, 'freterapido_shippings',true)?:[]);
+        $codigoRastreamento = $tracking_code[0];
+        $id_tiny = get_post_meta($id_pedido,"codigo_tiny",true);
+        $urlRastreamento = urlencode("https://ondeestameupedido.com.br/".$codigoRastreamento);
+        
+        $data = "token=$token&id=$id_tiny&codigoRastreamento=$codigoRastreamento&urlRastreamento=$urlRastreamento";
+
+        
+        $retorno = $tiny->enviarREST($url, $data);
+        
+        
+        $xml = simplexml_load_string($retorno); 
+        
+        if($xml->status_processamento=="3"){
+            return true;
+        }else{
+            return false;
+        }
     }
 }
 ?>
