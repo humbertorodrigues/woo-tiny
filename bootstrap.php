@@ -4,6 +4,7 @@ require WOO_TINY_DIR . 'helpers.php';
 
 require WOO_TINY_DIR . 'includes/roles.php';
 require WOO_TINY_DIR . 'includes/cron.php';
+require WOO_TINY_DIR . 'includes/pages.php';
 
 require WOO_TINY_DIR . 'includes/woocommerce/order.php';
 require WOO_TINY_DIR . 'includes/woocommerce/customer.php';

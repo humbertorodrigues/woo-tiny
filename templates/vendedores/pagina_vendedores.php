@@ -385,6 +385,16 @@
                     </div>
                 </div>
             </div>
+            <div class="row mt-3">
+                <div class="col-lg-12">
+                    <div class="form-check text-right">
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" name="payment_order" id="payment_order" checked>
+                            Proceder com o pagamento
+                        </label>
+                    </div>
+                </div>
+            </div>
             <div class="row">
                 <div class="col-12 text-right mb-5">
                     <input type="file" class="upDocuments" accept="pdf|png|jpg|zip" name="documents[]"

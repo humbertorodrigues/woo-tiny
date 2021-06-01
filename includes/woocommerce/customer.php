@@ -4,6 +4,7 @@ add_action('wp_ajax_woo_tiny_update_price_product_by_user', 'woo_tiny_update_pri
 add_action('wp_ajax_woo_tiny_delete_price_product_by_user', 'woo_tiny_delete_price_product_by_user');
 add_action('wp_ajax_woo_tiny_get_product_price_by_user', 'woo_tiny_get_product_price_by_user');
 add_action('wp_ajax_woo_tiny_customer_load_content_custom_product_price', 'woo_tiny_customer_load_content_custom_product_price');
+add_action('woocommerce_before_pay_action', 'woo_tiny_set_customer_in_payment_order');
 
 global $woocommerce;
 
@@ -227,6 +228,13 @@ function woo_tiny_get_seller_data_by_order_id($order_id, $key = ''){
     $user = get_userdata($seller_id);
     if($key == '' || !property_exists($user->data, $key)) return $user;
     return $user->{$key};
+}
+
+function woo_tiny_set_customer_in_payment_order($order){
+    global $post;
+    if ($post->ID == url_to_postid(site_url('pagar-pedido'))) {
+        WC()->customer = new WC_Customer($order->get_customer_id());
+    }
 }
 
 
