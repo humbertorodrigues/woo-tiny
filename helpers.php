@@ -198,6 +198,12 @@ if (!function_exists('serialize_phone_br')) {
 if (!function_exists('convert_date')) {
     function convert_date($date, string $from = 'd/m/Y', string $to = 'Y-m-d'): string
     {
+        if(!$from){
+            if($to == 'full'){
+                setlocale(LC_TIME, 'pt_BR', 'pt_BR.utf-8', 'pt_BR.utf-8', 'portuguese');
+                return strftime('%d de %B de %Y', strtotime($date));
+            }
+        }
         if ($date == '' || is_null($date)) return '';
         return DateTime::createFromFormat($from, $date)->format($to);
     }
