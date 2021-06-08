@@ -8,11 +8,14 @@ class pedidos {
         
     }
     public function separar_pedidos($order_id) {
-        // var_dump($order_id);
+        $produtos_nao_separar = array(936,927);
         $produtos_com_estoque = 0;
         $produtos_sem_estoque = 0;
+        $produtos_sem_estoque_juntos = 0;
         $order = wc_get_order($order_id);
+        $id_produtos_com_estoque = array();
         $id_produtos_sem_estoque = array();
+        $id_produtos_sem_estoque_nao_separar = array();
         $cupons = $order->get_items('coupon');
         foreach( $cupons as $item_id => $item ){
             
@@ -31,17 +34,30 @@ class pedidos {
             $pre_venda = get_post_meta($item['product_id'],"bw_pre_venda",true);
             
             if ($pre_venda == "yes") {
-                $id_produtos_sem_estoque[]= $item['product_id'];
-                $produtos_sem_estoque++;
+                if(array_search($item['product_id'],$produtos_nao_separar)===false){
+                    $id_produtos_sem_estoque[]= $item['product_id'];
+                    $produtos_sem_estoque++;
+                }else{
+                    $id_produtos_sem_estoque_nao_separar[]= $item['product_id'];
+                    $produtos_sem_estoque_juntos++;
+                }
             } else {
+                $id_produtos_com_estoque[]= $item['product_id'];
                 $produtos_com_estoque++;
             }
         }
-        if(($produtos_sem_estoque > 0 && $produtos_com_estoque > 0) || $produtos_sem_estoque > 1 ){
+        // var_dump($produtos_com_estoque);
+        // var_dump($produtos_sem_estoque);
+        // var_dump($produtos_sem_estoque_juntos);
+        
+        if((($produtos_sem_estoque > 0 || $produtos_sem_estoque_juntos>0) && $produtos_com_estoque > 0) || ($produtos_sem_estoque > 1 || $produtos_sem_estoque_juntos >1) ){
+            
             $order_id_sem_estoque = array();
+            $order_id_sem_estoque_nao_separar=false;
             for ($i=0; $i < $produtos_sem_estoque ; $i++) { 
                 if($produtos_com_estoque == 0 & $i==0){
                     $order_id_sem_estoque[$i] = $order_id;
+                    
                     continue;
                 }
                 $order_id_sem_estoque[$i] = $this->duplicate_order( $order );
@@ -57,6 +73,27 @@ class pedidos {
                     }
                 }
             }
+            
+            if($produtos_com_estoque == 0 && $produtos_sem_estoque ==0 ){
+                $order_id_sem_estoque_nao_separar = $order_id;
+                
+                
+            }else{
+
+                $order_id_sem_estoque_nao_separar = $this->duplicate_order( $order );
+                
+                $this->removerProdutosComEstoque($order_id_sem_estoque_nao_separar);
+                if($produtos_com_estoque > 0){
+    
+                    $this->removerFretePedidoSemEstoque($order_id_sem_estoque_nao_separar);
+                }else{
+                    //Só temos produtos sem estoque. Logo, mantemos o frete no primeiro produto.
+                    if($produtos_com_estoque>0){                        
+                        $this->removerFretePedidoSemEstoque($order_id_sem_estoque_nao_separar);
+                    }
+                }
+            }
+            
             $j = 0;
             foreach ($order_id_sem_estoque as $key => $sem_estoque_id) {
                 $produto_remover = false;
@@ -64,6 +101,8 @@ class pedidos {
                     
                     if($j != $key_produto_sem_estoque){
                         $this->orderRemoverProduto($sem_estoque_id,$id_produto_sem_estoque);
+                        if($order_id_sem_estoque_nao_separar>0){
+                        }
                     }
                 }
                 
@@ -71,10 +110,17 @@ class pedidos {
                 
                 update_post_meta($sem_estoque_id,"bw_pedido_pai",$order_id);
             }
+            if($order_id_sem_estoque_nao_separar>0){
+                foreach ($id_produtos_com_estoque as $key => $id_produto_com_estoque) {
+                    $this->orderRemoverProduto($order_id_sem_estoque_nao_separar,$id_produto_com_estoque);
+                    
+                }                
+            }
             if($produtos_com_estoque > 0){
                 $this->removerProdutosSemEstoque($order_id);
             }
-            
+            var_dump($order_id_sem_estoque);
+            var_dump($order_id_sem_estoque_nao_separar);
             update_post_meta($order_id,"bw_pedido_filho",$order_id_sem_estoque);
         }
         // exit("Pronto");
