@@ -395,7 +395,7 @@ if (!is_user_logged_in()) {
                 <div class="col-lg-12">
                     <div class="form-check text-right">
                         <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" name="payment_order" id="payment_order" checked>
+                            <input type="checkbox" class="form-check-input" name="payment_order" id="payment_order">
                             Proceder com o pagamento
                         </label>
                     </div>

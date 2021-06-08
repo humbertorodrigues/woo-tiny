@@ -250,6 +250,16 @@ class pedidos {
         update_post_meta($order_id, '_billing_cpf',            get_post_meta($original_order_id, '_billing_cpf', true));
         update_post_meta($order_id, '_billing_cnpj',           get_post_meta($original_order_id, '_billing_cnpj', true));
         update_post_meta($order_id, '_billing_persontype',     get_post_meta($original_order_id, '_billing_persontype', true));
+        
+        update_post_meta($order_id, 'bw_canal_venda',     get_post_meta($original_order_id, 'bw_canal_venda', true));
+        update_post_meta($order_id, 'bw_canal_venda_descricao',     get_post_meta($original_order_id, 'bw_canal_venda_descricao', true));
+        update_post_meta($order_id, 'bw_codigo',     get_post_meta($original_order_id, 'bw_codigo', true));
+        update_post_meta($order_id, 'bw_forma_pagamento_descricao',     get_post_meta($original_order_id, 'bw_forma_pagamento_descricao', true));
+        update_post_meta($order_id, 'bw_forma_pagamento_id',     get_post_meta($original_order_id, 'bw_forma_pagamento_id', true));
+        update_post_meta($order_id, 'bw_id_vendedor',     get_post_meta($original_order_id, 'bw_id_vendedor', true));
+        update_post_meta($order_id, 'bw_nome_contato',     get_post_meta($original_order_id, 'bw_nome_contato', true));
+        update_post_meta($order_id, 'bw_obs',     get_post_meta($original_order_id, 'bw_obs', true));
+        update_post_meta($order_id, 'bw_rg_inscricao',     get_post_meta($original_order_id, 'bw_rg_inscricao', true));
     }
 
     private function duplicate_shipping_fieds($original_order_id, $order_id) {
