@@ -13,6 +13,17 @@ class pedidos {
         $produtos_sem_estoque = 0;
         $order = wc_get_order($order_id);
         $id_produtos_sem_estoque = array();
+        $cupons = $order->get_items('coupon');
+        foreach( $cupons as $item_id => $item ){
+            
+            //Não dividimos os pedidos do kit pre venda 50% off
+            $coupon_post_obj = get_page_by_title( $item->get_name(), OBJECT, 'shop_coupon' );
+            $coupon_id = $coupon_post_obj->ID;
+
+            if($item->get_name()=="kit pré-venda 50% off"){
+                return;
+            }
+        }
         foreach ($order->get_items() as $item_id => $item) {
             
             $product = wc_get_product($item['product_id']);
