@@ -240,12 +240,16 @@ function woo_tiny_save_order()
 
 function woo_tiny_order_upload_files($order_id, $files)
 {
+
     $_FILES = rearrange_files($files);
     require_once(ABSPATH . "wp-admin" . '/includes/image.php');
     require_once(ABSPATH . "wp-admin" . '/includes/file.php');
     require_once(ABSPATH . "wp-admin" . '/includes/media.php');
     foreach ($_FILES as $file_handler => $file) {
-        media_handle_upload($file_handler, $order_id);
+        $attachment_id = media_handle_upload($file_handler, $order_id, ['post_status' => 'private', 'comment_status' => 'closed']);
+        if(is_integer($attachment_id)) {
+            update_post_meta($attachment_id, 'document_order', 'yes');
+        }
     }
 }
 
@@ -256,7 +260,8 @@ function woo_tiny_order_valid_statuses_for_payment($valid_order_statuses, $insta
     return array_merge($valid_order_statuses, $order_statuses);
 }
 
-function woo_tiny_order_is_checkout($condition) {
+function woo_tiny_order_is_checkout($condition)
+{
     global $post;
     global $wp;
     if ($post->ID == url_to_postid(site_url('pagar-pedido'))) {

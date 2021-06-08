@@ -1,3 +1,9 @@
+<?php
+if (!is_user_logged_in()) {
+    wp_redirect(wp_login_url(site_url('vendedores')));
+    exit;
+}
+?>
 <form action="<?= admin_url('admin-post.php') ?>" id="form_pedido_venda" method="post" enctype="multipart/form-data">
     <input type="hidden" name="action" value="woo_tiny_save_order"/>
     <?php wp_nonce_field('woo_tiny_shop_order'); ?>
@@ -460,10 +466,10 @@
 
     jQuery(document).on('click', '#triggerUpDocuments', function (e) {
         e.preventDefault();
-        jQuery('input.upDocuments').trigger('click');
+        jQuery('input.upDocuments:first').trigger('click');
     })
     var countElements = 0;
-    $(document).on('click', 'input.upDocuments', function () {
+    $(document).on('click', 'input.upDocuments', function (e) {
         $(this).MultiFile({
             accept: 'pdf|png|jpg|zip',
             STRING: {

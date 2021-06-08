@@ -96,8 +96,9 @@ function woo_tiny_order_documents($order){
     $attachments = get_posts([
         'post_type'   => 'attachment',
         'numberposts' => -1,
-        'post_status' => null,
+        'post_status' => 'private',
         'post_parent' => $order->get_id()
     ]);
+
     include WOO_TINY_DIR . 'templates/post-types/shop-order/documents-data.php';
 }

@@ -7,6 +7,8 @@ jQuery.fn.extend({
             if (res.success) {
                 content.html(res.data);
             }
+        }).fail(function (error) {
+            console.log('no content')
         });
     }
 });
@@ -48,5 +50,6 @@ jQuery(document).on('click', '#delete-bw-custom-product-price', function (e) {
         }
     });
 });
-
-jQuery('#content-bw-custom-product-price').bwLoadContentAdmin();
+if(jQuery('#content-bw-custom-product-price').length > 0) {
+    jQuery('#content-bw-custom-product-price').bwLoadContentAdmin();
+}
