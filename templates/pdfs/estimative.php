@@ -1,35 +1,3 @@
-<html>
-<head>
-    <style>
-        body{
-            font-family: sans-serif;
-        }
-        table.products{
-            width: 100%;
-            font-size: 12px;
-        }
-        table.products tr th,
-        table.products tr td{
-            padding: .5rem;
-        }
-        table.products,
-        table.products tr th,
-        table.products tr td{
-            border: solid 1px black;
-            border-collapse: collapse;
-        }
-        .text-uppercase{
-            text-transform: uppercase !important;
-        }
-        .bg-dark,
-        .bg-dark td{
-            background-color: black !important;
-            color: white !important;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
 <img src="<?= WOO_TINY_DIR . 'templates/pdfs/assets/images/estimate_header.jpg' ?>">
 <?= $estimate_doc['header'] ?? '' ?>
 <table class="products">
@@ -61,6 +29,4 @@
     </tbody>
 </table>
 <?= $estimate_doc['footer'] ?? '' ?>
-<img src="<?= WOO_TINY_DIR . 'templates/pdfs/assets/images/estimate_footer.jpg' ?>">
-</body>
-</html>
+
