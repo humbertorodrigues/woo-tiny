@@ -1,3 +1,9 @@
+<?php
+if (!is_user_logged_in()) {
+    wp_redirect(wp_login_url(site_url('vendedores')));
+    exit;
+}
+?>
 <form action="<?= admin_url('admin-post.php') ?>" id="form_pedido_venda" method="post" enctype="multipart/form-data">
     <input type="hidden" name="action" value="woo_tiny_save_order"/>
     <?php wp_nonce_field('woo_tiny_shop_order'); ?>
@@ -314,12 +320,12 @@
                                 $preco_bonificacao = get_post_meta($produto->get_id(), "bonificacao", "true");
                                 $preco_bonificacao = str_replace(",", ".", $preco_bonificacao);
                                 $in_stock = $produto->get_stock_quantity() > 0;
-                                $pre_sale = get_post_meta($produto->get_id(),"bw_pre_venda",true);
+                                $pre_sale = get_post_meta($produto->get_id(), "bw_pre_venda", true);
                                 $not_in_stock_and_pre_sale = !$in_stock && $pre_sale == 'yes';
                                 ?>
                                 <tr data-product-id="<?= $produto->get_id() ?>"
                                     <?php if ($not_in_stock_and_pre_sale): ?> class="text-primary"
-                                    <?php elseif (!$in_stock && $pre_sale != 'yes'): ?> class="text-danger" <?php  endif; ?>
+                                    <?php elseif (!$in_stock && $pre_sale != 'yes'): ?> class="text-danger" <?php endif; ?>
                                 >
                                     <td>
                                         <input type="hidden" name="id_produto[]"
@@ -329,10 +335,12 @@
                                     <td><?php echo $produto->get_title() ?></td>
                                     <td><input min="0" class="qtd" name="qtd[]"
                                                id="qtd_<?php echo $produto->get_id() ?>" type="number"
-                                               value="0" <?php if (!$in_stock && $pre_sale != 'yes'): ?> readonly <?php endif; ?>></td>
+                                               value="0" <?php if (!$in_stock && $pre_sale != 'yes'): ?> readonly <?php endif; ?>>
+                                    </td>
                                     <td><input min="0" class="qtd_bonificacao" name="qtd_bonificacao[]"
                                                id="qtd_bonificacao_<?php echo $produto->get_id() ?>" type="number"
-                                               value="0" <?php if (!$in_stock && $pre_sale != 'yes'): ?> readonly <?php endif; ?>></td>
+                                               value="0" <?php if (!$in_stock && $pre_sale != 'yes'): ?> readonly <?php endif; ?>>
+                                    </td>
                                     <td><input class="preco_unitario"
                                                id="preco_unitario_<?php echo $produto->get_id() ?>" min=""
                                                type="number"
@@ -389,9 +397,42 @@
                 <div class="col-lg-12">
                     <div class="form-check text-right">
                         <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" name="payment_order" id="payment_order" checked>
+                            <input type="checkbox" class="form-check-input" name="payment_order" id="payment-order"
+                                   checked>
                             Proceder com o pagamento
                         </label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="form-check text-right">
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" name="send_estimate" id="send-estimate">
+                            Enviar orçamento
+                        </label>
+                    </div>
+                    <div class="estimate-box" style="display: none">
+                        <div class="form-group">
+                            <label for="estimate-header" class="form-label">Cabeçalho Orçamento</label>
+                            <?php wp_editor('', 'estimate-header', [
+                                'media_buttons' => false,
+                                'drag_drop_upload' => false,
+                                'textarea_name' => 'estimate[header]',
+                                'editor_class' => 'estimate',
+                                'quicktags' => ['display' => true],
+                            ]) ?>
+                        </div>
+                        <div class="form-group">
+                            <label for="estimate-footer" class="form-label">Rodapé Orçamento</label>
+                            <?php wp_editor('', 'estimate-footer', [
+                                'media_buttons' => false,
+                                'drag_drop_upload' => false,
+                                'textarea_name' => 'estimate[footer]',
+                                'editor_class' => 'estimate',
+                                'quicktags' => ['display' => true],
+                            ]) ?>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -463,8 +504,8 @@
         jQuery('input.upDocuments').trigger('click');
     })
     var countElements = 0;
-    $(document).on('click', 'input.upDocuments', function () {
-        $(this).MultiFile({
+    jQuery(document).on('click', 'input.upDocuments', function () {
+        jQuery(this).MultiFile({
             accept: 'pdf|png|jpg|zip',
             STRING: {
                 remove: 'Remover',
@@ -473,10 +514,10 @@
                 duplicate: 'Arquivo ja selecionado:\n$file!'
             },
             afterFileAppend: function (element, value, master_element) {
-                let inputFile = $('<input type="file" accept="pdf|png|jpg|zip" style="display: none" class="upDocuments MultiFile-applied"/>');
+                let inputFile = jQuery('<input type="file" accept="pdf|png|jpg|zip" style="display: none" class="upDocuments MultiFile-applied"/>');
                 inputFile.attr('name', 'documents[' + countElements + ']');
                 inputFile.prop('files', new FileListItems(element.files));
-                $('#upDocuments').append(inputFile)
+                jQuery('#upDocuments').append(inputFile)
                 countElements++;
             }
         })
@@ -570,7 +611,7 @@
     }
 
     function calculateCoupon(total = 0) {
-        let coupon = $('#data-coupon');
+        let coupon = jQuery('#data-coupon');
         let type = coupon.attr('data-coupon-type');
         let amount = Number(coupon.attr('data-coupon-amount'));
         let discount = 0;
@@ -618,9 +659,9 @@
      * @params {File[]} files Array of files to add to the FileList
      * @return {FileList}
      */
-    function FileListItems (files) {
+    function FileListItems(files) {
         var b = new ClipboardEvent("").clipboardData || new DataTransfer()
-        for (var i = 0, len = files.length; i<len; i++) b.items.add(files[i])
+        for (var i = 0, len = files.length; i < len; i++) b.items.add(files[i])
         return b.files
     }
 </script>

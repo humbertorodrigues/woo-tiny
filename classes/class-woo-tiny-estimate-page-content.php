@@ -25,7 +25,7 @@ class Woo_Tiny_Estimate_Page_Content extends WP_List_Table
         ]);
         global $wpdb;
         self::$db = $wpdb;
-        self::$table = $wpdb->prefix . 'posts';
+        self::$table = $wpdb->posts;
         self::$status = 'wc-estimate';
     }
 
@@ -119,7 +119,7 @@ class Woo_Tiny_Estimate_Page_Content extends WP_List_Table
         $title = '#' . $item['number'] . '';
         $actions = [
             'show' => sprintf('<a href="?page=%s&action=%s&item=%d&_wpnonce=%s" target="_blank">Ver</a>', esc_attr($_REQUEST['page']), 'woo_tiny_estimate_show', absint($item['number']), $estimate_nonce),
-            'edit' => sprintf('<a href="post.php?post=%d&action=edit">Editar</a>', absint($item['number'])),
+            //'edit' => sprintf('<a href="post.php?post=%d&action=edit">Editar</a>', absint($item['number'])),
             'update-status' => sprintf('<a href="?page=%s&action=%s&item=%d&_wpnonce=%s">Transformar em Pedido</a>', esc_attr($_REQUEST['page']), 'woo_tiny_estimate_update_status', absint($item['number']), $estimate_nonce),
             'delete' => sprintf('<a href="?page=%s&action=%s&item=%d&_wpnonce=%s">Excluir</a>', esc_attr($_REQUEST['page']), 'woo_tiny_estimate_delete', absint($item['number']), $estimate_nonce)
         ];

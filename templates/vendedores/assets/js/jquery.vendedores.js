@@ -1,24 +1,20 @@
 'use strict';
-if ($ === undefined) {
-    let $ = window.jQuery || window.$;
-}
-
-$(document).on('change', '[data-product-id]', function (e) {
+jQuery(document).on('change', '[data-product-id]', function (e) {
     e.preventDefault();
-    let target = $(e.target);
-    let limitBonus = $(this).limitBonus();
+    let target = jQuery(e.target);
+    let limitBonus = jQuery(this).limitBonus();
     calcula_subtotal();
 });
 
-$(document).on('click', '#apply-coupon', function (e) {
+jQuery(document).on('click', '#apply-coupon', function (e) {
     e.preventDefault();
     let data = {
         action: 'woo_tiny_get_coupon',
-        code: $(this).parent().parent().find('[name=coupon]').val()
+        code: jQuery(this).parent().parent().find('[name=coupon]').val()
     };
-    $.get(woo_tiny.ajax_url, data, function (res) {
+    jQuery.get(woo_tiny.ajax_url, data, function (res) {
         if (res.discount_type) {
-            let dataCoupon = $('#data-coupon');
+            let dataCoupon = jQuery('#data-coupon');
             dataCoupon.attr('data-coupon-type', res.discount_type);
             dataCoupon.attr('data-coupon-amount', res.amount);
             calcula_subtotal();
@@ -26,16 +22,16 @@ $(document).on('click', '#apply-coupon', function (e) {
     });
 });
 
-$(document).on('keyup blur change', '[name=cpf_cnpj]', function (e) {
+jQuery(document).on('keyup blur change', '[name=cpf_cnpj]', function (e) {
     e.preventDefault();
     e.stopPropagation();
-    let inputVat = $(this);
+    let inputVat = jQuery(this);
     let data = {
         action: 'woo_tiny_get_customer',
         vat: inputVat.val()
     };
     if(data.vat.length < 11) return;
-    $.post(woo_tiny.ajax_url, data, function (res) {
+    jQuery.post(woo_tiny.ajax_url, data, function (res) {
         if(res.success === true){
             for (var [key, value] of Object.entries(res.data)) {
                 switch (key){
@@ -51,38 +47,50 @@ $(document).on('keyup blur change', '[name=cpf_cnpj]', function (e) {
                         break;
                 }
                 if(key == 'shipping_postcode'){
-                    $('#has-shipping').attr('checked', false);
-                    $('#has-shipping').trigger('click');
+                    jQuery('#has-shipping').attr('checked', false);
+                    jQuery('#has-shipping').trigger('click');
                 }
                 if(key == 'bw_custom_product_prices'){
-                    $('#canal_venda').attr('data-user-prices', JSON.stringify(value))
+                    jQuery('#canal_venda').attr('data-user-prices', JSON.stringify(value))
                 }
                 if(value!=""){
-                    $('[data-filled=' + key + ']').val(value);
+                    jQuery('[data-filled=' + key + ']').val(value);
                 }
             }
         }
     });
 });
 
-$(document).on('click', '#has-shipping', function (e){
+jQuery(document).on('click', '#has-shipping', function (e){
     this.toggleAttribute('checked');
-   if($(this).is(':checked')){
-       $('#form-shipping').show();
+   if(jQuery(this).is(':checked')){
+       jQuery('#form-shipping').show();
    }else{
-       $('#form-shipping').hide();
-       $('#form-shipping').find('input').each(function (i, el) {
-           $(el).val('');
-           $(el).prop('readonly', false);
+       jQuery('#form-shipping').hide();
+       jQuery('#form-shipping').find('input').each(function (i, el) {
+           jQuery(el).val('');
+           jQuery(el).prop('readonly', false);
        });
    }
 });
+jQuery(document).on('click', '#send-estimate', function (e) {
+    if(jQuery(this).is(':checked')){
+        jQuery('#payment-order').attr('disabled', true).prop('checked', false);
+        jQuery('.estimate-box').show();
+        jQuery('.estimate').attr('disabled', false).prop('required', true);
+        jQuery('.switch-tmce').trigger('click');
+        jQuery('.wp-editor-tools').hide();
+    }else{
+        jQuery('#payment-order').attr('disabled', false);
+        jQuery('.estimate-box').hide();
+        jQuery('.estimate').attr('disabled', true).prop('required', false);
+    }
+});
 
-
-$.fn.extend({
+jQuery.fn.extend({
     limitBonus: function (limit = 5) {
-        let inputQtd = $(this).find('input.qtd');
-        let inputBonus = $(this).find('input.qtd_bonificacao');
+        let inputQtd = jQuery(this).find('input.qtd');
+        let inputBonus = jQuery(this).find('input.qtd_bonificacao');
         let amount = parseInt(inputQtd.val());
         let bonus = parseInt(inputBonus.val());
         inputQtd.val(amount);

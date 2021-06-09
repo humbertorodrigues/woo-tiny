@@ -35,6 +35,7 @@ function woo_tiny_estimate_display_page()
 function woo_tiny_estimate_generate_pdf($estimate_id){
     $estimate = wc_get_order($estimate_id);
     $items = $estimate->get_items();
+    $estimate_doc = get_post_meta($estimate_id, 'estimate', true);
     ob_start();
     include WOO_TINY_DIR . 'templates/pdfs/estimative.php';
     $html = ob_get_clean();
