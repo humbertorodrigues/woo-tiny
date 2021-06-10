@@ -22,9 +22,10 @@ class vendedores
     {
         if (isset($user->roles)) {
             if (in_array("vendedores_bw", $user->roles) !== false || (in_array("bw_supervisor", $user->roles) !== false)) {
-                return site_url("vendedores");
+                $redirect_to =  site_url("vendedores");
             }
         }
+        return $redirect_to;
     }
 
     public function role_vendedores()

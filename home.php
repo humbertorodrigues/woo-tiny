@@ -9,6 +9,8 @@ defined('ABSPATH') or die('No script kiddies please!');
  * License:     GPL v2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  **/
+
+
 // Register new status
 
 define("WOO_TINY_DIR", plugin_dir_path( __FILE__ ));
@@ -101,33 +103,5 @@ function myplugin_update_db_check() {
     }
 }
 add_action( 'plugins_loaded', 'myplugin_update_db_check' );
-
-/*add_filter( 'manage_edit-shop_order_columns', 'set_coluna_codigo_tiny' );
-function set_coluna_codigo_tiny($columns) {
-    
-    $columns['codigo_tiny'] = 'Código tiny';
-
-    return $columns;
-}*/
-
-/*// Add the data to the custom columns for the book post type:
-add_action( 'manage_shop_order_posts_custom_column' , 'mostra_valor_coluna_codigo_tiny', 0, 2 );
-function mostra_valor_coluna_codigo_tiny( $column, $post_id ) {
-    switch ( $column ) {
-
-        case 'codigo_tiny' :
-            $codigo_tiny = get_post_meta( $post_id , 'codigo_tiny' , true );
-            if(!empty($codigo_tiny)){
-
-				echo "<a target=\"_blank\" href=\"https://erp.tiny.com.br/vendas#edit/".$codigo_tiny."\">Ver pedido ($codigo_tiny) </a>";
-			}
-
-			
-			break;
-
-        
-
-    }
-}*/
 
 

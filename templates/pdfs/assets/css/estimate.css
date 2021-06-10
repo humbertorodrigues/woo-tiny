@@ -1,0 +1,26 @@
+body{
+    font-family: sans-serif;
+}
+table.products{
+    width: 100%;
+    font-size: 12px;
+}
+table.products tr th,
+table.products tr td{
+    padding: .5rem;
+}
+table.products,
+table.products tr th,
+table.products tr td{
+    border: solid 1px black;
+    border-collapse: collapse;
+}
+.text-uppercase{
+    text-transform: uppercase !important;
+}
+.bg-dark,
+.bg-dark td{
+    background-color: black !important;
+    color: white !important;
+    font-weight: bold;
+}

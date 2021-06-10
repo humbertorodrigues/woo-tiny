@@ -127,7 +127,6 @@ function woo_tiny_save_order()
         $address['shipping']['company'] = $address['billing']['company'];
         $customer = woo_tiny_save_customer_meta_data(woo_tiny_get_customer_data($address));
         if (!$customer) {
-
             $referer .= set_alert('danger', 'Falha ao processar');
             wp_redirect($referer);
             exit;
@@ -182,9 +181,6 @@ function woo_tiny_save_order()
 
                 $order->update_status("wc-processing", 'Pedido por vendedor', TRUE);
             }*/
-
-
-        woo_tiny_trigger_order_revision_email($order);
         //Temos bonificacao, vamos montar um pedido à parte
         if (array_sum($qtd_bonificacao) > 0) {
             $order_bonificacao = wc_create_order(['status' => 'wc-revision']);
@@ -222,17 +218,28 @@ function woo_tiny_save_order()
                 $order_bonificacao->update_status("wc-processing", 'Pedido por vendedor', TRUE);
             }*/
 
-            woo_tiny_trigger_order_revision_email($order_bonificacao);
+            if(!$_POST['send_estimate']){
+                woo_tiny_trigger_order_revision_email($order_bonificacao);
+            }
         }
         woo_tiny_order_upload_files($order_id, $_FILES['documents']);
         $referer .= $order_id > 0 ? set_alert('success', "Pedido #{$order_id} salvo com sucesso") : set_alert('danger', 'Falha ao processar');
-        if ($_POST['payment_order']) {
-            $query = http_build_query([
-                'pay_for_order' => true,
-                'order-pay' => $order_id,
-                'key' => $order->get_order_key(),
-            ]);
-            $referer = site_url('pagar-pedido?' . $query);
+        if($_POST['send_estimate']){
+            $estimate = $_POST['estimate'];
+            update_post_meta($order_id, 'estimate', $estimate);
+            global $wpdb;
+            $wpdb->update($wpdb->posts, ['post_status' => 'wc-estimate'], ['ID' => $order_id], ['%s'], ['%d']);
+            $referer = admin_url(sprintf('admin.php?page=%s&action=%s&item=%d&_wpnonce=%s', 'woo_tiny_estimates', 'woo_tiny_estimate_show', $order_id, wp_create_nonce('woo_tiny_estimate_nonce')));
+        }else{
+            woo_tiny_trigger_order_revision_email($order);
+            if ($_POST['payment_order']) {
+                $query = http_build_query([
+                    'pay_for_order' => true,
+                    'order-pay' => $order_id,
+                    'key' => $order->get_order_key(),
+                ]);
+                $referer = site_url('pagar-pedido?' . $query);
+            }
         }
         wp_redirect($referer);
     }
