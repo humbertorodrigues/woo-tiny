@@ -1,4 +1,4 @@
-<img src="<?= WOO_TINY_DIR . 'templates/pdfs/assets/images/estimate_header.jpg' ?>">
+<img src="<?= WOO_TINY_DIR . 'templates/pdfs/assets/images/estimate_header.jpg' ?>" alt="">
 <?= $estimate_doc['header'] ?? '' ?>
 <table class="products">
     <thead>
@@ -28,5 +28,4 @@
     </tr>
     </tbody>
 </table>
-<?= $estimate_doc['footer'] ?? '' ?>
-
+<?php echo $estimate_doc['footer'] ?? '';

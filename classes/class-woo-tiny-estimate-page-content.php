@@ -118,7 +118,7 @@ class Woo_Tiny_Estimate_Page_Content extends WP_List_Table
         $estimate_nonce = wp_create_nonce('woo_tiny_estimate_nonce');
         $title = '#' . $item['number'] . '';
         $actions = [
-            'show' => sprintf('<a href="?page=%s&action=%s&item=%d&_wpnonce=%s" target="_blank">Ver</a>', esc_attr($_REQUEST['page']), 'woo_tiny_estimate_show', absint($item['number']), $estimate_nonce),
+            'show' => sprintf('<a href="?page=%s&action=%s&item=%d&_wpnonce=%s">Ver</a>', esc_attr($_REQUEST['page']), 'woo_tiny_estimate_show', absint($item['number']), $estimate_nonce),
             //'edit' => sprintf('<a href="post.php?post=%d&action=edit">Editar</a>', absint($item['number'])),
             'update-status' => sprintf('<a href="?page=%s&action=%s&item=%d&_wpnonce=%s">Transformar em Pedido</a>', esc_attr($_REQUEST['page']), 'woo_tiny_estimate_update_status', absint($item['number']), $estimate_nonce),
             'delete' => sprintf('<a href="?page=%s&action=%s&item=%d&_wpnonce=%s">Excluir</a>', esc_attr($_REQUEST['page']), 'woo_tiny_estimate_delete', absint($item['number']), $estimate_nonce)

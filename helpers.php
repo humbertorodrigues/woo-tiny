@@ -340,3 +340,61 @@ if(!function_exists('rearrange_files')){
         return $file_ary;
     }
 }
+
+if(!function_exists('remove_all_headers')){
+    function remove_all_headers(){
+        if(headers_sent()){
+            foreach(headers_list() as $header){
+                header_remove($header);
+            }
+        }
+    }
+}
+
+if(!function_exists('html_get_contents')){
+    function html_get_contents($path, $data = null){
+        ob_start();
+        $html = '';
+        if(file_exists($path)) {
+            if(is_array($data)){
+                extract($data);
+            }
+            error_reporting(E_ERROR);
+            include $path;
+            $html = ob_get_contents();
+        }
+        ob_clean();
+        ob_end_clean();
+        return $html;
+    }
+}
+if(!function_exists('generate_pdf_by_html')){
+    function generate_pdf_by_html($filename, $html, $output = 'D', $header = '', $footer = '', $stylesheet = '', $title = '', $author = '') {
+        remove_all_headers();
+        ob_clean();
+        $pdf = new \Mpdf\Mpdf();
+        $pdf->SetDisplayMode('fullpage');
+        $pdf->list_indent_first_level = 0;
+        $pdf->allow_charset_conversion = true;
+        $pdf->charset_in='UTF-8';
+        if($title != '') {
+            $pdf->SetTitle(\Mpdf\Utils\UtfString::strcode2utf($title));
+        }
+        if($author != '') {
+            $pdf->SetAuthor(\Mpdf\Utils\UtfString::strcode2utf($author));
+        }
+        if($header != '') {
+            $pdf->SetHTMLHeader($header);
+        }
+        if($footer != '') {
+            $pdf->SetHTMLFooter($footer);
+        }
+        if($stylesheet != '') {
+            $pdf->WriteHTML($stylesheet, 1);
+        }
+        $pdf->WriteHTML(minify_html($html), 2);
+        $pdf->Output($filename, $output)->setContentType('application/pdf');
+        ob_end_flush();
+        exit;
+    }
+}

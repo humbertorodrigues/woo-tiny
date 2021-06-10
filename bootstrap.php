@@ -1,7 +1,8 @@
 <?php
 
-require_once WOO_TINY_DIR . 'third-party/mpdf/vendor/autoload.php';
+require WOO_TINY_DIR . 'third-party/mpdf/vendor/autoload.php';
 
+require WOO_TINY_DIR . 'third-party/php-html-css-js-minifier.php';
 require WOO_TINY_DIR . 'helpers.php';
 
 require WOO_TINY_DIR . 'classes/class-woo-tiny-estimate-page-content.php';
