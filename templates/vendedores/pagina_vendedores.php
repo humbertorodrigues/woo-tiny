@@ -503,13 +503,9 @@ if (!is_user_logged_in()) {
         jQuery('input.upDocuments:first').trigger('click');
     })
     var countElements = 0;
-<<<<<<< HEAD
-    $(document).on('click', 'input.upDocuments', function (e) {
-        $(this).MultiFile({
-=======
+
     jQuery(document).on('click', 'input.upDocuments', function () {
         jQuery(this).MultiFile({
->>>>>>> feature/estimates
             accept: 'pdf|png|jpg|zip',
             STRING: {
                 remove: 'Remover',
