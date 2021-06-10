@@ -30,11 +30,11 @@ jQuery(document).on('keyup blur change', '[name=cpf_cnpj]', function (e) {
         action: 'woo_tiny_get_customer',
         vat: inputVat.val()
     };
-    if(data.vat.length < 11) return;
+    if (data.vat.length < 11) return;
     jQuery.post(woo_tiny.ajax_url, data, function (res) {
-        if(res.success === true){
+        if (res.success === true) {
             for (var [key, value] of Object.entries(res.data)) {
-                switch (key){
+                switch (key) {
                     case 'billing_cnpj':
                     case 'billing_cpf':
                         key = 'billing_vat';
@@ -46,14 +46,14 @@ jQuery(document).on('keyup blur change', '[name=cpf_cnpj]', function (e) {
                     default:
                         break;
                 }
-                if(key == 'shipping_postcode'){
+                if (key == 'shipping_postcode') {
                     jQuery('#has-shipping').attr('checked', false);
                     jQuery('#has-shipping').trigger('click');
                 }
-                if(key == 'bw_custom_product_prices'){
+                if (key == 'bw_custom_product_prices') {
                     jQuery('#canal_venda').attr('data-user-prices', JSON.stringify(value))
                 }
-                if(value!=""){
+                if (value != "") {
                     jQuery('[data-filled=' + key + ']').val(value);
                 }
             }
@@ -61,26 +61,26 @@ jQuery(document).on('keyup blur change', '[name=cpf_cnpj]', function (e) {
     });
 });
 
-jQuery(document).on('click', '#has-shipping', function (e){
+jQuery(document).on('click', '#has-shipping', function (e) {
     this.toggleAttribute('checked');
-   if(jQuery(this).is(':checked')){
-       jQuery('#form-shipping').show();
-   }else{
-       jQuery('#form-shipping').hide();
-       jQuery('#form-shipping').find('input').each(function (i, el) {
-           jQuery(el).val('');
-           jQuery(el).prop('readonly', false);
-       });
-   }
+    if (jQuery(this).is(':checked')) {
+        jQuery('#form-shipping').show();
+    } else {
+        jQuery('#form-shipping').hide();
+        jQuery('#form-shipping').find('input').each(function (i, el) {
+            jQuery(el).val('');
+            jQuery(el).prop('readonly', false);
+        });
+    }
 });
 jQuery(document).on('click', '#send-estimate', function (e) {
-    if(jQuery(this).is(':checked')){
+    if (jQuery(this).is(':checked')) {
         jQuery('#payment-order').attr('disabled', true).prop('checked', false);
         jQuery('.estimate-box').show();
         jQuery('.estimate').attr('disabled', false).prop('required', true);
         jQuery('.switch-tmce').trigger('click');
         jQuery('.wp-editor-tools').hide();
-    }else{
+    } else {
         jQuery('#payment-order').attr('disabled', false);
         jQuery('.estimate-box').hide();
         jQuery('.estimate').attr('disabled', true).prop('required', false);
@@ -105,5 +105,48 @@ jQuery.fn.extend({
         }
         inputBonus.val(0);
         return false;
+    }
+});
+
+jQuery(document).on('change', '#bw_payment_option', function (e) {
+    let installmentValue = jQuery('#bw_payment_option>option:selected').data('bw-order-installments');
+    if (installmentValue === 0) {
+        jQuery('#set-order-installments').hide();
+        jQuery('#input-order-installments').html('');
+    } else {
+        jQuery('#set-order-installments').show();
+    }
+    calcula_subtotal();
+});
+
+jQuery(document).on('click', '.order-installment', function (e) {
+    e.preventDefault();
+    if (jQuery(this).hasClass('add')) {
+        let qtdInputsInstallments = jQuery('#input-order-installments>div').length + 1;
+        let inputDueDate = jQuery('#input-order-installments>div:last-child input').val();
+        let dueDate = new Date();
+        if (inputDueDate !== undefined) {
+            inputDueDate = new Date(Date.parse(inputDueDate));
+            dueDate.setMonth(inputDueDate.getMonth() + 1);
+            if(dueDate.getMonth() === 0){
+                dueDate.setFullYear(inputDueDate.getFullYear() + 1)
+            }else{
+                dueDate.setFullYear(inputDueDate.getFullYear())
+            }
+        }
+        dueDate.setMonth((dueDate.getMonth() + 1));
+        let month = ("0" + dueDate.getMonth()).slice(-2);
+        if(month === '00'){
+            month = '12';
+            dueDate.setFullYear(dueDate.getFullYear() - 1);
+        }
+        dueDate = dueDate.getFullYear() + '-' + month + '-' + dueDate.getDate();
+        jQuery('#input-order-installments').append('<div class="text-right">' +
+            '<label>Parcela ' + qtdInputsInstallments + ': </label>' +
+            '<input type="date" name="bw_order_installments[' + qtdInputsInstallments + '][duedate]" value="' + dueDate + '" required>' +
+            '</div>');
+    } else if (jQuery(this).hasClass('remove')) {
+        jQuery('#input-order-installments>div:last-child').remove();
+    } else {
     }
 });

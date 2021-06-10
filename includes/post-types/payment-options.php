@@ -51,8 +51,6 @@ function woo_tiny_payment_options_meta_save()
 
     $_POST['discount'] = $_POST['discount'] ?? '0';
     $_POST['discount'] = preg_replace('/\D/', '', $_POST['discount']);
-    $_POST['installments'] = $_POST['installments'] ?? '1';
-    $_POST['installments'] = preg_replace('/\D/', '', $_POST['installments']);
     update_post_meta($post->ID, "discount", $_POST['discount']);
     update_post_meta($post->ID, "payment_method", $_POST['payment_method']);
     update_post_meta($post->ID, "installments", $_POST['installments']);

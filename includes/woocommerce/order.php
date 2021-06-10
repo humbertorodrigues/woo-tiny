@@ -149,6 +149,9 @@ function woo_tiny_save_order()
         update_post_meta($order_id, "bw_obs", $obs);
         update_post_meta($order_id, "bw_forma_pagamento_id", $payment_option_id);
         update_post_meta($order_id, "bw_forma_pagamento_descricao", get_the_title($payment_option_id));
+        if(array_key_exists('bw_order_installments', $_POST) && isset($_POST['bw_order_installments'])){
+            update_post_meta($order_id, "bw_order_installments", $_POST['bw_order_installments']);
+        }
 
         $order->add_order_note($obs);
 

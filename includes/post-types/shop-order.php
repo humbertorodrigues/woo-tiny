@@ -65,6 +65,9 @@ function woo_tiny_order_data_seller($order){
     }else {
         include WOO_TINY_DIR . 'templates/post-types/shop-order/meta-seller-data.php';
     }
+    $installments = get_post_meta($order->get_id(), 'bw_order_installments', true);
+    $installments = !empty($installments) ? $installments : [];
+    include WOO_TINY_DIR . 'templates/post-types/shop-order/meta-seller-installments.php';
 }
 
 function woo_tiny_order_save_meta($order_id, $order){

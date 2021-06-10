@@ -13,6 +13,11 @@ jQuery.fn.extend({
     }
 });
 
+jQuery(document).on('click', '.bw-installment-value', function (e) {
+   e.preventDefault();
+    jQuery('.bw-input-yes-no').val(jQuery(this).data('value'));
+});
+
 
 jQuery(document).on('click', '#add-bw-custom-product-price', function (e) {
     e.preventDefault();

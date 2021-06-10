@@ -22,12 +22,14 @@
         </td>
     </tr>
     <tr>
-        <th scope="row"><label for="installments">Parcelas</label></th>
+        <th scope="row"><label>Parcelas</label></th>
         <td>
-            <input name="installments" type="number" min="1" id="installments" value="<?= bw_get_meta_field('installments') ?>"
-                   class="regular-text" required>
+            <div>
+                <span aria-hidden="true" class="bw-installment-value" data-value="0">Não</span>
+                <input type="range" min="0" max="1" id="installments" name="installments" value="<?= bw_get_meta_field('installments') ?>" class="bw-input-yes-no">
+                <span aria-hidden="true" class="bw-installment-value" data-value="1">Sim</span>
+            </div>
             <br>
-            <small>Digite um número inteiro</small>
         </td>
     </tr>
     </tbody>

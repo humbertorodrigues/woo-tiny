@@ -234,18 +234,31 @@ if (!is_user_logged_in()) {
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group">
-                                <label for="">Forma de pagamento</label>
+                                <label for="bw_payment_option">Forma de pagamento</label>
                                 <select class="form-control" name="bw_payment_option" id="bw_payment_option" required>
-                                    <option value="" data-bw-order-discount="0" selected>Escolha uma forma de
+                                    <option value="" data-bw-order-installments="0" data-bw-order-discount="0" selected>
+                                        Escolha uma forma de
                                         pagamento
                                     </option>
-                                    <?php foreach ($payment_options as $payment_option) {
-                                        ?>
+                                    <?php foreach ($payment_options as $payment_option): $payment_option_discount = bw_get_meta_field('discount', $payment_option->ID); ?>
                                         <option value="<?php echo $payment_option->ID ?>"
-                                                data-bw-order-discount="<?= bw_get_meta_field('discount', $payment_option->ID) ?>"><?= $payment_option->post_title . ' (Desconto de ' . bw_get_meta_field('discount', $payment_option->ID) . '%)' ?></option>
-                                        <?php
-                                    } ?>
+                                                data-bw-order-installments="<?= bw_get_meta_field('installments', $payment_option->ID) ?>"
+                                                data-bw-order-discount="<?= $payment_option_discount ?>">
+                                            <?= $payment_option->post_title . ' (Desconto de ' . $payment_option_discount . '%)' ?></option>
+                                    <?php endforeach; ?>
                                 </select>
+                                <div id="set-order-installments" style="display: none">
+                                    <div class="btn-group-sm mt-3 text-right">
+                                        <button type="button"
+                                                class="btn btn-outline-danger btn-sm order-installment remove">-
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-outline-primary btn-sm order-installment add">+
+                                        </button>
+                                    </div>
+                                    <div class="row mt-3" id="input-order-installments">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -273,14 +286,10 @@ if (!is_user_logged_in()) {
                         <div class="col-lg-10">
                             <div class="form-group">
                                 <select class="form-control" id="produto">
-                                    <?php
-                                    foreach ($produtos as $key => $produto) {
-                                        ?>
+                                    <?php foreach ($produtos as $key => $produto): ?>
                                         <option data-descricao="<?php echo $produto->get_title() ?>"
                                                 value="<?php echo $produto->get_id() ?>"><?php echo $produto->get_title() ?></option>
-                                        <?php
-                                    }
-                                    ?>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
@@ -313,7 +322,7 @@ if (!is_user_logged_in()) {
                             </tr>
                             </thead>
                             <?php
-                            foreach ($produtos as $key => $produto) {
+                            foreach ($produtos as $key => $produto):
                                 if (stripos($produto->get_title(), "kit") !== false || stripos($produto->get_title(), "let's") !== false) {
                                     continue;
                                 }
@@ -360,9 +369,7 @@ if (!is_user_logged_in()) {
                                 </tr>
 
 
-                                <?php
-                            }
-                            ?>
+                            <?php endforeach; ?>
                             <tbody>
 
 
@@ -538,10 +545,6 @@ if (!is_user_logged_in()) {
                 jQuery("#preco_unitario_" + id_produto).attr('min', finalPrice);
             }
         }
-        calcula_subtotal();
-    })
-
-    jQuery(document).on('change', '#bw_payment_option', function () {
         calcula_subtotal();
     })
 

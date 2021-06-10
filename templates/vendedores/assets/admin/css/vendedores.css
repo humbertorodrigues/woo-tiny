@@ -1,21 +1,35 @@
-.container.bw-custom-product-price{
+.container.bw-custom-product-price {
     display: flex;
     column-gap: 1rem;
 }
-.col.bw-custom-product-price{
+
+.col.bw-custom-product-price {
     max-width: 50%;
     background-color: white;
     padding: 1rem;
 }
-.input.bw-custom-product-price{
+
+.input.bw-custom-product-price {
     width: 100%;
 }
-.input.bw-custom-product-price#new_price{
+
+.input.bw-custom-product-price#new_price {
     text-align: right;
 }
-.button-container.bw-custom-product-price{
+
+.button-container.bw-custom-product-price {
     display: flex;
 }
-.button-container.bw-custom-product-price .button{
+
+.button-container.bw-custom-product-price .button {
     margin-left: auto;
+}
+
+input.bw-input-yes-no {
+    width: 35px;
+    height: 25px;
+}
+
+span.bw-installment-value{
+    cursor: pointer;
 }
