@@ -4,7 +4,7 @@
     <thead>
     <tr>
         <th class="text-uppercase">Produto</th>
-        <th class="text-uppercase">Preço Cheio B2B</th>
+        <th class="text-uppercase">Valor</th>
         <th class="text-uppercase">Quantidade (un)</th>
         <th class="text-uppercase">Total</th>
     </tr>
