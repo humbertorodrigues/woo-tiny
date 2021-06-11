@@ -15,8 +15,11 @@ require WOO_TINY_DIR . 'includes/media.php';
 require WOO_TINY_DIR . 'includes/woocommerce/order.php';
 require WOO_TINY_DIR . 'includes/woocommerce/customer.php';
 require WOO_TINY_DIR . 'includes/woocommerce/coupon.php';
-require WOO_TINY_DIR . 'includes/woocommerce/emails.php';
+require WOO_TINY_DIR . 'includes/woocommerce/email.php';
 require WOO_TINY_DIR . 'includes/woocommerce/estimate.php';
+require WOO_TINY_DIR . 'includes/woocommerce/report.php';
+require WOO_TINY_DIR . 'includes/woocommerce/analytic.php';
+require WOO_TINY_DIR . 'includes/woocommerce/seller.php';
 
 
 require WOO_TINY_DIR . 'includes/post-types/payment-options.php';
