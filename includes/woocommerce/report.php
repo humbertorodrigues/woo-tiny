@@ -37,8 +37,10 @@ function woo_tiny_admin_reports($reports)
             'callback' => ['WC_Admin_Reports', 'get_report'],
         ],
     ];
-    $reports_orders = array_chunk($reports['orders']['reports'], 3, true);
-    $reports['orders']['reports'] = array_merge(array_shift($reports_orders), $woo_tiny_reports_orders, ...$reports_orders);
+    if(isset($reports['orders'])) {
+        $reports_orders = array_chunk($reports['orders']['reports'], 3, true);
+        $reports['orders']['reports'] = array_merge(array_shift($reports_orders), $woo_tiny_reports_orders, ...$reports_orders);
+    }
 
     return $reports;
 }

@@ -19,19 +19,12 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
      */
     public $chart_colours = array();
 
-    /**
-     * Product ids.
-     *
-     * @var array
-     */
-    public $seller_ids = array();
 
-    /**
-     * Product ids with titles.
-     *
-     * @var array
-     */
-    public $seller_ids_titles = array();
+    public $seller_id;
+
+
+    public $seller_id_title;
+
 
     /**
      * Constructor.
@@ -40,11 +33,10 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
     {
         // @codingStandardsIgnoreStart
         if (isset($_GET['seller_id'])) {
-            $this->seller_ids = array_filter(array(absint($_GET['seller_id'])));
+            $this->seller_id = absint($_GET['seller_id']);
         } else {
-            $this->seller_ids = array_filter(array_map(function ($seller) {
-                return absint($seller->ID);
-            }, get_users(['role__in' => ['vendedores_bw']])));
+            $sellers = get_users(['role__in' => ['vendedores_bw']]);
+            $this->seller_id = absint($sellers[0]->ID);
         }
         // @codingStandardsIgnoreEnd
     }
@@ -57,7 +49,7 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
     public function get_chart_legend()
     {
 
-        if (empty($this->seller_ids)) {
+        if (empty($this->seller_id)) {
             return [];
         }
 
@@ -67,40 +59,58 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
             'query_type' => 'get_var',
             'filter_range' => true,
             'order_status' => ['completed', 'processing', 'on-hold', 'refunded', 'revision'],
-        ];
-        $total_sales = $this->get_order_report_data(array_merge($query, [
-            'data' => [
-                '_line_total' => [
-                    'type' => 'order_item_meta',
-                    'order_item_type' => 'line_item',
-                    'function' => 'SUM',
-                    'name' => 'order_item_amount',
+            'where_meta' => [
+                [
+                    'meta_key' => 'bw_id_vendedor',
+                    'meta_value' => $this->seller_id,
+                    'operator' => '=',
                 ],
             ],
-        ]));
+            'debug' => false,
+        ];
+        $total_sales = $this->get_order_report_data(array_merge_recursive($query, [
+                'data' => [
+                    '_order_total' => [
+                        'type' => 'meta',
+                        'function' => 'SUM',
+                        'name' => 'total_sales',
+                    ],
+                    'post_date' => [
+                        'type' => 'post_data',
+                        'function' => '',
+                        'name' => 'post_date',
+                    ],
+                ]
+            ]
+        ));
 
         $total_items = absint(
-            $this->get_order_report_data(array_merge($query, [
+            $this->get_order_report_data(array_merge_recursive($query, [
                 'data' => [
-                    '_qty' => [
-                        'type' => 'order_item_meta',
-                        'order_item_type' => 'line_item',
-                        'function' => 'SUM',
-                        'name' => 'order_item_count',
+                    'ID' => [
+                        'type' => 'post_data',
+                        'function' => 'COUNT',
+                        'name' => 'count',
+                        'distinct' => true,
+                    ],
+                    'post_date' => [
+                        'type' => 'post_data',
+                        'function' => '',
+                        'name' => 'post_date',
                     ],
                 ],
             ])));
 
         $legend[] = array(
             /* translators: %s: total items sold */
-            'title' => sprintf(__('%s sales for the selected items', 'woocommerce'), '<strong>' . wc_price($total_sales) . '</strong>'),
+            'title' => sprintf(__('%s gross sales in this period', 'woocommerce'), '<strong>' . wc_price($total_sales) . '</strong>'),
             'color' => $this->chart_colours['sales_amount'],
             'highlight_series' => 1,
         );
 
         $legend[] = array(
             /* translators: %s: total items purchased */
-            'title' => sprintf(__('%s purchases for the selected items', 'woocommerce'), '<strong>' . ($total_items) . '</strong>'),
+            'title' => sprintf(__('%s orders placed', 'woocommerce'), '<strong>' . ($total_items) . '</strong>'),
             'color' => $this->chart_colours['item_count'],
             'highlight_series' => 0,
         );
@@ -153,37 +163,7 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
             'callback' => array($this, 'sellers_widget'),
         );
 
-        if (!empty($this->seller_ids)) {
-            $widgets[] = array(
-                'title' => __('Showing reports for:', 'woocommerce'),
-                'callback' => array($this, 'current_filters'),
-            );
-        }
-
         return $widgets;
-    }
-
-    /**
-     * Output current filters.
-     */
-    public function current_filters()
-    {
-
-        $this->seller_ids_titles = array();
-
-        foreach ($this->seller_ids as $seller_id) {
-
-            $seller = get_user_by('ID', $seller_id);
-
-            if ($seller) {
-                $this->seller_ids_titles[] = $seller->display_name;
-            } else {
-                $this->seller_ids_titles[] = '#' . $seller_id;
-            }
-        }
-
-        echo '<p><strong>' . implode('</strong></p><hr><p><strong>', $this->seller_ids_titles) . '</strong></p>';
-        echo '<p><a class="button" href="' . esc_url(remove_query_arg('seller_id')) . '">' . esc_html__('Reset', 'woocommerce') . '</a></p>';
     }
 
     /**
@@ -201,7 +181,7 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
                     ?>
                     <select class="regular-text" style="width:203px;" id="seller_id" name="seller_id">
                         <?php foreach ($sellers as $seller): ?>
-                            <option value="<?= $seller->ID ?>"><?= $seller->display_name ?></option>
+                            <option value="<?= $seller->ID ?>"<?= (!empty($_GET['seller_id']) && $_GET['seller_id'] == $seller->ID) ? 'selected' : '' ?>><?= $seller->display_name ?></option>
                         <?php endforeach; ?>
                     </select>
                     <button type="submit" class="submit button"
@@ -250,93 +230,70 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
     {
         global $wp_locale;
 
-        if (empty($this->seller_ids)) {
+        if (empty($this->seller_id)) {
             ?>
             <div class="chart-container">
                 <p class="chart-prompt"><?php esc_html_e('Choose a seller to view stats', 'woocommerce'); ?></p>
             </div>
             <?php
         } else {
+            $query = [
+                'debug' => false,
+                'group_by' => 'bw_id_vendedor,' . $this->group_by_query,
+                'order_by' => 'post_date ASC',
+                'query_type' => 'get_results',
+                'filter_range' => true,
+                'order_status' => ['completed', 'processing', 'on-hold', 'refunded', 'revision'],
+                'where_meta' => [
+                    [
+                        'meta_key' => 'bw_id_vendedor',
+                        'meta_value' => [$this->seller_id],
+                        'operator' => 'IN',
+                    ],
+                ],
+                'data' => [
+                    'bw_id_vendedor' => [
+                        'type' => 'meta',
+                        'function' => '',
+                        'name' => 'bw_id_vendedor',
+                    ],
+                ],
+            ];
             // Get orders and dates in range - we want the SUM of order totals, COUNT of order items, COUNT of orders, and the date.
-            $order_item_counts = $this->get_order_report_data(
-                array(
-                    'data' => array(
-                        '_qty' => array(
-                            'type' => 'order_item_meta',
-                            'order_item_type' => 'line_item',
-                            'function' => 'SUM',
-                            'name' => 'order_item_count',
-                        ),
-                        'post_date' => array(
-                            'type' => 'post_data',
-                            'function' => '',
-                            'name' => 'post_date',
-                        ),
-                        'bw_id_vendedor' => array(
-                            'type' => 'order_item_meta',
-                            'order_item_type' => 'line_item',
-                            'function' => '',
-                            'name' => 'seller_id',
-                        ),
-                    ),
-                    'where_meta' => array(
-                        'relation' => 'OR',
-                        array(
-                            'type' => 'order_item_meta',
-                            'meta_key' => 'bw_id_vendedor', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-                            'meta_value' => $this->seller_ids, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-                            'operator' => 'IN',
-                        ),
-                    ),
-                    'group_by' => 'seller_id,' . $this->group_by_query,
-                    'order_by' => 'post_date ASC',
-                    'query_type' => 'get_results',
-                    'filter_range' => true,
-                    'order_status' => array('completed', 'processing', 'on-hold', 'refunded'),
-                )
-            );
+            $order_item_counts = $this->get_order_report_data(array_merge_recursive($query, [
+                'data' => [
+                    'ID' => [
+                        'type' => 'post_data',
+                        'function' => 'COUNT',
+                        'name' => 'count_sales',
+                        //'distinct' => true,
+                    ],
+                    'post_date' => [
+                        'type' => 'post_data',
+                        'function' => '',
+                        'name' => 'post_date',
+                    ]
+                ],
+            ]));
 
-            $order_item_amounts = $this->get_order_report_data(
-                array(
-                    'data' => array(
-                        '_line_total' => array(
-                            'type' => 'order_item_meta',
-                            'order_item_type' => 'line_item',
-                            'function' => 'SUM',
-                            'name' => 'order_item_amount',
-                        ),
-                        'post_date' => array(
-                            'type' => 'post_data',
-                            'function' => '',
-                            'name' => 'post_date',
-                        ),
-                        '_seller_id' => array(
-                            'type' => 'order_item_meta',
-                            'order_item_type' => 'line_item',
-                            'function' => '',
-                            'name' => 'seller_id',
-                        ),
-                    ),
-                    'where_meta' => array(
-                        'relation' => 'OR',
-                        array(
-                            'type' => 'order_item_meta',
-                            'meta_key' => array('_seller_id', '_variation_id'), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-                            'meta_value' => $this->seller_ids, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-                            'operator' => 'IN',
-                        ),
-                    ),
-                    'group_by' => 'seller_id, ' . $this->group_by_query,
-                    'order_by' => 'post_date ASC',
-                    'query_type' => 'get_results',
-                    'filter_range' => true,
-                    'order_status' => array('completed', 'processing', 'on-hold', 'refunded'),
-                )
-            );
+            $order_item_amounts = $this->get_order_report_data(array_merge_recursive($query, [
+                'data' => [
+                    '_order_total' => [
+                        'type' => 'meta',
+                        'function' => 'SUM',
+                        'name' => 'total_sales',
+                    ],
+                    'post_date' => [
+                        'type' => 'post_data',
+                        'function' => '',
+                        'name' => 'post_date',
+                    ],
+                ]
+            ]));
 
             // Prepare data for report.
-            $order_item_counts = $this->prepare_chart_data($order_item_counts, 'post_date', 'order_item_count', $this->chart_interval, $this->start_date, $this->chart_groupby);
-            $order_item_amounts = $this->prepare_chart_data($order_item_amounts, 'post_date', 'order_item_amount', $this->chart_interval, $this->start_date, $this->chart_groupby);
+            $order_item_counts = $this->prepare_chart_data($order_item_counts, 'post_date', 'count_sales', $this->chart_interval, $this->start_date, $this->chart_groupby);
+            $order_item_amounts = $this->prepare_chart_data($order_item_amounts, 'post_date', 'total_sales', $this->chart_interval, $this->start_date, $this->chart_groupby);
 
             // Encode in json format.
             $chart_data = wp_json_encode(
