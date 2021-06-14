@@ -10,7 +10,7 @@ defined('ABSPATH') or die('No script kiddies please!');
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  **/
 
-
+error_reporting(E_ALL & ~E_NOTICE);
 // Register new status
 
 define("WOO_TINY_DIR", plugin_dir_path( __FILE__ ));
