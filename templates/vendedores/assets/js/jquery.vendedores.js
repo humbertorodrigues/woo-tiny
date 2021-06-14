@@ -2,7 +2,9 @@
 jQuery(document).on('change', '[data-product-id]', function (e) {
     e.preventDefault();
     let target = jQuery(e.target);
-    let limitBonus = jQuery(this).limitBonus();
+    if(jQuery('#woo-tiny-seller').length === 0) {
+        let limitBonus = jQuery(this).limitBonus();
+    }
     calcula_subtotal();
 });
 

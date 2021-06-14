@@ -132,58 +132,62 @@ function woo_tiny_save_order()
             exit;
         }
 
-        // Now we create the order
-        $order = wc_create_order([
-            'status' => 'wc-revision',
-            'customer_id' => $customer->get_id()
-        ]);
+        if(array_sum($qtd) > 0) {
 
-        $order_id = $order->get_id();
+            // Now we create the order
+            $order = wc_create_order([
+                'status' => 'wc-revision',
+                'customer_id' => $customer->get_id()
+            ]);
 
-        update_post_meta($order_id, "bw_codigo", $codigo);
-        update_post_meta($order_id, "bw_id_vendedor", $user_id);
-        update_post_meta($order_id, "bw_rg_inscricao", $rg_inscricao);
-        update_post_meta($order_id, "bw_nome_contato", $nome_contato);
-        update_post_meta($order_id, "bw_canal_venda", $canal_venda);
-        update_post_meta($order_id, "bw_canal_venda_descricao", get_the_title($canal_venda));
-        update_post_meta($order_id, "bw_obs", $obs);
-        update_post_meta($order_id, "bw_forma_pagamento_id", $payment_option_id);
-        update_post_meta($order_id, "bw_forma_pagamento_descricao", get_the_title($payment_option_id));
-        if(array_key_exists('bw_order_installments', $_POST) && isset($_POST['bw_order_installments'])){
-            update_post_meta($order_id, "bw_order_installments", $_POST['bw_order_installments']);
-        }
+            $order_id = $order->get_id();
 
-        $order->add_order_note($obs);
-
-
-        // // The add_product() function below is located in /plugins/woocommerce/includes/abstracts/abstract_wc_order.php
-
-        foreach ($id_produto as $key_produto => $produto) {
-            if ($qtd[$key_produto] == 0) {
-                continue;
+            update_post_meta($order_id, "bw_codigo", $codigo);
+            update_post_meta($order_id, "bw_id_vendedor", $user_id);
+            update_post_meta($order_id, "bw_rg_inscricao", $rg_inscricao);
+            update_post_meta($order_id, "bw_nome_contato", $nome_contato);
+            update_post_meta($order_id, "bw_canal_venda", $canal_venda);
+            update_post_meta($order_id, "bw_canal_venda_descricao", get_the_title($canal_venda));
+            update_post_meta($order_id, "bw_obs", $obs);
+            update_post_meta($order_id, "bw_forma_pagamento_id", $payment_option_id);
+            update_post_meta($order_id, "bw_forma_pagamento_descricao", get_the_title($payment_option_id));
+            if (array_key_exists('bw_order_installments', $_POST) && isset($_POST['bw_order_installments'])) {
+                update_post_meta($order_id, "bw_order_installments", $_POST['bw_order_installments']);
             }
 
-            $produto_add = wc_get_product($produto);
-            $produto_add->set_price($preco_unitario[$key_produto]);
+            $order->add_order_note($obs);
 
-            $order->add_product($produto_add, $qtd[$key_produto]);
+            // // The add_product() function below is located in /plugins/woocommerce/includes/abstracts/abstract_wc_order.php
+
+            foreach ($id_produto as $key_produto => $produto) {
+                if ($qtd[$key_produto] == 0) {
+                    continue;
+                }
+
+                $produto_add = wc_get_product($produto);
+                $produto_add->set_price($preco_unitario[$key_produto]);
+
+                $order->add_product($produto_add, $qtd[$key_produto]);
+            }
+            $order->set_address($address['billing'], 'billing');
+            $order->set_address($address['shipping'], 'shipping');
+            // //
+
+            if (isset($_POST['coupon'])) {
+                $order->apply_coupon($_POST['coupon']);
+            }
+
+            $order->calculate_totals();
+
+            /*if(isset($_POST['revisao'])){
+                    $order->update_status("wc-pending", 'Pedido por vendedor', TRUE);
+                }else{
+
+                    $order->update_status("wc-processing", 'Pedido por vendedor', TRUE);
+                }*/
         }
-        $order->set_address($address['billing'], 'billing');
-        $order->set_address($address['shipping'], 'shipping');
-        // //
 
-        if (isset($_POST['coupon'])) {
-            $order->apply_coupon($_POST['coupon']);
-        }
-
-        $order->calculate_totals();
-
-        /*if(isset($_POST['revisao'])){
-                $order->update_status("wc-pending", 'Pedido por vendedor', TRUE);
-            }else{
-
-                $order->update_status("wc-processing", 'Pedido por vendedor', TRUE);
-            }*/
+        if(empty($order_id)) $order_id = 0;
         //Temos bonificacao, vamos montar um pedido à parte
         if (array_sum($qtd_bonificacao) > 0) {
             $order_bonificacao = wc_create_order(['status' => 'wc-revision']);
@@ -196,6 +200,8 @@ function woo_tiny_save_order()
             update_post_meta($order_bonificacao_id, "bw_canal_venda", $canal_venda);
             update_post_meta($order_bonificacao_id, "bw_canal_venda_descricao", get_the_title($canal_venda));
             update_post_meta($order_bonificacao_id, "bw_bonificacao_pedido_pai", $order_id);
+            update_post_meta($order_bonificacao_id, "bw_forma_pagamento_id", $payment_option_id);
+            update_post_meta($order_bonificacao_id, "bw_forma_pagamento_descricao", get_the_title($payment_option_id));
 
             $order_bonificacao->add_order_note($obs);
 
@@ -225,24 +231,28 @@ function woo_tiny_save_order()
                 woo_tiny_trigger_order_revision_email($order_bonificacao);
             }
         }
-        woo_tiny_order_upload_files($order_id, $_FILES['documents']);
-        $referer .= $order_id > 0 ? set_alert('success', "Pedido #{$order_id} salvo com sucesso") : set_alert('danger', 'Falha ao processar');
-        if($_POST['send_estimate']){
-            $estimate = $_POST['estimate'];
-            update_post_meta($order_id, 'estimate', $estimate);
-            global $wpdb;
-            $wpdb->update($wpdb->posts, ['post_status' => 'wc-estimate'], ['ID' => $order_id], ['%s'], ['%d']);
-            $referer = admin_url(sprintf('admin.php?page=%s&action=%s&item=%d&_wpnonce=%s', 'woo_tiny_estimates', 'woo_tiny_estimate_show', $order_id, wp_create_nonce('woo_tiny_estimate_nonce')));
-        }else{
-            woo_tiny_trigger_order_revision_email($order);
-            if ($_POST['payment_order']) {
-                $query = http_build_query([
-                    'pay_for_order' => true,
-                    'order-pay' => $order_id,
-                    'key' => $order->get_order_key(),
-                ]);
-                $referer = site_url('pagar-pedido?' . $query);
+        if($order_id > 0) {
+            woo_tiny_order_upload_files($order_id, $_FILES['documents']);
+            $referer .= $order_id > 0 ? set_alert('success', "Pedido #{$order_id} salvo com sucesso") : set_alert('danger', 'Falha ao processar');
+            if ($_POST['send_estimate']) {
+                $estimate = $_POST['estimate'];
+                update_post_meta($order_id, 'estimate', $estimate);
+                global $wpdb;
+                $wpdb->update($wpdb->posts, ['post_status' => 'wc-estimate'], ['ID' => $order_id], ['%s'], ['%d']);
+                $referer = admin_url(sprintf('admin.php?page=%s&action=%s&item=%d&_wpnonce=%s', 'woo_tiny_estimates', 'woo_tiny_estimate_show', $order_id, wp_create_nonce('woo_tiny_estimate_nonce')));
+            } else {
+                woo_tiny_trigger_order_revision_email($order);
+                if ($_POST['payment_order']) {
+                    $query = http_build_query([
+                        'pay_for_order' => true,
+                        'order-pay' => $order_id,
+                        'key' => $order->get_order_key(),
+                    ]);
+                    $referer = site_url('pagar-pedido?' . $query);
+                }
             }
+        }else{
+            $referer .= $order_bonificacao_id > 0 ? set_alert('success', "Bonificação #{$order_bonificacao_id} salvo com sucesso") : set_alert('danger', 'Falha ao processar');
         }
         wp_redirect($referer);
     }
