@@ -48,7 +48,7 @@
             <tr>
                 <th scope="row"><label for="new_price">Novo preço</label></th>
                 <td>
-                    <input type="text" id="new_price" class="regular-text input bw-custom-product-price">
+                    <input type="text" id="new_price" class="regular-text input bw-custom-product-price" placeholder="0,00">
                 </td>
             </tr>
             <tr>

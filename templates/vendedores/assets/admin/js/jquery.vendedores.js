@@ -14,7 +14,7 @@ jQuery.fn.extend({
 });
 
 jQuery(document).on('click', '.bw-installment-value', function (e) {
-   e.preventDefault();
+    e.preventDefault();
     jQuery('.bw-input-yes-no').val(jQuery(this).data('value'));
 });
 
@@ -55,6 +55,10 @@ jQuery(document).on('click', '#delete-bw-custom-product-price', function (e) {
         }
     });
 });
-if(jQuery('#content-bw-custom-product-price').length > 0) {
+if (jQuery('#content-bw-custom-product-price').length > 0) {
     jQuery('#content-bw-custom-product-price').bwLoadContentAdmin();
 }
+
+jQuery(document).on('keyup blur', '.bw-custom-product-price', function (e) {
+    jQuery(this).maskMoney({thousands:'.', decimal:',', affixesStay: false});
+});
