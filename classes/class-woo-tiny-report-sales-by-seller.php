@@ -20,10 +20,10 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
     public $chart_colours = array();
 
 
-    public $seller_id;
+    public $seller_ids = [];
 
 
-    public $seller_id_title;
+    public $seller_ids_titles = [];
 
 
     /**
@@ -32,11 +32,10 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
     public function __construct()
     {
         // @codingStandardsIgnoreStart
-        if (isset($_GET['seller_id'])) {
-            $this->seller_id = absint($_GET['seller_id']);
-        } else {
-            $sellers = get_users(['role__in' => ['vendedores_bw']]);
-            $this->seller_id = absint($sellers[0]->ID);
+        if ( isset( $_GET['seller_ids'] ) && is_array( $_GET['seller_ids'] ) ) {
+            $this->seller_ids = array_filter( array_map( 'absint', $_GET['seller_ids'] ) );
+        } elseif ( isset( $_GET['seller_ids'] ) ) {
+            $this->seller_ids = array_filter( array( absint( $_GET['seller_ids'] ) ) );
         }
         // @codingStandardsIgnoreEnd
     }
@@ -49,7 +48,7 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
     public function get_chart_legend()
     {
 
-        if (empty($this->seller_id)) {
+        if (empty($this->seller_ids)) {
             return [];
         }
 
@@ -62,8 +61,8 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
             'where_meta' => [
                 [
                     'meta_key' => 'bw_id_vendedor',
-                    'meta_value' => $this->seller_id,
-                    'operator' => '=',
+                    'meta_value' => $this->seller_ids,
+                    'operator' => 'IN',
                 ],
             ],
             'debug' => false,
@@ -163,7 +162,30 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
             'callback' => array($this, 'sellers_widget'),
         );
 
+        if (!empty($this->seller_ids)) {
+            $widgets[] = array(
+                'title' => __('Showing reports for:', 'woocommerce'),
+                'callback' => array($this, 'current_filters'),
+            );
+        }
+
         return $widgets;
+    }
+
+    public function current_filters()
+    {
+        $this->seller_ids_titles = [];
+        foreach ($this->seller_ids as $seller_id){
+            $seller = get_userdata($seller_id);
+            if ($seller) {
+                $this->seller_ids_titles[] = $seller->display_name;
+            } else {
+                $this->seller_ids_titles[] = '#' . $seller_id;
+            }
+        }
+
+        echo '<p><strong>' . implode(', ', $this->seller_ids_titles) . '</strong></p>';
+        echo '<p><a class="button" href="' . esc_url(remove_query_arg('seller_ids')) . '">' . esc_html__('Reset', 'woocommerce') . '</a></p>';
     }
 
     /**
@@ -179,11 +201,13 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
                 <div>
                     <?php // @codingStandardsIgnoreStart
                     ?>
-                    <select class="regular-text" style="width:203px;" id="seller_id" name="seller_id">
+                    <select class="wc-enhanced-select" multiple="multiple" data-placeholder="Selecionar vendedores..." style="width:203px;" id="seller_ids" name="seller_ids[]">
                         <?php foreach ($sellers as $seller): ?>
-                            <option value="<?= $seller->ID ?>"<?= (!empty($_GET['seller_id']) && $_GET['seller_id'] == $seller->ID) ? 'selected' : '' ?>><?= $seller->display_name ?></option>
+                            <option value="<?= $seller->ID ?>"<?= (!empty($_GET['seller_ids']) && $_GET['seller_ids'] == $seller->ID) ? 'selected' : '' ?>><?= $seller->display_name ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <a href="#" class="select_none"><?php esc_html_e( 'None', 'woocommerce' ); ?></a>
+                    <a href="#" class="select_all"><?php esc_html_e( 'All', 'woocommerce' ); ?></a>
                     <button type="submit" class="submit button"
                             value="<?php esc_attr_e('Show', 'woocommerce'); ?>"><?php esc_html_e('Show', 'woocommerce'); ?></button>
                     <input type="hidden" name="range"
@@ -202,6 +226,22 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
                     <?php // @codingStandardsIgnoreEnd
                     ?>
                 </div>
+                <script type="text/javascript">
+                    jQuery(function(){
+                        // Select all/None
+                        jQuery( '.chart-widget' ).on( 'click', '.select_all', function() {
+                            jQuery(this).closest( 'div' ).find( 'select option' ).attr( 'selected', 'selected' );
+                            jQuery(this).closest( 'div' ).find('select').change();
+                            return false;
+                        });
+
+                        jQuery( '.chart-widget').on( 'click', '.select_none', function() {
+                            jQuery(this).closest( 'div' ).find( 'select option' ).removeAttr( 'selected' );
+                            jQuery(this).closest( 'div' ).find('select').change();
+                            return false;
+                        });
+                    });
+                </script>
             </form>
         </div>
         <?php
@@ -230,10 +270,10 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
     {
         global $wp_locale;
 
-        if (empty($this->seller_id)) {
+        if (empty($this->seller_ids)) {
             ?>
             <div class="chart-container">
-                <p class="chart-prompt"><?php esc_html_e('Choose a seller to view stats', 'woocommerce'); ?></p>
+                <p class="chart-prompt">Escolha um vendedor para ver as estatísticas</p>
             </div>
             <?php
         } else {
@@ -247,7 +287,7 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
                 'where_meta' => [
                     [
                         'meta_key' => 'bw_id_vendedor',
-                        'meta_value' => [$this->seller_id],
+                        'meta_value' => $this->seller_ids,
                         'operator' => 'IN',
                     ],
                 ],

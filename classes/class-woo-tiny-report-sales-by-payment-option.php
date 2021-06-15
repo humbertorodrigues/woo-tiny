@@ -205,11 +205,13 @@ class WC_Report_Woo_Tiny_Sales_By_Payment_Option extends WC_Admin_Report
                 <div>
                     <?php // @codingStandardsIgnoreStart
                     ?>
-                    <select class="regular-text" style="width:203px;" id="payment_method_ids" name="payment_method_ids[]">
+                    <select class="wc-enhanced-select" multiple="multiple" data-placeholder="Selecionar formas de pag..." style="width:203px;" id="payment_method_ids" name="payment_method_ids[]">
                         <?php foreach ($payment_methods as $payment_method): ?>
                             <option value="<?= $payment_method->ID ?>"<?= (in_array($payment_method->ID, $this->payment_method_ids)) ? 'selected' : '' ?>><?= $payment_method->post_title ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <a href="#" class="select_none"><?php esc_html_e( 'None', 'woocommerce' ); ?></a>
+                    <a href="#" class="select_all"><?php esc_html_e( 'All', 'woocommerce' ); ?></a>
                     <button type="submit" class="submit button"
                             value="<?php esc_attr_e('Show', 'woocommerce'); ?>"><?php esc_html_e('Show', 'woocommerce'); ?></button>
                     <input type="hidden" name="range"
@@ -228,6 +230,22 @@ class WC_Report_Woo_Tiny_Sales_By_Payment_Option extends WC_Admin_Report
                     <?php // @codingStandardsIgnoreEnd
                     ?>
                 </div>
+                <script type="text/javascript">
+                    jQuery(function(){
+                        // Select all/None
+                        jQuery( '.chart-widget' ).on( 'click', '.select_all', function() {
+                            jQuery(this).closest( 'div' ).find( 'select option' ).attr( 'selected', 'selected' );
+                            jQuery(this).closest( 'div' ).find('select').change();
+                            return false;
+                        });
+
+                        jQuery( '.chart-widget').on( 'click', '.select_none', function() {
+                            jQuery(this).closest( 'div' ).find( 'select option' ).removeAttr( 'selected' );
+                            jQuery(this).closest( 'div' ).find('select').change();
+                            return false;
+                        });
+                    });
+                </script>
             </form>
         </div>
         <?php
@@ -259,7 +277,7 @@ class WC_Report_Woo_Tiny_Sales_By_Payment_Option extends WC_Admin_Report
         if (empty($this->payment_method_ids)) {
             ?>
             <div class="chart-container">
-                <p class="chart-prompt"><?php esc_html_e('Choose a channel to view stats', 'woocommerce'); ?></p>
+                <p class="chart-prompt">Escolha uma forma de pagamento para ver as estatísticas</p>
             </div>
             <?php
         } else {

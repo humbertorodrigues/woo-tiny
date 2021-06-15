@@ -205,11 +205,13 @@ class WC_Report_Woo_Tiny_Sales_By_Channel extends WC_Admin_Report
                 <div>
                     <?php // @codingStandardsIgnoreStart
                     ?>
-                    <select class="regular-text" style="width:203px;" id="channel_ids" name="channel_ids[]">
+                    <select class="wc-enhanced-select" multiple="multiple" data-placeholder="Selecionar canais..." style="width:203px;" id="channel_ids" name="channel_ids[]">
                         <?php foreach ($channels as $channel): ?>
                             <option value="<?= $channel->ID ?>"<?= (in_array($channel->ID, $this->channel_ids)) ? 'selected' : '' ?>><?= $channel->post_title ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <a href="#" class="select_none"><?php esc_html_e( 'None', 'woocommerce' ); ?></a>
+                    <a href="#" class="select_all"><?php esc_html_e( 'All', 'woocommerce' ); ?></a>
                     <button type="submit" class="submit button"
                             value="<?php esc_attr_e('Show', 'woocommerce'); ?>"><?php esc_html_e('Show', 'woocommerce'); ?></button>
                     <input type="hidden" name="range"
@@ -228,6 +230,22 @@ class WC_Report_Woo_Tiny_Sales_By_Channel extends WC_Admin_Report
                     <?php // @codingStandardsIgnoreEnd
                     ?>
                 </div>
+                <script type="text/javascript">
+                    jQuery(function(){
+                        // Select all/None
+                        jQuery( '.chart-widget' ).on( 'click', '.select_all', function() {
+                            jQuery(this).closest( 'div' ).find( 'select option' ).attr( 'selected', 'selected' );
+                            jQuery(this).closest( 'div' ).find('select').change();
+                            return false;
+                        });
+
+                        jQuery( '.chart-widget').on( 'click', '.select_none', function() {
+                            jQuery(this).closest( 'div' ).find( 'select option' ).removeAttr( 'selected' );
+                            jQuery(this).closest( 'div' ).find('select').change();
+                            return false;
+                        });
+                    });
+                </script>
             </form>
         </div>
         <?php
@@ -259,7 +277,7 @@ class WC_Report_Woo_Tiny_Sales_By_Channel extends WC_Admin_Report
         if (empty($this->channel_ids)) {
             ?>
             <div class="chart-container">
-                <p class="chart-prompt"><?php esc_html_e('Choose a channel to view stats', 'woocommerce'); ?></p>
+                <p class="chart-prompt">Escolha um canal para ver as estatísticas</p>
             </div>
             <?php
         } else {
