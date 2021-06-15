@@ -203,7 +203,7 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
                     ?>
                     <select class="wc-enhanced-select" multiple="multiple" data-placeholder="Selecionar vendedores..." style="width:203px;" id="seller_ids" name="seller_ids[]">
                         <?php foreach ($sellers as $seller): ?>
-                            <option value="<?= $seller->ID ?>"<?= (!empty($_GET['seller_ids']) && $_GET['seller_ids'] == $seller->ID) ? 'selected' : '' ?>><?= $seller->display_name ?></option>
+                            <option value="<?= $seller->ID ?>"<?= (in_array($seller->ID, $this->seller_ids)) ? 'selected' : '' ?>><?= $seller->display_name ?></option>
                         <?php endforeach; ?>
                     </select>
                     <a href="#" class="select_none"><?php esc_html_e( 'None', 'woocommerce' ); ?></a>
@@ -330,7 +330,7 @@ class WC_Report_Woo_Tiny_Sales_By_Seller extends WC_Admin_Report
                     ],
                 ]
             ]));
-
+            //var_dump($order_item_counts, $order_item_amounts); exit;
             // Prepare data for report.
             $order_item_counts = $this->prepare_chart_data($order_item_counts, 'post_date', 'count_sales', $this->chart_interval, $this->start_date, $this->chart_groupby);
             $order_item_amounts = $this->prepare_chart_data($order_item_amounts, 'post_date', 'total_sales', $this->chart_interval, $this->start_date, $this->chart_groupby);
