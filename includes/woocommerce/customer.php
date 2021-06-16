@@ -8,11 +8,12 @@ add_action('woocommerce_before_pay_action', 'woo_tiny_set_customer_in_payment_or
 
 global $woocommerce;
 
-function woo_tiny_get_product_price_by_user(){
+function woo_tiny_get_product_price_by_user()
+{
     $data = filter_input_array(INPUT_GET);
-    if(isset($data['vat'], $data['product_id'], $data['channel_id'])){
+    if (isset($data['vat'], $data['product_id'], $data['channel_id'])) {
         $user_id = woo_tiny_get_user_id_by_cpf_cnpj($data['vat']);
-        if($user_id) {
+        if ($user_id) {
             $price = get_custom_product_price_by_user_id($user_id, $data['product_id'], $data['channel_id']);
             if ($price) {
                 wp_send_json_success($price);
@@ -22,14 +23,15 @@ function woo_tiny_get_product_price_by_user(){
     wp_send_json_error();
 }
 
-function woo_tiny_delete_price_product_by_user(){
+function woo_tiny_delete_price_product_by_user()
+{
     if ('POST' != $_SERVER['REQUEST_METHOD']) wp_send_json_error('Requisição inválida');
     $data_store = filter_input_array(INPUT_POST);
-    if(!wp_verify_nonce($data_store['nonce'], 'woo-tiny-admin-ajax') && empty($data_store['userid'])) wp_send_json_error('Requisição inválida');
+    if (!wp_verify_nonce($data_store['nonce'], 'woo-tiny-admin-ajax') && empty($data_store['userid'])) wp_send_json_error('Requisição inválida');
     $user_id = $data_store['userid'];
     $data = get_user_meta($user_id, 'bw_custom_product_prices', true);
     $key = $data_store['productprice'];
-    if(isset($data, $key)){
+    if (isset($data, $key)) {
         unset($data[$key]);
         update_user_meta($user_id, 'bw_custom_product_prices', $data);
         wp_send_json_success();
@@ -37,16 +39,17 @@ function woo_tiny_delete_price_product_by_user(){
     wp_send_json_error();
 }
 
-function woo_tiny_update_price_product_by_user(){
+function woo_tiny_update_price_product_by_user()
+{
     if ('POST' != $_SERVER['REQUEST_METHOD']) wp_send_json_error('Requisição inválida');
     $data_store = filter_input_array(INPUT_POST);
-    if(!wp_verify_nonce($data_store['nonce'], 'woo-tiny-admin-ajax') && empty($data_store['user_id'])) wp_send_json_error('Requisição inválida');
+    if (!wp_verify_nonce($data_store['nonce'], 'woo-tiny-admin-ajax') && empty($data_store['user_id'])) wp_send_json_error('Requisição inválida');
     $user_id = $data_store['user_id'];
     unset($data_store['nonce'], $data_store['action'], $data_store['user_id']);
     $data = get_user_meta($user_id, 'bw_custom_product_prices', true);
-    if(empty($data) && !is_array($data)) $data = [];
-    foreach ($data as $key => $item){
-        if($item['product_id'] == $data_store['product_id'] && $item['channel_id'] == $data_store['channel_id']){
+    if (empty($data) && !is_array($data)) $data = [];
+    foreach ($data as $key => $item) {
+        if ($item['product_id'] == $data_store['product_id'] && $item['channel_id'] == $data_store['channel_id']) {
             unset($data[$key]);
         }
     }
@@ -55,23 +58,24 @@ function woo_tiny_update_price_product_by_user(){
     wp_send_json_success($data);
 }
 
-function woo_tiny_customer_load_content_custom_product_price(){
+function woo_tiny_customer_load_content_custom_product_price()
+{
     $user_id = filter_input(INPUT_GET, 'userid', FILTER_VALIDATE_INT);
-    if(empty($user_id)) wp_send_json_error('Requisição inválida');
+    if (empty($user_id)) wp_send_json_error('Requisição inválida');
     $data = get_user_meta($user_id, 'bw_custom_product_prices', true);
-    if(empty($data) && !is_array($data)) $data = [];
-    $data = array_map(function ($item){
+    if (empty($data) && !is_array($data)) $data = [];
+    $data = array_map(function ($item) {
         $item['product_name'] = get_the_title($item['product_id']);
         $item['channel_name'] = get_the_title($item['channel_id']);
         return $item;
     }, $data);
     $content = '';
-    foreach ($data as $key => $item){
+    foreach ($data as $key => $item) {
         $content .= '<tr>';
         $content .= '<td>' . $item['product_name'] . '</td>';
         $content .= '<td>' . $item['channel_name'] . '</td>';
         $content .= '<td>' . $item['new_price'] . '</td>';
-        $content .= '<td><a href="javascript:;" data-productPrice="' . $key . '" data-userId="'. $user_id .'" id="delete-bw-custom-product-price">&times;</a></td>';
+        $content .= '<td><a href="javascript:;" data-productPrice="' . $key . '" data-userId="' . $user_id . '" id="delete-bw-custom-product-price">&times;</a></td>';
         $content .= '</tr>';
     }
     wp_send_json_success($content);
@@ -114,8 +118,14 @@ function woo_tiny_ajax_get_customer_by_vat()
             foreach ($private_keys as $key) {
                 unset($customer_data[$key]);
             }
-            if(array_key_exists('bw_custom_product_prices', $customer_data)){
-                $customer_data['bw_custom_product_prices'] = get_user_meta($customer, 'bw_custom_product_prices', true);
+            if (array_key_exists('bw_custom_product_prices', $customer_data)) {
+                $data = get_user_meta($customer, 'bw_custom_product_prices', true);
+                if (empty($data) && !is_array($data)) $data = [];
+                $customer_data['bw_custom_product_prices'] = array_map(function ($item) {
+                    $item['new_price'] = only_numbers($item['new_price']);
+                    $item['new_price'] = round($item['new_price'] / 100, 2);
+                    return $item;
+                }, $data);
             }
             wp_send_json_success($customer_data);
         }
@@ -138,18 +148,18 @@ function woo_tiny_get_user_id_by_cpf_cnpj($cpf_cnpj)
 
 function woo_tiny_save_customer_meta_data($customer_data)
 {
-    $customer_id = get_user_by('email',$customer_data['email']);
-    
+    $customer_id = get_user_by('email', $customer_data['email']);
+
     if (!$customer_id) {
         $senha = wp_generate_password();
-        
-        $customer_id = woo_tiny_get_user_id_by_cpf_cnpj($customer_data['vat']);
-        if($customer_id===false){
 
-            $customer_id = wc_create_new_customer($customer_data['email'],$customer_data['email'],$senha);
+        $customer_id = woo_tiny_get_user_id_by_cpf_cnpj($customer_data['vat']);
+        if ($customer_id === false) {
+
+            $customer_id = wc_create_new_customer($customer_data['email'], $customer_data['email'], $senha);
         }
     }
-    
+
     $customer_id = is_a($customer_id, 'WP_User') ? $customer_id->ID : $customer_id;
     try {
         $customer = new WC_Customer($customer_id);
@@ -222,15 +232,17 @@ function woo_tiny_get_customer_data($customer_data)
     return $customer_data;
 }
 
-function woo_tiny_get_seller_data_by_order_id($order_id, $key = ''){
+function woo_tiny_get_seller_data_by_order_id($order_id, $key = '')
+{
     $seller_id = get_post_meta($order_id, 'bw_id_vendedor', true);
-    if(!$seller_id) return false;
+    if (!$seller_id) return false;
     $user = get_userdata($seller_id);
-    if($key == '' || !property_exists($user->data, $key)) return $user;
+    if ($key == '' || !property_exists($user->data, $key)) return $user;
     return $user->{$key};
 }
 
-function woo_tiny_set_customer_in_payment_order($order){
+function woo_tiny_set_customer_in_payment_order($order)
+{
     global $post;
     if ($post->ID == url_to_postid(site_url('pagar-pedido'))) {
         WC()->customer = new WC_Customer($order->get_customer_id());
