@@ -7,7 +7,6 @@ if (!defined('ABSPATH')) {
 if (!class_exists('WP_List_Table')) {
     require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
-
 class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
 {
 
@@ -135,13 +134,13 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         ];
     }
 
-
+    
     public function prepare_items()
     {
         global $wpdb;
         $current_page = absint($this->get_pagenum());
         $per_page = 20;
-        $channels = array_map(fn($item) => $item->ID, get_posts([
+        $channels = array_map(function($item) {return $item->ID;}, get_posts([
             'post_type' => 'canal_venda',
             'numberposts' => -1
         ]));
