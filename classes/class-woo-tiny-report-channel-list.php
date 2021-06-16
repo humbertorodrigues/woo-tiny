@@ -53,25 +53,38 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         $this->check_current_range_nonce($current_range);
         $this->calculate_current_range($current_range);
         $this->prepare_items();
+
+        $total_b2b = $this->get_total_type('B2B');
+        $total_b2c = $this->get_total_type('B2C');
+        $total_b2b_b2c = $total_b2b + $total_b2c;
         include WOO_TINY_DIR . 'templates/reports/channel-list.php';
     }
 
     public function column_default($item, $column_name)
     {
+        $goal = $this->get_goal($item);
         switch ($column_name) {
             case 'channel':
                 return get_post_field('post_title', $item->$column_name);
             case 'type':
                 return get_post_meta($item->channel, $column_name, true);
+            case 'goal':
+                return wc_price($goal);
             case 'fulfilled':
                 return wc_price($item->$column_name);
             case 'target':
+                $balance = $goal - round((float) $item->fulfilled, 2);
+                $balance = round((($balance / $goal) * 100), 2);
+                if($balance > 0){
+                    return '<span style="color: red;">' . $balance . '%</span>';
+                }
+                return '<span style="color: blue" >' . abs($balance) . '%</span>';
             default:
                 return '';
         }
     }
 
-    public function column_goal($item)
+    private function get_goal($item)
     {
         $current_range = !empty($_GET['range']) ? sanitize_text_field(wp_unslash($_GET['range'])) : '7day';
 
@@ -108,7 +121,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         }
 
         $goal = only_numbers($goal);
-        return wc_price(round($goal / 100, 2));
+        return round($goal / 100, 2);
     }
 
     public function get_columns()
@@ -135,7 +148,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         $this->_column_headers = [$this->get_columns(), [], $this->get_sortable_columns()];
         $args = [
             'group_by' => 'channel',
-            'order_by' => 'channel ASC',
+            'order_by' => 'type DESC',
             'filter_range' => true,
             'order_status' => ['completed', 'processing', 'on-hold', 'refunded', 'revision'],
             'where_meta' => [
@@ -164,6 +177,9 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             ],
         ];
         $query = $this->prepare_query($args);
+        $query['select'] .= ', meta_type.meta_value as type';
+        $query['join'] .= " INNER JOIN {$wpdb->postmeta} AS meta_type ON ( meta_type.post_id = meta_bw_canal_venda.meta_value AND meta_type.meta_key = 'type' )";
+        $query = implode(' ', $query);
         self::enable_big_selects();
         $this->items = $wpdb->get_results($query);
         $this->set_pagination_args([
@@ -171,6 +187,19 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'per_page' => $per_page,
             'total_pages' => ceil($wpdb->total_users / $per_page),
         ]);
+    }
+
+    public function get_total_type($type){
+        if($this->items != null && is_array($this->items)){
+            $total = 0;
+            array_map(function ($item) use ($type, &$total){
+                if($type == get_post_meta($item->channel, 'type', true)){
+                    $total += $item->fulfilled;
+                }
+            }, $this->items);
+            return $total;
+        }
+        return 0;
     }
 
     private function prepare_query($args = [])
@@ -419,7 +448,8 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             $query['limit'] = "LIMIT {$limit}";
         }
 
-        return implode(' ', $query);
+
+        return $query;
     }
 
     protected static function enable_big_selects()

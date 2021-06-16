@@ -61,9 +61,9 @@
         <div style="width: 100%; display: flex">
             <div class="inside" style="width: 15%">
                 <ul>
-                    <li><strong>Total B2B: </strong> R$ 0,00</li>
-                    <li><strong>Total B2C: </strong> R$ 0,00</li>
-                    <li><strong>Total B2B+B2C: </strong> R$ 0,00</li>
+                    <li><strong>Total B2B: </strong> <?= wc_price($total_b2b) ?></li>
+                    <li><strong>Total B2C: </strong> <?= wc_price($total_b2c) ?></li>
+                    <li><strong>Total B2B+B2C: </strong> <?= wc_price($total_b2b_b2c) ?></li>
                 </ul>
             </div>
             <div class="main" style="width: 85%; margin-right: .5rem">
