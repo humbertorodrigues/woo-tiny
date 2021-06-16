@@ -62,3 +62,45 @@ if (jQuery('#content-bw-custom-product-price').length > 0) {
 jQuery(document).on('keyup blur', '.bw-custom-product-price', function (e) {
     jQuery(this).maskMoney({thousands:'.', decimal:',', affixesStay: false});
 });
+
+jQuery(document).ready(function () {
+    jQuery('.datepicker-year').datepicker({
+        changeMonth: true,
+        changeYear: true,
+        showButtonPanel: true,
+        dateFormat: 'MM yy',
+        onChangeMonthYear: function (year, month, inst){
+            let input = jQuery('#woo_tiny_goal');
+            input.attr('name', 'goal_' + year + '_' + month)
+            let data = {
+                metakey: input.attr('name'),
+                postid: jQuery('#post_ID').val()
+            };
+            data.action = 'woo_tiny_get_goal_by_channel';
+            data.nonce = woo_tiny.admin_nonce;
+            jQuery.post(woo_tiny.admin_ajax_url, data, function (res) {
+                if (res.success) {
+                    input.val(res.data);
+                }
+            });
+        }
+    });
+    jQuery('.datepicker-year').trigger('onChangeMonthYear');
+})
+
+jQuery(document).on('click', '#woo_tiny_save_goal_by_channel', function (e) {
+    e.preventDefault();
+    let input = jQuery('#woo_tiny_goal');
+    let data = {
+        metakey: input.attr('name'),
+        metavalue: input.val(),
+        postid: jQuery('#post_ID').val()
+    };
+    data.action = 'woo_tiny_save_goal_by_channel';
+    data.nonce = woo_tiny.admin_nonce;
+    jQuery.post(woo_tiny.admin_ajax_url, data, function (res) {
+        if (res.success) {
+            console.log(res.success)
+        }
+    });
+});
