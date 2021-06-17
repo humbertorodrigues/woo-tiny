@@ -37,3 +37,15 @@ function woo_tiny_limiter_order_view_by_users($query_vars){
     }
     return $query_vars;
 }
+
+function woo_tiny_get_user_field(int $customer_id, string $field = '')
+{
+    $user = get_userdata($customer_id);
+    if (!is_a($user, 'WP_User')) {
+        $user = new WP_User($customer_id);
+    }
+    if ($user->has_prop($field)) {
+        return $user->get($field);
+    }
+    return $user->data;
+}

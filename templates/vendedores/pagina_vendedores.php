@@ -419,8 +419,9 @@ if (!is_user_logged_in()) {
                         </label>
                     </div>
                     <div class="estimate-box" style="display: none">
+                        <h3>Orçamento</h3>
                         <div class="form-group">
-                            <label for="estimate-header" class="form-label">Cabeçalho Orçamento</label>
+                            <label for="estimate-header" class="form-label">Escopo</label>
                             <?php wp_editor('', 'estimate-header', [
                                 'media_buttons' => false,
                                 'drag_drop_upload' => false,
@@ -430,7 +431,7 @@ if (!is_user_logged_in()) {
                             ]) ?>
                         </div>
                         <div class="form-group">
-                            <label for="estimate-footer" class="form-label">Rodapé Orçamento</label>
+                            <label for="estimate-footer" class="form-label">Observações</label>
                             <?php wp_editor('', 'estimate-footer', [
                                 'media_buttons' => false,
                                 'drag_drop_upload' => false,

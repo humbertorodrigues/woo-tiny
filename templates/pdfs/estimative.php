@@ -1,5 +1,15 @@
 <img src="<?= WOO_TINY_DIR . 'templates/pdfs/assets/images/estimate_header.jpg' ?>" alt="">
-<?= $estimate_doc['header'] ?? '' ?>
+<div class="header">
+    <h2 class="text-uppercase text-center">Proposta Comercial</h2>
+    <p>São Paulo, <?= $estimate_created ?></p>
+    <span><strong class="text-uppercase">Cliente: </strong> <?= $estimate_customer ?></span><br>
+    <span><strong class="text-uppercase">Projeto: </strong> <?= $estimate_id ?></span><br>
+    <span><strong class="text-uppercase">A/C: </strong> <?= $estimate_contact ?></span><br>
+    <p>
+        <strong>ESCOPO</strong><br>
+        <span><?= $estimate_header ?></span>
+    </p>
+</div>
 <table class="products">
     <thead>
     <tr>
@@ -10,22 +20,32 @@
     </tr>
     </thead>
     <tbody>
-    <?php foreach($items as $item): ?>
+    <?php foreach($estimate_items as $item): ?>
     <tr>
-        <td><?= $item->get_name() ?></td>
-        <td><?= 'R$ ' . number_format($item->get_total() / $item->get_quantity(), 2, ',', '.') ?></td>
-        <td><?= $item->get_quantity() ?></td>
-        <td><?= 'R$ ' . number_format($item->get_total(), 2, ',', '.') ?></td>
+        <td><?= $item['name'] ?></td>
+        <td><?= $item['price'] ?></td>
+        <td><?= $item['qtd'] ?></td>
+        <td><?= $item['total'] ?></td>
     </tr>
     <?php endforeach; ?>
     <tr class="bg-dark">
         <td colspan="3" class="text-uppercase">Descontos</td>
-        <td><?= 'R$ ' . number_format($estimate->get_discount_total(), 2, ',', '.') ?></td>
+        <td><?= $estimate_discount_total ?></td>
     </tr>
     <tr class="bg-dark">
         <td colspan="3" class="text-uppercase">Total</td>
-        <td><?= 'R$ ' . number_format($estimate->get_total(), 2, ',', '.') ?></td>
+        <td><?= $estimate_total ?></td>
     </tr>
     </tbody>
 </table>
-<?php echo $estimate_doc['footer'] ?? '';
+<div class="footer">
+    <?= $estimate_footer ?>
+</div>
+<p>
+    <strong>Entrega: </strong><br>
+    <span>A definir local de entrega e prazo.</span>
+</p>
+<p>
+    <?= $estimate_seller_name ?><br>
+    <a href="mailto:<?= $estimate_seller_email ?>"><?= $estimate_seller_email ?></a><br>
+</p>

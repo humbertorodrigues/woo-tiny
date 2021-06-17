@@ -18,6 +18,9 @@ table.products tr td{
 .text-uppercase{
     text-transform: uppercase !important;
 }
+.text-center{
+    text-align: center !important;
+}
 .bg-dark,
 .bg-dark td{
     background-color: black !important;
