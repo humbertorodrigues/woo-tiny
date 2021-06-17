@@ -398,3 +398,27 @@ if(!function_exists('generate_pdf_by_html')){
         exit;
     }
 }
+
+if(!function_exists('get_month_by_index')){
+    function get_month_by_index(int $index): string
+    {
+        $months = [
+            'Janeiro',
+            'Fevereiro',
+            'Março',
+            'Abril',
+            'Maio',
+            'Junho',
+            'Julho',
+            'Agosto',
+            'Setembro',
+            'Outubro',
+            'Novembro',
+            'Dezembro'
+        ];
+        if($index <= count($months)){
+            return $months[$index - 1];
+        }
+        return '';
+    }
+}

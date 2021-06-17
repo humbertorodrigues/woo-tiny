@@ -59,9 +59,12 @@ class vendedores
     }
 
     public function admin_enqueue_scripts(){
-        wp_enqueue_style('vendedores', WOO_TINY_URL . 'templates/vendedores/assets/admin/css/vendedores.css', ['login']);
+        wp_register_style( 'jquery-ui', 'https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css' );
+        wp_enqueue_style( 'jquery-ui');
+        wp_enqueue_style('vendedores', WOO_TINY_URL . 'templates/vendedores/assets/admin/css/vendedores.css', ['login', 'jquery-ui']);
         wp_enqueue_script('jquery-mask-money', WOO_TINY_URL . 'templates/vendedores/assets/admin/js/jquery.maskMoney.min.js', ['jquery']);
-        wp_enqueue_script('vendedores', WOO_TINY_URL . 'templates/vendedores/assets/admin/js/jquery.vendedores.js', ['jquery', 'jquery-mask-money']);
+        wp_enqueue_script( 'jquery-ui-datepicker');
+        wp_enqueue_script('vendedores', WOO_TINY_URL . 'templates/vendedores/assets/admin/js/jquery.vendedores.js', ['jquery', 'jquery-ui-datepicker', 'jquery-mask-money']);
         wp_localize_script( 'vendedores', 'woo_tiny', [
                 'admin_ajax_url' => admin_url( 'admin-ajax.php' ),
                 'admin_nonce' => wp_create_nonce('woo-tiny-admin-ajax')

@@ -17,6 +17,17 @@ function woo_tiny_admin_reports($reports)
             ]
         ],
     ];
+    $reports['woo_tiny_channels'] = [
+        'title' => 'Canais',
+        'reports' => [
+            'woo_tiny_channel_list' => [
+                'title' => 'Lista de Canais',
+                'description' => '',
+                'hide_title' => true,
+                'callback' => ['WC_Admin_Reports', 'get_report'],
+            ]
+        ],
+    ];
     $woo_tiny_reports_orders = [
         'woo_tiny_sales_by_seller' => [
             'title' => 'Vendas por vendedor',
@@ -50,7 +61,7 @@ function woo_tiny_reports_path($path, $name)
     $prefix = 'woo-tiny-';
     if (str_contains($prefix, $name)) {
         $name = str_replace($prefix, '', $name);
-        if(in_array($name, ['seller-list', 'sales-by-seller', 'sales-by-channel', 'sales-by-payment-option'])){
+        if(in_array($name, ['seller-list', 'sales-by-seller', 'sales-by-channel', 'sales-by-payment-option', 'channel-list'])){
             $path = WOO_TINY_DIR . 'classes/class-woo-tiny-report-' . $name . '.php';
         }
     }

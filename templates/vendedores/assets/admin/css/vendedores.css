@@ -33,3 +33,7 @@ input.bw-input-yes-no {
 span.bw-installment-value{
     cursor: pointer;
 }
+.ui-datepicker-buttonpane.ui-widget-content,
+.ui-datepicker-calendar {
+    display: none;
+}
