@@ -69,7 +69,9 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                 return wc_price($item->$column_name);
             case 'target':
                 $balance = $item->goal - round((float) $item->fulfilled, 2);
-                $balance = round((($balance / $item->goal) * 100), 2);
+                if($item->goal != 0) {
+                    $balance = round((($balance / $item->goal) * 100), 2);
+                }
                 if($balance > 0){
                     return '<span style="color: red;">' . $balance . '%</span>';
                 }
@@ -203,9 +205,10 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             case 'custom':
             case 'year':
                 $goal = 0;
-                while ($this->start_date <= $this->end_date) {
-                    $metakey = 'goal_' . date('Y_n', $this->start_date);
-                    $this->start_date = strtotime("+1 month", $this->start_date);
+                $start_date = $this->start_date;
+                while ($start_date <= $this->end_date) {
+                    $metakey = 'goal_' . date('Y_n', $start_date);
+                    $start_date = strtotime("+1 month", $start_date);
                     $metavalue = get_post_meta($channel_id, $metakey, true);
                     if ($metavalue != '') {
                         $metavalue = (int)only_numbers($metavalue);
@@ -242,7 +245,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'limit' => '',
             'filter_range' => false,
             'order_types' => wc_get_order_types('reports'),
-            'order_status' => ['completed', 'processing', 'on-hold'],
+            'order_status' => ['completed', 'processing'],
             'parent_order_status' => false,
         ];
         $args = wp_parse_args($args, $default_args);

@@ -74,8 +74,10 @@ function woo_tiny_coupon_save_extra_data_in_order($order_id, $status_from, $stat
         if($channel_id == ''){
             $channel_id = get_post_meta($coupon_id, 'woo_tiny_channel_id', true) ?? $channel_id;
         }
-        if ($seller_id != '' && $channel_id != '') {
-            update_post_meta($order_id, "bw_id_vendedor", $seller_id);
+        if ($channel_id != '') {
+            if($seller_id != '') {
+                update_post_meta($order_id, "bw_id_vendedor", $seller_id);
+            }
             update_post_meta($order_id, "bw_canal_venda", $channel_id);
             update_post_meta($order_id, "bw_canal_venda_descricao", get_the_title($channel_id));
         }
