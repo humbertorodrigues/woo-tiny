@@ -25,15 +25,11 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         );
     }
 
-
     public function no_items()
     {
         echo 'nenhum canal encontrado';
     }
 
-    /**
-     * Output the report.
-     */
     public function output_report()
     {
         $ranges = array(
@@ -61,19 +57,19 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
 
     public function column_default($item, $column_name)
     {
-        $goal = $this->get_goal($item);
         switch ($column_name) {
             case 'channel':
                 return get_post_field('post_title', $item->$column_name);
             case 'type':
                 return get_post_meta($item->channel, $column_name, true);
-            case 'goal':
-                return wc_price($goal);
             case 'fulfilled':
+                return wc_price($item->$column_name - $item->in_wallet);
+            case 'goal':
+            case 'in_wallet':
                 return wc_price($item->$column_name);
             case 'target':
-                $balance = $goal - round((float) $item->fulfilled, 2);
-                $balance = round((($balance / $goal) * 100), 2);
+                $balance = $item->goal - round((float) $item->fulfilled, 2);
+                $balance = round((($balance / $item->goal) * 100), 2);
                 if($balance > 0){
                     return '<span style="color: red;">' . $balance . '%</span>';
                 }
@@ -83,46 +79,6 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         }
     }
 
-    private function get_goal($item)
-    {
-        $current_range = !empty($_GET['range']) ? sanitize_text_field(wp_unslash($_GET['range'])) : '7day';
-
-        if (!in_array($current_range, array('custom', 'year', 'last_month', 'month', '7day'), true)) {
-            $current_range = '7day';
-        }
-
-        $this->calculate_current_range($current_range);
-
-        switch ($current_range) {
-            case 'custom':
-            case 'year':
-                $goal = 0;
-                while ($this->start_date <= $this->end_date) {
-                    $metakey = 'goal_' . date('Y_n', $this->start_date);
-                    $this->start_date = strtotime("+1 month", $this->start_date);
-                    $metavalue = get_post_meta($item->channel, $metakey, true);
-                    if ($metavalue != '') {
-                        $metavalue = (int)only_numbers($metavalue);
-                        $goal += $metavalue;
-                    }
-                }
-                break;
-            case 'last_month':
-            case 'month':
-            case '7day':
-            default:
-                $metakey = 'goal_' . date('Y_n', $this->end_date);
-                $goal = get_post_meta($item->channel, $metakey, true);
-                if ($goal == '') {
-                    $goal = 0;
-                }
-                break;
-        }
-
-        $goal = only_numbers($goal);
-        return round($goal / 100, 2);
-    }
-
     public function get_columns()
     {
         return [
@@ -130,11 +86,11 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'type' => 'Tipo',
             'goal' => 'Objetivo',
             'fulfilled' => 'Realizado',
+            'in_wallet' => 'Em carteira',
             'target' => 'Percentual de atingimento'
         ];
     }
 
-    
     public function prepare_items()
     {
         global $wpdb;
@@ -149,7 +105,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'group_by' => 'channel',
             'order_by' => 'type DESC',
             'filter_range' => true,
-            'order_status' => ['completed', 'processing'],
+            'order_status' => ['completed', 'processing', 'wallet'],
             'where_meta' => [
                 [
                     'meta_key' => 'bw_canal_venda',
@@ -180,7 +136,12 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         $query['join'] .= " INNER JOIN {$wpdb->postmeta} AS meta_type ON ( meta_type.post_id = meta_bw_canal_venda.meta_value AND meta_type.meta_key = 'type' )";
         $query = implode(' ', $query);
         self::enable_big_selects();
-        $this->items = $wpdb->get_results($query);
+        $this->items = array_map(function ($item) {
+            $item->in_wallet = $this->get_in_wallet($item->channel);
+            $item->goal = $this->get_goal($item->channel);
+            return $item;
+        },(array)$wpdb->get_results($query));
+
         $this->set_pagination_args([
             'total_items' => $wpdb->total_users,
             'per_page' => $per_page,
@@ -188,7 +149,34 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         ]);
     }
 
-    public function get_total_type($type){
+    private function get_in_wallet($channel_id){
+        global $wpdb;
+        $args = [
+            'filter_range' => true,
+            'order_status' => ['wallet'],
+            'where_meta' => [
+                [
+                    'meta_key' => 'bw_canal_venda',
+                    'operator' => '=',
+                    'meta_value' => $channel_id
+                ],
+            ],
+            'data' => [
+                '_order_total' => [
+                    'type' => 'meta',
+                    'function' => 'SUM',
+                    'name' => 'in_wallet',
+                ]
+            ],
+        ];
+        $query = $this->prepare_query($args);
+        $query = implode(' ', $query);
+        self::enable_big_selects();
+        $result = $wpdb->get_row($query);
+        return $result->in_wallet;
+    }
+
+    private function get_total_type($type){
         if($this->items != null && is_array($this->items)){
             $total = 0;
             array_map(function ($item) use ($type, &$total){
@@ -199,6 +187,46 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             return $total;
         }
         return 0;
+    }
+
+    private function get_goal($channel_id)
+    {
+        $current_range = !empty($_GET['range']) ? sanitize_text_field(wp_unslash($_GET['range'])) : '7day';
+
+        if (!in_array($current_range, array('custom', 'year', 'last_month', 'month', '7day'), true)) {
+            $current_range = '7day';
+        }
+
+        $this->calculate_current_range($current_range);
+
+        switch ($current_range) {
+            case 'custom':
+            case 'year':
+                $goal = 0;
+                while ($this->start_date <= $this->end_date) {
+                    $metakey = 'goal_' . date('Y_n', $this->start_date);
+                    $this->start_date = strtotime("+1 month", $this->start_date);
+                    $metavalue = get_post_meta($channel_id, $metakey, true);
+                    if ($metavalue != '') {
+                        $metavalue = (int)only_numbers($metavalue);
+                        $goal += $metavalue;
+                    }
+                }
+                break;
+            case 'last_month':
+            case 'month':
+            case '7day':
+            default:
+                $metakey = 'goal_' . date('Y_n', $this->end_date);
+                $goal = get_post_meta($channel_id, $metakey, true);
+                if ($goal == '') {
+                    $goal = 0;
+                }
+                break;
+        }
+
+        $goal = only_numbers($goal);
+        return round($goal / 100, 2);
     }
 
     private function prepare_query($args = [])
@@ -451,7 +479,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         return $query;
     }
 
-    protected static function enable_big_selects()
+    private static function enable_big_selects()
     {
         static $big_selects = false;
 
@@ -463,7 +491,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         }
     }
 
-    public function check_current_range_nonce($current_range)
+    private function check_current_range_nonce($current_range)
     {
         if ('custom' !== $current_range) {
             return;
@@ -479,7 +507,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         }
     }
 
-    public function calculate_current_range($current_range)
+    private function calculate_current_range($current_range)
     {
         switch ($current_range) {
             case 'custom':
