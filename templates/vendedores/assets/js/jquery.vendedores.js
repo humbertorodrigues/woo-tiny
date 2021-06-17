@@ -75,15 +75,15 @@ jQuery(document).on('click', '#has-shipping', function (e) {
         });
     }
 });
-jQuery(document).on('click', '#send-estimate', function (e) {
-    if (jQuery(this).is(':checked')) {
-        jQuery('#payment-order').attr('disabled', true).prop('checked', false);
+
+jQuery(document).on('change', '#finish', function (e) {
+    console.log(jQuery(this).val())
+    if (jQuery(this).val() === '2') {
         jQuery('.estimate-box').show();
         jQuery('.estimate').attr('disabled', false).prop('required', true);
         jQuery('.switch-tmce').trigger('click');
         jQuery('.wp-editor-tools').hide();
     } else {
-        jQuery('#payment-order').attr('disabled', false);
         jQuery('.estimate-box').hide();
         jQuery('.estimate').attr('disabled', true).prop('required', false);
     }

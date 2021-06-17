@@ -401,23 +401,20 @@ if (!is_user_logged_in()) {
                 </div>
             </div>
             <div class="row mt-3">
-                <div class="col-lg-12">
-                    <div class="form-check text-right">
-                        <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" name="payment_order" id="payment_order">
-                            Proceder com o pagamento
-                        </label>
+                <div class="col-lg-4 ms-lg-auto">
+                    <div class="form-group">
+                        <label for="finish">Tipo de finalização</label>
+                        <select name="finish" id="finish" class="form-control">
+                            <option value="0">Nenhuma das opções</option>
+                            <option value="1">Proceder com o pagamento</option>
+                            <option value="2">Enviar orçamento</option>
+                            <option value="3">Pedido em carteira</option>
+                        </select>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="form-check text-right">
-                        <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" name="send_estimate" id="send-estimate">
-                            Enviar orçamento
-                        </label>
-                    </div>
                     <div class="estimate-box" style="display: none">
                         <h3>Orçamento</h3>
                         <div class="form-group">

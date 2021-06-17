@@ -24,26 +24,40 @@ function woo_tiny_order_after_calculate_totals($and_taxes, $order)
 function woo_tiny_register_new_order_statuses()
 {
     register_post_status('wc-revision', array(
-        'label' => _x('Em revisão', 'Order status', 'woocommerce'),
+        'label' => 'Em revisão',
         'public' => true,
         'exclude_from_search' => false,
         'show_in_admin_all_list' => true,
         'show_in_admin_status_list' => true,
         'label_count' => _n_noop('Em revisão <span class="count">(%s)</span>', 'Em revisão <span class="count">(%s)</span>', 'woocommerce')
     ));
+
+    register_post_status('wc-wallet', array(
+        'label' => 'Em carteira',
+        'public' => true,
+        'exclude_from_search' => false,
+        'show_in_admin_all_list' => true,
+        'show_in_admin_status_list' => true,
+        'label_count' => _n_noop('Em carteira <span class="count">(%s)</span>', 'Em carteira <span class="count">(%s)</span>', 'woocommerce')
+    ));
 }
 
 
 function woo_tiny_new_wc_order_statuses($order_statuses)
 {
-    $order_statuses['wc-revision'] = _x('Em revisão', 'Order status', 'woocommerce');
+    $order_statuses['wc-revision'] = 'Em revisão';
+    $order_statuses['wc-wallet'] = 'Em carteira';
 
     return $order_statuses;
 }
 
 function woo_tiny_wc_order_is_editable($editable, $order)
 {
-    if ($order->get_status() == 'revision') {
+    $editable_statuses = [
+        'wallet',
+        'revision'
+    ];
+    if (in_array($order->get_status(), $editable_statuses, true)) {
         $editable = true;
     }
     return $editable;
@@ -97,6 +111,8 @@ function woo_tiny_save_order()
 
         $user_id = $_POST['bw_id_vendedor'];
 
+        $order_finish = (int) $_POST['finish'];
+
         $address = array(
             'first_name' => $nome,
             'company' => $nome_fantasia,
@@ -132,7 +148,7 @@ function woo_tiny_save_order()
             exit;
         }
 
-        if(array_sum($qtd) > 0) {
+        if (array_sum($qtd) > 0) {
 
             // Now we create the order
             $order = wc_create_order([
@@ -187,7 +203,7 @@ function woo_tiny_save_order()
                 }*/
         }
 
-        if(empty($order_id)) $order_id = 0;
+        if (empty($order_id)) $order_id = 0;
         //Temos bonificacao, vamos montar um pedido à parte
         if (array_sum($qtd_bonificacao) > 0) {
             $order_bonificacao = wc_create_order(['status' => 'wc-revision']);
@@ -227,32 +243,42 @@ function woo_tiny_save_order()
                 $order_bonificacao->update_status("wc-processing", 'Pedido por vendedor', TRUE);
             }*/
 
-            if(!$_POST['send_estimate']){
+            if (!in_array($order_finish, [2, 3], true)) {
                 woo_tiny_trigger_order_revision_email($order_bonificacao);
             }
         }
-        if($order_id > 0) {
+        if ($order_id > 0) {
             woo_tiny_order_upload_files($order_id, $_FILES['documents']);
             $referer .= $order_id > 0 ? set_alert('success', "Pedido #{$order_id} salvo com sucesso") : set_alert('danger', 'Falha ao processar');
-            if ($_POST['send_estimate']) {
-                $estimate = $_POST['estimate'];
-                update_post_meta($order_id, 'estimate', $estimate);
-                global $wpdb;
-                $wpdb->update($wpdb->posts, ['post_status' => 'wc-estimate'], ['ID' => $order_id], ['%s'], ['%d']);
-                $referer = admin_url(sprintf('admin.php?page=%s&action=%s&item=%d&_wpnonce=%s', 'woo_tiny_estimates', 'woo_tiny_estimate_show', $order_id, wp_create_nonce('woo_tiny_estimate_nonce')));
-            } else {
-                woo_tiny_trigger_order_revision_email($order);
-                if ($_POST['payment_order']) {
+            switch ($order_finish){
+                case 1:
                     $query = http_build_query([
                         'pay_for_order' => true,
                         'order-pay' => $order_id,
                         'key' => $order->get_order_key(),
                     ]);
                     $referer = site_url('pagar-pedido?' . $query);
-                }
+                    break;
+                case 2:
+                    $estimate = $_POST['estimate'];
+                    update_post_meta($order_id, 'estimate', $estimate);
+                    global $wpdb;
+                    $wpdb->update($wpdb->posts, ['post_status' => 'wc-estimate'], ['ID' => $order_id], ['%s'], ['%d']);
+                    $referer = admin_url(sprintf('admin.php?page=%s&action=%s&item=%d&_wpnonce=%s', 'woo_tiny_estimates', 'woo_tiny_estimate_show', $order_id, wp_create_nonce('woo_tiny_estimate_nonce')));
+                    break;
+                case 3:
+                    global $wpdb;
+                    $wpdb->update($wpdb->posts, ['post_status' => 'wc-wallet'], ['ID' => $order_id], ['%s'], ['%d']);
+                    break;
+                case 0:
+                default:
+                    break;
             }
-        }else{
+        } else {
             $referer .= $order_bonificacao_id > 0 ? set_alert('success', "Bonificação #{$order_bonificacao_id} salvo com sucesso") : set_alert('danger', 'Falha ao processar');
+        }
+        if (!in_array((int) $_POST['finish'], [2, 3], true)) {
+            woo_tiny_trigger_order_revision_email($order);
         }
         wp_redirect($referer);
     }
@@ -267,7 +293,7 @@ function woo_tiny_order_upload_files($order_id, $files)
     require_once(ABSPATH . "wp-admin" . '/includes/media.php');
     foreach ($_FILES as $file_handler => $file) {
         $attachment_id = media_handle_upload($file_handler, $order_id, ['post_status' => 'private', 'comment_status' => 'closed']);
-        if(is_integer($attachment_id)) {
+        if (is_integer($attachment_id)) {
             update_post_meta($attachment_id, 'document_order', 'yes');
         }
     }
