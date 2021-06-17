@@ -149,7 +149,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'group_by' => 'channel',
             'order_by' => 'type DESC',
             'filter_range' => true,
-            'order_status' => ['completed', 'processing', 'on-hold', 'refunded', 'revision'],
+            'order_status' => ['completed', 'processing'],
             'where_meta' => [
                 [
                     'meta_key' => 'bw_canal_venda',
