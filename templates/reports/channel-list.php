@@ -1,3 +1,10 @@
+<style>
+@media print{
+    .column-pre_sale,.column-in_wallet{
+        display: none;
+    }
+}
+</style>
 <div id="poststuff" class="woocommerce-reports-wide">
     <div class="postbox">
 

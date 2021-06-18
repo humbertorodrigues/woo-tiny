@@ -57,13 +57,16 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
 
     public function column_default($item, $column_name)
     {
+        
         switch ($column_name) {
             case 'channel':
                 return get_post_field('post_title', $item->$column_name);
             case 'type':
                 return get_post_meta($item->channel, $column_name, true);
             case 'fulfilled':
-                return wc_price($item->$column_name - $item->in_wallet);
+                return wc_price($item->$column_name);
+            case 'pre_sale':
+                return wc_price($item->pre_sale);                
             case 'goal':
             case 'in_wallet':
                 return wc_price($item->$column_name);
@@ -88,6 +91,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'type' => 'Tipo',
             'goal' => 'Objetivo',
             'fulfilled' => 'Realizado',
+            'pre_sale' => 'Pré-venda',
             'in_wallet' => 'Em carteira',
             'target' => 'Percentual de atingimento'
         ];
@@ -107,12 +111,17 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'group_by' => 'channel',
             'order_by' => 'type DESC',
             'filter_range' => true,
-            'order_status' => ['completed', 'processing', 'wallet'],
+            'order_status' => ['completed', 'processing','shipping'],
             'where_meta' => [
                 [
                     'meta_key' => 'bw_canal_venda',
                     'operator' => 'IN',
                     'meta_value' => $channels
+                ],
+                [
+                    'meta_key' => 'tiny_nf_chave_acesso',
+                    'operator' => 'NOT LIKE',
+                    'meta_value' => ""
                 ],
             ],
             'data' => [
@@ -140,10 +149,12 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         self::enable_big_selects();
         $this->items = array_map(function ($item) {
             $item->in_wallet = $this->get_in_wallet($item->channel);
+            $item->pre_sale = $this->get_pre_sale($item->channel);
             $item->goal = $this->get_goal($item->channel);
+            
             return $item;
         },(array)$wpdb->get_results($query));
-
+        
         $this->set_pagination_args([
             'total_items' => $wpdb->total_users,
             'per_page' => $per_page,
@@ -176,6 +187,33 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         self::enable_big_selects();
         $result = $wpdb->get_row($query);
         return $result->in_wallet;
+    }
+    private function get_pre_sale($channel_id){
+        global $wpdb;
+        $args = [
+            'filter_range' => true,
+            'order_status' => ['completed', 'processing','shipping'],
+            'where_meta' => [
+                [
+                    'meta_key' => 'bw_canal_venda',
+                    'operator' => '=',
+                    'meta_value' => $channel_id
+                ],
+            ],
+            'data' => [
+                '_order_total' => [
+                    'type' => 'meta',
+                    'function' => 'SUM',
+                    'name' => 'pre_sale',
+                ]
+            ],
+        ];
+        $query = $this->prepare_query($args);
+        $query = implode(' ', $query);
+        self::enable_big_selects();
+        $result = $wpdb->get_row($query);
+        
+        return $result->pre_sale;
     }
 
     private function get_total_type($type){
