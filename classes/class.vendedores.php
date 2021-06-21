@@ -82,6 +82,7 @@ class vendedores
         $produtos = wc_get_products($args);
 
         $canais_vendas = get_posts(array(
+            'exclude' => [],
             'post_type' => 'canal_venda',
             'numberposts' => -1
         ));

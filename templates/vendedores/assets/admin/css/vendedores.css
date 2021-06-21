@@ -37,3 +37,15 @@ span.bw-installment-value{
 .datepicker-year .ui-datepicker-calendar {
     display: none;
 }
+
+tr.woo-tiny-table-separator td {
+    color: #32373c !important;
+    background-color: white;
+    line-height: 1.4em;
+    padding: 1rem 7px !important;
+    border-top: 1px solid #ccd0d4;
+    border-bottom: 1px solid #ccd0d4;
+    font-weight: 400;
+    border-spacing: 0;
+    font-size: 14px;
+}

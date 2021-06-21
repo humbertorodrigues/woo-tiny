@@ -1,9 +1,9 @@
 <style>
-@media print{
-    .column-pre_sale,.column-in_wallet{
-        display: none;
+    @media print {
+        .column-pre_sale, .column-in_wallet {
+            display: none;
+        }
     }
-}
 </style>
 <div id="poststuff" class="woocommerce-reports-wide">
     <div class="postbox">
@@ -65,17 +65,8 @@
                 </li>
             </ul>
         </div>
-        <div style="width: 100%; display: flex">
-            <div class="inside" style="width: 15%">
-                <ul>
-                    <li><strong>Total B2B: </strong> <?= wc_price($total_b2b) ?></li>
-                    <li><strong>Total B2C: </strong> <?= wc_price($total_b2c) ?></li>
-                    <li><strong>Total B2B+B2C: </strong> <?= wc_price($total_b2b_b2c) ?></li>
-                </ul>
-            </div>
-            <div class="main" style="width: 85%; margin-right: .5rem">
-                <?php $this->display(); ?>
-            </div>
+        <div style="margin: 1rem">
+            <?php $this->display(); ?>
         </div>
     </div>
 </div>
