@@ -1,3 +1,4 @@
+
 <table class="form-table">
     <tbody>
     <tr>
@@ -16,7 +17,9 @@
     <tr>
         <th scope="row"><label for="woo_tiny_goal">Meta</label></th>
         <td>
-            <div class="datepicker-year"></div>
+            <input id="data_meta" type="month"/>
+                    <br>
+            <!-- <input type="text" placeholder="Data"  value="<?php echo date('F Y') ?>" class="datepicker-year"> -->
             <br>
             <?php $name = 'goal_' . date('Y_n') ?>
             <input name="<?= $name ?>" id="woo_tiny_goal" type="text"
