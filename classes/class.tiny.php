@@ -167,16 +167,18 @@ class tiny{
                 }
             }
             if($texto_acao=="contratar_frete"){       
-                $retorno_frete = contratar_frete($id_pedido);
-                
-                if($retorno_frete !==false){
-                    $this->marcarConcluido($id_acao);
-                    $dados['acao'] = "atualizar_rastreio";
-                    $dados['id_pedido'] = $id_pedido;
-                    $dados['status'] = "pendente";
-                    $wpdb->insert($wpdb->prefix."acoes_tiny",$dados);
-                }else{
-                    $this->marcarExecutado($id_acao);
+                $flexas_is_packed = get_post_meta($id_pedido,"bw_status_is_packed",true);
+                if($flexas_is_packed==="1"){
+                    $retorno_frete = contratar_frete($id_pedido);
+                    if($retorno_frete !==false){
+                        $this->marcarConcluido($id_acao);
+                        $dados['acao'] = "atualizar_rastreio";
+                        $dados['id_pedido'] = $id_pedido;
+                        $dados['status'] = "pendente";
+                        $wpdb->insert($wpdb->prefix."acoes_tiny",$dados);
+                    }else{
+                        $this->marcarExecutado($id_acao);
+                }
                 }
             }
             if($texto_acao=="atualizar_rastreio"){       
