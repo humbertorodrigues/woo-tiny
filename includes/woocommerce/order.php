@@ -9,9 +9,6 @@ add_action('admin_post_woo_tiny_save_order', 'woo_tiny_save_order');
 add_filter('woocommerce_valid_order_statuses_for_payment', 'woo_tiny_order_valid_statuses_for_payment', 10, 2);
 add_filter('woocommerce_is_checkout', 'woo_tiny_order_is_checkout');
 
-global $woocommerce;
-
-
 function woo_tiny_order_after_calculate_totals($and_taxes, $order)
 {
     $payment_option_id = (int)bw_get_meta_field('discount', (int)get_post_meta($order->get_id(), 'bw_forma_pagamento_id', true));
