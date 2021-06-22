@@ -65,7 +65,7 @@
                 </li>
             </ul>
         </div>
-        <div style="margin: 1rem">
+        <div class="bw-table-channel-list">
             <?php $this->display(); ?>
         </div>
     </div>

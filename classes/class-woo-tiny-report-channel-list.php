@@ -49,10 +49,6 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         $this->check_current_range_nonce($current_range);
         $this->calculate_current_range($current_range);
         $this->prepare_items();
-
-        $total_b2b = $this->get_total_type('B2B');
-        $total_b2c = $this->get_total_type('B2C');
-        $total_b2b_b2c = $total_b2b + $total_b2c;
         include WOO_TINY_DIR . 'templates/reports/channel-list.php';
     }
 
@@ -69,10 +65,11 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             case 'in_wallet':
                 return wc_price($item->$column_name);
             case 'target':
-                if ($item->$column_name > 0) {
-                    return '<span style="color: red;">' . $item->$column_name . '%</span>';
+                $style = 'style="color: red;"';
+                if ($item->fulfilled > $item->goal) {
+                    $style = 'style="color: blue;"';
                 }
-                return '<span style="color: blue" >' . abs($item->$column_name) . '%</span>';
+                return '<span ' . $style . '>' . abs($item->$column_name) . '%</span>';
             default:
                 return '';
         }
@@ -101,12 +98,14 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             $channel->id = $item->ID;
             $channel->channel = $item->post_title;
             $channel->type = get_post_meta($channel->id, 'type', true);
-            $channel->fulfilled = $this->get_fulfilled($channel->id);
-            $channel->in_wallet = $this->get_in_wallet($channel->id);
-            $channel->pre_sale = $this->get_pre_sale($channel->id) - $channel->fulfilled;
+            $channel->fulfilled = $this->get_fulfilled_by_order_query($channel->id);
+            $channel->in_wallet = $this->get_in_wallet_by_order_query($channel->id);
+            $channel->pre_sale = $this->get_pre_sale_by_order_query($channel->id);
             $channel->goal = $this->get_goal($channel->id);
-            $channel->target = $channel->goal - ($channel->fulfilled + $channel->in_wallet + $channel->pre_sale);
-            if ($channel->goal != 0 && $channel->target != 0) {
+            $channel->target = $channel->goal - $channel->fulfilled;
+            if ($channel->fulfilled == 0) {
+                $channel->target = $channel->fulfilled;
+            } elseif ($channel->goal > 0) {
                 $channel->target = round((($channel->target / $channel->goal) * 100), 2);
             }
             $this->items[] = $channel;
@@ -164,17 +163,22 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             $this->single_row($item);
             if ($key == $this->get_count_type($type)) {
                 $total_goal = $this->get_total_type($type, 'goal');
-                $total_target = $this->get_total_type($type, 'target');
+                $total_fulfilled = $this->get_total_type($type, 'fulfilled');
                 $total_row = '<tr class="woo-tiny-table-separator">';
                 $total_row .= '<td class="manage-column" colspan="2">Total ' . $type . '</td>';
                 $total_row .= '<td class="manage-column">' . wc_price($total_goal) . '</td>';
-                $total_row .= '<td class="manage-column">' . wc_price($this->get_total_type($type, 'fulfilled')) . '</td>';
-                $total_row .= '<td class="manage-column">' . wc_price($this->get_total_type($type, 'in_wallet')) . '</td>';
+                $total_row .= '<td class="manage-column">' . wc_price($total_fulfilled) . '</td>';
                 $total_row .= '<td class="manage-column">' . wc_price($this->get_total_type($type, 'pre_sale')) . '</td>';
-
-                $style = 'style="color: blue !important"';
-                if ($total_target > 0) {
-                    $style = 'style="color: red !important"';
+                $total_row .= '<td class="manage-column">' . wc_price($this->get_total_type($type, 'in_wallet')) . '</td>';
+                $total_target = $total_goal - $total_fulfilled;
+                if ($total_fulfilled == 0) {
+                    $total_target = $total_fulfilled;
+                } elseif ($total_goal > 0) {
+                    $total_target = round((($total_target / $total_goal) * 100), 2);
+                }
+                $style = 'style="color: red !important"';
+                if ($total_fulfilled > $total_goal) {
+                    $style = 'style="color: blue !important"';
                 }
                 $total_row .= '<td class="manage-column" ' . $style . '>' . abs($total_target) . '%</td>';
                 $total_row .= '</tr>';
@@ -190,16 +194,21 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
     private function get_tfooter()
     {
         $total_goal = $this->get_total_type('', 'goal');
-        $total_target = $this->get_total_type('', 'target');
-        $total_row = '<th class="manage-column" colspan="2">Total B2B+B2C</th>';
+        $total_fulfilled = $this->get_total_type('', 'fulfilled');
+        $total_row = '<td colspan="7"></td></tr><tr class="woo-tiny-table-separator"><th class="manage-column" colspan="2">Total B2B+B2C</th>';
         $total_row .= '<th class="manage-column">' . wc_price($total_goal) . '</th>';
-        $total_row .= '<th class="manage-column">' . wc_price($this->get_total_type('', 'fulfilled')) . '</th>';
-        $total_row .= '<th class="manage-column">' . wc_price($this->get_total_type('', 'in_wallet')) . '</th>';
+        $total_row .= '<th class="manage-column">' . wc_price($total_fulfilled) . '</th>';
         $total_row .= '<th class="manage-column">' . wc_price($this->get_total_type('', 'pre_sale')) . '</th>';
-
-        $style = 'style="color: blue !important"';
-        if ($total_target > 0) {
-            $style = 'style="color: red !important"';
+        $total_row .= '<th class="manage-column">' . wc_price($this->get_total_type('', 'in_wallet')) . '</th>';
+        $total_target = $total_goal - $total_fulfilled;
+        if ($total_fulfilled == 0) {
+            $total_target = $total_fulfilled;
+        } elseif ($total_goal > 0) {
+            $total_target = round((($total_target / $total_goal) * 100), 2);
+        }
+        $style = 'style="color: red !important"';
+        if ($total_fulfilled > $total_goal) {
+            $style = 'style="color: blue !important"';
         }
         $total_row .= '<td class="manage-column" ' . $style . '>' . abs($total_target) . '%</td>';
         echo $total_row;
@@ -212,12 +221,14 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         $channel->id = 0;
         $channel->channel = 'Ecommerce';
         $channel->type = 'B2C';
-        $channel->fulfilled = $this->get_fulfilled($channel->id);
-        $channel->in_wallet = $this->get_in_wallet($channel->id);
-        $channel->pre_sale = $this->get_pre_sale($channel->id) - $channel->fulfilled;
+        $channel->fulfilled = $this->get_fulfilled_by_order_query($channel->id);
+        $channel->in_wallet = $this->get_in_wallet_by_order_query($channel->id);
+        $channel->pre_sale = $this->get_pre_sale_by_order_query($channel->id);
         $channel->goal = $this->get_goal($channel->id);
-        $channel->target = $channel->goal - ($channel->fulfilled + $channel->in_wallet + $channel->pre_sale);
-        if ($channel->goal != 0 && $channel->target != 0) {
+        $channel->target = $channel->goal - $channel->fulfilled;
+        if ($channel->fulfilled == 0) {
+            $channel->target = $channel->fulfilled;
+        } elseif ($channel->goal > 0) {
             $channel->target = round((($channel->target / $channel->goal) * 100), 2);
         }
         return $channel;
@@ -233,7 +244,9 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                 'meta_value' => $channel_id
             ];
         } else {
-            $channels = array_map(function($item) {return $item->ID;}, get_posts([
+            $channels = array_map(function ($item) {
+                return $item->ID;
+            }, get_posts([
                 'post_type' => 'canal_venda',
                 'numberposts' => -1
             ]));
@@ -253,13 +266,9 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         $args = [
             'filter_range' => true,
             'order_status' => ['completed', 'processing', 'shipping'],
-            'where_meta' => array_merge_recursive([
-                [
-                    'meta_key' => 'tiny_nf_chave_acesso',
-                    'operator' => 'NOT LIKE',
-                    'meta_value' => ""
-                ]
-            ], $this->get_where_meta($channel_id)),
+            'meta_key' => 'tiny_nf', // The postmeta key field
+            'meta_compare' => 'EXISTS',
+            'where_meta' => $this->get_where_meta($channel_id),
             'data' => [
                 '_order_total' => [
                     'type' => 'meta',
@@ -304,6 +313,8 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'filter_range' => true,
             'order_status' => ['completed', 'processing', 'shipping'],
             'where_meta' => $this->get_where_meta($channel_id),
+            'meta_key' => 'tiny_nf', // The postmeta key field
+            'meta_compare' => 'NOT EXISTS',
             'data' => [
                 '_order_total' => [
                     'type' => 'meta',
@@ -700,4 +711,75 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                 break;
         }
     }
+
+    private function get_fulfilled_by_order_query($channel_id)
+    {
+        $query = new WC_Order_Query([
+            'limit' => -1,
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'date_paid' => $this->start_date . "..." . $this->end_date,  //'2018-02-01...2018-02-28',
+            'status' => ['wc-processing', 'wc-completed', 'wc-shipping'],
+            'meta_key' => 'tiny_nf', // The postmeta key field
+            'meta_compare' => 'EXISTS',
+
+        ]);
+        $orders = $query->get_orders();
+        $total_vendas = 0;
+        foreach ($orders as $order) {
+            $order_id = $order->data['id'];
+            $total = $order->data['total'];
+            if ($channel_id == get_post_meta($order_id, "bw_canal_venda", true)) {
+                $total_vendas += $total;
+            }
+        }
+        return $total_vendas;
+    }
+
+    private function get_pre_sale_by_order_query($channel_id)
+    {
+        $query = new WC_Order_Query([
+            'limit' => -1,
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'date_paid' => $this->start_date . "..." . $this->end_date,  //'2018-02-01...2018-02-28',
+            'status' => ['wc-processing', 'wc-completed', 'wc-shipping'],
+            'meta_key' => 'tiny_nf', // The postmeta key field
+            'meta_compare' => 'NOT EXISTS',
+
+        ]);
+        $orders = $query->get_orders();
+        $total_vendas = 0;
+        foreach ($orders as $order) {
+            $order_id = $order->data['id'];
+            $total = $order->data['total'];
+            if ($channel_id == get_post_meta($order_id, "bw_canal_venda", true)) {
+                $total_vendas += $total;
+            }
+        }
+        return $total_vendas;
+    }
+
+    private function get_in_wallet_by_order_query($channel_id)
+    {
+        $query = new WC_Order_Query([
+            'limit' => -1,
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'date_created' => $this->start_date . "..." . $this->end_date,  //'2018-02-01...2018-02-28',
+            'status' => ['wc-wallet']
+        ]);
+        $orders = $query->get_orders();
+        $total_vendas = 0;
+        foreach ($orders as $order) {
+            $order_id = $order->data['id'];
+            $total = $order->data['total'];
+            if ($channel_id == get_post_meta($order_id, "bw_canal_venda", true)) {
+                $total_vendas += $total;
+            }
+        }
+        return $total_vendas;
+    }
+
+
 }
