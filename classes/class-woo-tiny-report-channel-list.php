@@ -84,7 +84,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'fulfilled' => 'Realizado',
             'pre_sale' => 'Pré-venda',
             'in_wallet' => 'Em carteira',
-            'target' => 'Percentual de atingimento'
+            'target' => 'Atingimento meta'
         ];
     }
 
@@ -107,6 +107,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                 $channel->target = $channel->fulfilled;
             } elseif ($channel->goal > 0) {
                 $channel->target = round((($channel->target / $channel->goal) * 100), 2);
+                $channel->target = round($channel->target - 100,2);
             }
             $this->items[] = $channel;
         }, get_posts([
@@ -176,6 +177,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                     $total_target = $total_fulfilled;
                 } elseif ($total_goal > 0) {
                     $total_target = round((($total_target / $total_goal) * 100), 2);
+                    $total_target = round($total_target - 100,2);
                 }
                 $style = 'style="color: red !important"';
                 if ($total_fulfilled > $total_goal) {
@@ -206,6 +208,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             $total_target = $total_fulfilled;
         } elseif ($total_goal > 0) {
             $total_target = round((($total_target / $total_goal) * 100), 2);
+            $total_target = round($total_target - 100,2);
         }
         $style = 'style="color: red !important"';
         if ($total_fulfilled > $total_goal) {
@@ -231,6 +234,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             $channel->target = $channel->fulfilled;
         } elseif ($channel->goal > 0) {
             $channel->target = round((($channel->target / $channel->goal) * 100), 2);
+            $channel->target = round($channel->target - 100,2);
         }
         return $channel;
     }
