@@ -4,6 +4,7 @@ add_action("manage_posts_custom_column", "woo_tiny_shop_order_custom_columns");
 add_action( 'woocommerce_admin_order_data_after_order_details', 'woo_tiny_order_data_seller');
 add_action( 'woocommerce_admin_order_data_after_shipping_address', 'woo_tiny_order_documents');
 add_action('woocommerce_update_order', 'woo_tiny_order_save_meta', 10, 2);
+add_action('woocommerce_update_order', 'woo_tiny_admin_channel_update', 10, 2);
 
 function woo_tiny_shop_order_edit_columns($columns)
 {
@@ -50,7 +51,10 @@ function woo_tiny_order_data_seller($order){
     $channel_id = bw_get_meta_field('bw_canal_venda');
     $channel = ($channel_id != '') ? get_the_title($channel_id) : '';
     $user = wp_get_current_user();
-
+    $channels = get_posts([
+        'post_type' => 'canal_venda',
+        'numberposts' => -1
+    ]);
     if(in_array('bw_supervisor', $user->roles)){
         $sellers = get_users(['role__in' => ['vendedores_bw']]);
         $channels = get_posts(array(
@@ -94,7 +98,14 @@ function woo_tiny_order_save_meta($order_id, $order){
         }
     }
 }
-
+function woo_tiny_admin_channel_update($order_id, $order){
+    if(array_key_exists('bw_canal_venda', $_POST)){
+        $bw_canal_venda = $_POST['bw_canal_venda'];
+        $descricao_canal = get_the_title($bw_canal_venda);
+        update_post_meta($order_id, "bw_canal_venda", $bw_canal_venda);
+        update_post_meta($order_id, "bw_canal_venda_descricao", $descricao_canal);
+    }
+}
 function woo_tiny_order_documents($order){
     $attachments = get_posts([
         'post_type'   => 'attachment',
