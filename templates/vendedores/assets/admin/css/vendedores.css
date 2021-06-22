@@ -46,10 +46,12 @@ tr.woo-tiny-table-separator td {
     color: #000000 !important;
     background-color: #cccccc;
     line-height: 1.4em;
-    padding: 7px !important;
-    border-top: 1px solid #ccd0d4;
-    border-bottom: 1px solid #ccd0d4;
     font-weight: 400;
-    border-spacing: 0;
     font-size: 14px;
+}
+
+@media screen and (max-width: 782px){
+    .bw-table-channel-list tfoot{
+        display: none !important;
+    }
 }

@@ -153,6 +153,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         </table>
         <?php
         $this->display_tablenav('bottom');
+        $this->display_totals();
     }
 
     public function display_rows()
@@ -165,11 +166,11 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                 $total_goal = $this->get_total_type($type, 'goal');
                 $total_fulfilled = $this->get_total_type($type, 'fulfilled');
                 $total_row = '<tr class="woo-tiny-table-separator">';
-                $total_row .= '<td class="manage-column" colspan="2">Total ' . $type . '</td>';
-                $total_row .= '<td class="manage-column">' . wc_price($total_goal) . '</td>';
-                $total_row .= '<td class="manage-column">' . wc_price($total_fulfilled) . '</td>';
-                $total_row .= '<td class="manage-column">' . wc_price($this->get_total_type($type, 'pre_sale')) . '</td>';
-                $total_row .= '<td class="manage-column">' . wc_price($this->get_total_type($type, 'in_wallet')) . '</td>';
+                $total_row .= '<td class="channel column-channel has-row-actions column-primary" data-colname="Total ' . $type . '" colspan="2">Total ' . $type . '<button type="button" class="toggle-row"><span class="screen-reader-text">Mostrar mais detalhes</span></button></td>';
+                $total_row .= '<td class="goal column-goal" data-colname="Objetivo">' . wc_price($total_goal) . '</td>';
+                $total_row .= '<td class="fulfilled column-fulfilled" data-colname="Realizado">' . wc_price($total_fulfilled) . '</td>';
+                $total_row .= '<td class="pre_sale column-pre_sale" data-colname="Pré-venda">' . wc_price($this->get_total_type($type, 'pre_sale')) . '</td>';
+                $total_row .= '<td class="in_wallet column-in_wallet" data-colname="Em carteira">' . wc_price($this->get_total_type($type, 'in_wallet')) . '</td>';
                 $total_target = $total_goal - $total_fulfilled;
                 if ($total_fulfilled == 0) {
                     $total_target = $total_fulfilled;
@@ -180,7 +181,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                 if ($total_fulfilled > $total_goal) {
                     $style = 'style="color: blue !important"';
                 }
-                $total_row .= '<td class="manage-column" ' . $style . '>' . abs($total_target) . '%</td>';
+                $total_row .= '<td class="target column-target" data-colname="Atingimento meta"' . $style . '>' . abs($total_target) . '%</td>';
                 $total_row .= '</tr>';
                 $key = 1;
                 $type = 'B2B';
@@ -195,11 +196,11 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
     {
         $total_goal = $this->get_total_type('', 'goal');
         $total_fulfilled = $this->get_total_type('', 'fulfilled');
-        $total_row = '<td colspan="7"></td></tr><tr class="woo-tiny-table-separator"><th class="manage-column" colspan="2">Total B2B+B2C</th>';
-        $total_row .= '<th class="manage-column">' . wc_price($total_goal) . '</th>';
-        $total_row .= '<th class="manage-column">' . wc_price($total_fulfilled) . '</th>';
-        $total_row .= '<th class="manage-column">' . wc_price($this->get_total_type('', 'pre_sale')) . '</th>';
-        $total_row .= '<th class="manage-column">' . wc_price($this->get_total_type('', 'in_wallet')) . '</th>';
+        $total_row = '<td colspan="7"></td></tr><tr class="woo-tiny-table-separator"><th class="manage-column column-primary" data-colname="Total B2B+B2C" colspan="2">Total B2B+B2C</th>';
+        $total_row .= '<th class="manage-column" data-colname="Objetivo">' . wc_price($total_goal) . '</th>';
+        $total_row .= '<th class="manage-column" data-colname="Realizado">' . wc_price($total_fulfilled) . '</th>';
+        $total_row .= '<th class="manage-column" data-colname="Pré-venda">' . wc_price($this->get_total_type('', 'pre_sale')) . '</th>';
+        $total_row .= '<th class="manage-column" data-colname="Em carteira">' . wc_price($this->get_total_type('', 'in_wallet')) . '</th>';
         $total_target = $total_goal - $total_fulfilled;
         if ($total_fulfilled == 0) {
             $total_target = $total_fulfilled;
@@ -210,7 +211,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         if ($total_fulfilled > $total_goal) {
             $style = 'style="color: blue !important"';
         }
-        $total_row .= '<td class="manage-column" ' . $style . '>' . abs($total_target) . '%</td>';
+        $total_row .= '<td class="manage-column" data-colname="Atingimento meta" ' . $style . '>' . abs($total_target) . '%</td>';
         echo $total_row;
     }
 
@@ -779,6 +780,38 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             }
         }
         return $total_vendas;
+    }
+
+    private function display_totals(){
+        $total_pre_sale = $this->get_total_type('', 'pre_sale');
+        $total_fulfilled = $this->get_total_type('', 'fulfilled');
+        $total_in_wallet = $this->get_total_type('', 'in_wallet');
+        ?>
+        <table class="widefat">
+            <tbody>
+            <tr class="woo-tiny-table-separator">
+                <td>Total B2B + B2C</td>
+                <td></td>
+                <td><?= wc_price($total_fulfilled) ?></td>
+            </tr>
+            <tr class="woo-tiny-table-separator">
+                <td>OBS: á faturar pré-venda (recebidos)</td>
+                <td></td>
+                <td><?= wc_price($total_pre_sale) ?></td>
+            </tr>
+            <tr class="woo-tiny-table-separator">
+                <td>OBS: á faturar carteira (não recebidos)</td>
+                <td></td>
+                <td><?= wc_price($total_in_wallet) ?></td>
+            </tr>
+            <tr class="woo-tiny-table-separator">
+                <td>Total B2B + B2C + OBS</td>
+                <td></td>
+                <td><?= wc_price($total_fulfilled + $total_pre_sale +$total_in_wallet) ?></td>
+            </tr>
+            </tbody>
+        </table>
+        <?php
     }
 
 
