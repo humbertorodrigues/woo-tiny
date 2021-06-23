@@ -1,5 +1,6 @@
 <?php
-
+error_reporting(E_ALL);
+ini_set("display_errors","on");
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
@@ -16,6 +17,8 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
 
     public function __construct()
     {
+        add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', [$this,'handle_custom_query_var'], 10, 2 );
+
 
         parent::__construct(
             array(
@@ -222,12 +225,12 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
     {
         // Ecommerce 109033
         $channel = new stdClass();
-        $channel->id = 0;
-        $channel->channel = 'Ecommerce';
+        $channel->id = 109033;
+        $channel->channel = 'E-commerce';
         $channel->type = 'B2C';
-        $channel->fulfilled = $this->get_fulfilled_by_order_query($channel->id);
-        $channel->in_wallet = $this->get_in_wallet_by_order_query($channel->id);
-        $channel->pre_sale = $this->get_pre_sale_by_order_query($channel->id);
+        $channel->fulfilled = $this->get_fulfilled_by_order_query(0);
+        $channel->in_wallet = $this->get_in_wallet_by_order_query(0);
+        $channel->pre_sale = $this->get_pre_sale_by_order_query(0);
         $channel->goal = $this->get_goal($channel->id);
         $channel->target = $channel->goal - $channel->fulfilled;
         if ($channel->fulfilled == 0) {
@@ -706,8 +709,8 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                 $this->end_date = strtotime(date('Y-m-t', strtotime('-1 DAY', $first_day_current_month)));
                 break;
             case 'month':
-                $this->start_date = strtotime(date('Y-m-01', current_time('timestamp')));
-                $this->end_date = strtotime('midnight', current_time('timestamp'));
+                $this->start_date = strtotime(date('Y-m-01'));
+                $this->end_date = strtotime(date('Y-m-t'));
                 break;
             case '7day':
             default:
@@ -717,23 +720,40 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         }
     }
 
-    private function get_fulfilled_by_order_query($channel_id)
-    {
+    private function get_fulfilled_by_order_query($channel_id){
+    
+       
+        if($channel_id != 0){
+           $signal = "=";
+        }else{
+            $signal = "NOT EXISTS";
+        }
         $query = new WC_Order_Query([
+            'meta_query' => array(
+                'relation' => 'AND',
+                'tiny_nf' => array(
+                    'key' => 'tiny_nf',
+                    'compare' => 'EXISTS',
+                ),
+                'bw_canal_venda' => array(
+                    'key' => 'bw_canal_venda',
+                    'compare' => $signal,
+                    'value' => $channel_id
+                ), 
+            ),
             'limit' => -1,
             'orderby' => 'date',
             'order' => 'DESC',
-            'date_paid' => $this->start_date . "..." . $this->end_date,  //'2018-02-01...2018-02-28',
+            'date_paid' => $this->start_date."..." .$this->end_date, 
             'status' => ['wc-processing', 'wc-completed', 'wc-shipping'],
-            'meta_key' => 'tiny_nf', // The postmeta key field
-            'meta_compare' => 'EXISTS',
-
+            'return' => 'ids',
         ]);
         $orders = $query->get_orders();
         $total_vendas = 0;
         foreach ($orders as $order) {
-            $order_id = $order->data['id'];
-            $total = $order->data['total'];
+            $order_id = $order;
+            $total = get_post_meta ($order_id , '_order_total', true);
+            
             if ($channel_id == get_post_meta($order_id, "bw_canal_venda", true)) {
                 $total_vendas += $total;
             }
@@ -743,45 +763,85 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
 
     private function get_pre_sale_by_order_query($channel_id)
     {
+        if($channel_id != 0){
+            $signal = "=";
+         }else{
+             $signal = "NOT EXISTS";
+         }
         $query = new WC_Order_Query([
             'limit' => -1,
             'orderby' => 'date',
             'order' => 'DESC',
             'date_paid' => $this->start_date . "..." . $this->end_date,  //'2018-02-01...2018-02-28',
             'status' => ['wc-processing', 'wc-completed', 'wc-shipping'],
-            'meta_key' => 'tiny_nf', // The postmeta key field
-            'meta_compare' => 'NOT EXISTS',
+            'return' => 'ids',
+
+            'meta_query' => array(
+                'relation' => 'AND',
+                'tiny_nf' => array(
+                    'key' => 'tiny_nf',
+                    'compare' => 'NOT EXISTS',
+                ),
+                'bw_canal_venda' => array(
+                    'key' => 'bw_canal_venda',
+                    'compare' => $signal,
+                    'value' =>$channel_id
+                ), 
+            ),
 
         ]);
         $orders = $query->get_orders();
         $total_vendas = 0;
-        foreach ($orders as $order) {
-            $order_id = $order->data['id'];
-            $total = $order->data['total'];
-            if ($channel_id == get_post_meta($order_id, "bw_canal_venda", true)) {
-                $total_vendas += $total;
-            }
+        foreach ($orders as $order_id) {
+            $order = wc_get_order( $order_id );
+            $total = $order->get_total();
+         
+            // $order_id = $order->data['id'];
+            // $total = $order->data['total'];
+            // $total = get_post_meta ($order_id , '_order_total', true);
+            // if ($channel_id == get_post_meta($order_id, "bw_canal_venda", true)) {
+            $total_vendas += $total;
+            // }
         }
         return $total_vendas;
     }
 
     private function get_in_wallet_by_order_query($channel_id)
     {
+        if($channel_id != 0){
+            $signal = "=";
+         }else{
+             $signal = "NOT EXISTS";
+         }
         $query = new WC_Order_Query([
             'limit' => -1,
             'orderby' => 'date',
             'order' => 'DESC',
             'date_created' => $this->start_date . "..." . $this->end_date,  //'2018-02-01...2018-02-28',
-            'status' => ['wc-wallet']
+            'return' => 'ids',
+            'status' => ['wc-wallet'],
+            'meta_query' => array(
+                'bw_canal_venda' => array(
+                    'key' => 'bw_canal_venda',
+                    'compare' => $signal,
+                    'value' =>$channel_id
+                ), 
+            ),
         ]);
-        $orders = $query->get_orders();
+        
         $total_vendas = 0;
-        foreach ($orders as $order) {
-            $order_id = $order->data['id'];
-            $total = $order->data['total'];
-            if ($channel_id == get_post_meta($order_id, "bw_canal_venda", true)) {
-                $total_vendas += $total;
-            }
+        $orders = $query->get_orders();
+
+        foreach ($orders as $order_id) {
+            $order = wc_get_order( $order_id );
+            $total = $order->get_total();
+         
+            // $order_id = $order->data['id'];
+            // $total = $order->data['total'];
+            // $total = get_post_meta ($order_id , '_order_total', true);
+            // if ($channel_id == get_post_meta($order_id, "bw_canal_venda", true)) {
+            $total_vendas += $total;
+            // }
         }
         return $total_vendas;
     }
@@ -816,6 +876,14 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             </tbody>
         </table>
         <?php
+    }
+    public function handle_custom_query_var( $query, $query_vars ) {
+        if ( ! empty( $query_vars['meta_query'] ) ) {
+            $query['meta_query'][]=$query_vars['meta_query'];
+        }
+        
+    
+        return $query;
     }
 
 
