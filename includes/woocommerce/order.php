@@ -6,8 +6,6 @@ add_filter('wc_order_statuses', 'woo_tiny_new_wc_order_statuses');
 add_filter('wc_order_is_editable', 'woo_tiny_wc_order_is_editable', 10, 2);
 add_action('wp_ajax_woo_tiny_get_coupon', 'woo_tiny_ajax_get_coupon_by_code');
 add_action('admin_post_woo_tiny_save_order', 'woo_tiny_save_order');
-add_filter('woocommerce_valid_order_statuses_for_payment', 'woo_tiny_order_valid_statuses_for_payment', 10, 2);
-add_filter('woocommerce_is_checkout', 'woo_tiny_order_is_checkout');
 
 function woo_tiny_order_after_calculate_totals($and_taxes, $order)
 {
@@ -249,12 +247,7 @@ function woo_tiny_save_order()
             $referer .= $order_id > 0 ? set_alert('success', "Pedido #{$order_id} salvo com sucesso") : set_alert('danger', 'Falha ao processar');
             switch ($order_finish){
                 case 1:
-                    $query = http_build_query([
-                        'pay_for_order' => true,
-                        'order-pay' => $order_id,
-                        'key' => $order->get_order_key(),
-                    ]);
-                    $referer = site_url('pagar-pedido?' . $query);
+                    $referer = $order->get_checkout_payment_url();
                     break;
                 case 2:
                     $estimate = $_POST['estimate'];
@@ -294,28 +287,6 @@ function woo_tiny_order_upload_files($order_id, $files)
             update_post_meta($attachment_id, 'document_order', 'yes');
         }
     }
-}
-
-
-function woo_tiny_order_valid_statuses_for_payment($valid_order_statuses, $instance)
-{
-    $order_statuses = ['revision'];
-    return array_merge($valid_order_statuses, $order_statuses);
-}
-
-function woo_tiny_order_is_checkout($condition)
-{
-    global $post;
-    global $wp;
-    if ($post->ID == url_to_postid(site_url('pagar-pedido'))) {
-        $condition = true;
-        wc_maybe_define_constant('WOOCOMMERCE_CHECKOUT', true);
-        if (isset($_GET['order-pay'])) {
-            set_query_var('order-pay', $_GET['order-pay']);
-            $wp->query_vars['order-pay'] = $_GET['order-pay'];
-        }
-    }
-    return $condition;
 }
 
 

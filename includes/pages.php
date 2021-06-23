@@ -9,6 +9,13 @@ function woo_tiny_order_payment_page()
         if (count($available_gateways)) {
             current($available_gateways)->set_current();
         }
-        include WOO_TINY_DIR . 'templates/pages/payment-order.php';
+        wc_get_template(
+            'checkout/form-pay.php',
+            array(
+                'order' => $order,
+                'available_gateways' => $available_gateways,
+                'order_button_text' => apply_filters('woocommerce_pay_order_button_text', __('Pay for order', 'woocommerce')),
+            )
+        );
     }
 }

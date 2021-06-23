@@ -7,11 +7,11 @@ add_action('woocommerce_update_order', 'woo_tiny_order_save_meta', 10, 2);
 add_action('woocommerce_update_order', 'woo_tiny_admin_channel_update', 10, 2);
 add_filter('woocommerce_admin_order_actions', 'woo_tiny_admin_order_actions', 10, 2);
 
-function woo_tiny_admin_order_actions($actions, $object)
+function woo_tiny_admin_order_actions($actions, $order)
 {
-    if ($object->has_status(['revision', 'wallet'])) {
+    if ($order->has_status(['revision', 'wallet'])) {
         $actions['processing'] = [
-            'url' => wp_nonce_url(admin_url('admin-ajax.php?action=woocommerce_mark_order_status&status=processing&order_id=' . $object->get_id()), 'woocommerce-mark-order-status'),
+            'url' => wp_nonce_url(admin_url('admin-ajax.php?action=woocommerce_mark_order_status&status=processing&order_id=' . $order->get_id()), 'woocommerce-mark-order-status'),
             'name' => __('Processing', 'woocommerce'),
             'action' => 'processing',
         ];

@@ -21,6 +21,7 @@ require WOO_TINY_DIR . 'includes/woocommerce/estimate.php';
 require WOO_TINY_DIR . 'includes/woocommerce/report.php';
 require WOO_TINY_DIR . 'includes/woocommerce/analytic.php';
 require WOO_TINY_DIR . 'includes/woocommerce/seller.php';
+require WOO_TINY_DIR . 'includes/woocommerce/payment.php';
 
 
 require WOO_TINY_DIR . 'includes/post-types/payment-options.php';
