@@ -60,7 +60,7 @@ if (jQuery('#content-bw-custom-product-price').length > 0) {
 }
 
 jQuery(document).on('keyup blur', '.bw-custom-product-price', function (e) {
-    jQuery(this).maskMoney({thousands:'.', decimal:',', affixesStay: false});
+    jQuery(this).maskMoney({thousands: '.', decimal: ',', affixesStay: false});
 });
 
 // jQuery(document).ready(function () {
@@ -87,13 +87,13 @@ jQuery(document).on('keyup blur', '.bw-custom-product-price', function (e) {
 //     });
 //     jQuery('.datepicker-year').trigger('onChangeMonthYear');
 // })
-jQuery(document).ready(function(){
+jQuery(document).ready(function () {
     let data_atual = new Date();
-    jQuery("#data_meta").val(data_atual.getFullYear()+"-"+("0" + (data_atual.getMonth()+1)).slice(-2));
-    jQuery("#data_meta").on('change',function(){
-        let data_selecionada  = jQuery("#data_meta").val();
-        let dataF = new Date(data_selecionada+"-10");
-        let month = dataF.getMonth()+1;
+    jQuery("#data_meta").val(data_atual.getFullYear() + "-" + ("0" + (data_atual.getMonth() + 1)).slice(-2));
+    jQuery("#data_meta").on('change', function () {
+        let data_selecionada = jQuery("#data_meta").val();
+        let dataF = new Date(data_selecionada + "-10");
+        let month = dataF.getMonth() + 1;
         let year = dataF.getFullYear();
         let input = jQuery('#woo_tiny_goal');
         input.attr('name', 'goal_' + year + '_' + month)
@@ -108,7 +108,7 @@ jQuery(document).ready(function(){
                 input.val(res.data);
             }
         });
-    
+
     })
 })
 jQuery(document).on('click', '#woo_tiny_save_goal_by_channel', function (e) {
@@ -127,4 +127,9 @@ jQuery(document).on('click', '#woo_tiny_save_goal_by_channel', function (e) {
             alert("Meta atualizada com sucesso")
         }
     });
+});
+
+jQuery(document).on('click', 'label[for=order_status]', function (e) {
+    let ancor = jQuery(this).children('a');
+    ancor.attr('target', '_blank');
 });

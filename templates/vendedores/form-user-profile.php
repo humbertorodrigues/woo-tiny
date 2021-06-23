@@ -63,12 +63,8 @@
             <td>
                 <select id="bw_regional" class="regular-text" name="bw_regional" required>
                     <option value="" selected>Selecione uma regional...</option>
-                    <?php foreach ($regionais as $regional => $estados): ?>
-                        <optgroup label="<?= $regional ?>">
-                            <?php foreach ($estados as $uf => $estado): ?>
-                                <option value="<?= $uf ?>" <?php if(get_user_meta($user->ID, 'bw_regional', true) == $uf){ echo 'selected'; } ?>><?= $estado ?></option>
-                            <?php endforeach; ?>
-                        </optgroup>
+                    <?php foreach ($regionais as $regional => $estados):  $estados = implode(', ', $estados); ?>
+                                <option value="<?= $regional ?>" <?php if(get_user_meta($user->ID, 'bw_regional', true) == $regional){ echo 'selected'; } ?>><?= $regional . ' (' . $estados . ')' ?></option>
                     <?php endforeach; ?>
                 </select>
             </td>
