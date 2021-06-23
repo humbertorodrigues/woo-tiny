@@ -147,13 +147,14 @@ class vendedores
             }, $custom_products_prices);
         }
 
-        include WOO_TINY_DIR . '/templates/vendedores/form-customer.php';
+        include WOO_TINY_DIR . '/templates/vendedores/form-user-profile.php';
     }
 
     public function salva_dados_vendedor($user_id)
     {
         update_user_meta($user_id, "bw_id_vendedor_tiny_vinicola", $_POST['bw_id_vendedor_tiny_vinicola'] ?? '');
         update_user_meta($user_id, "bw_id_vendedor_tiny_bw", $_POST['bw_id_vendedor_tiny_bw'] ?? '');
+        update_user_meta($user_id, "bw_regional", $_POST['bw_regional'] ?? '');
     }
 }
 
