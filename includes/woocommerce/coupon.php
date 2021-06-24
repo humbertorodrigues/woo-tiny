@@ -67,19 +67,73 @@ function woo_tiny_coupon_save_extra_data_in_order($order_id, $status_from, $stat
         $coupon_post_obj = get_page_by_title($item->get_name(), OBJECT, 'shop_coupon');
         $coupon_id = $coupon_post_obj->ID;
         $seller_id = get_post_meta($order_id, 'bw_id_vendedor', true) ?? '';
-        if($seller_id == ''){
+        if ($seller_id == '') {
             $seller_id = get_post_meta($coupon_id, 'woo_tiny_seller_id', true) ?? $seller_id;
         }
-        $channel_id = get_post_meta($order_id, 'bw_canal_venda', true) ?? '';
-        if($channel_id == ''){
-            $channel_id = get_post_meta($coupon_id, 'woo_tiny_channel_id', true) ?? $channel_id;
-        }
+        $channel_id = woo_tiny_coupon_get_channel_by_coupon_id($coupon_id, get_post_meta($order_id, 'bw_canal_venda', true));
         if ($channel_id != '') {
-            if($seller_id != '') {
+            if ($seller_id != '') {
                 update_post_meta($order_id, "bw_id_vendedor", $seller_id);
             }
             update_post_meta($order_id, "bw_canal_venda", $channel_id);
             update_post_meta($order_id, "bw_canal_venda_descricao", get_the_title($channel_id));
         }
     }
+    woo_tiny_coupon_set_channel_in_rule_user_email($order_id);
+}
+
+function woo_tiny_coupon_set_channel_in_rule_user_email($order_id)
+{
+    $emails = [
+        '@agilize.com.br',
+        '@appsistemas.com.br',
+        '@cappta.com.br',
+        '@conube.com.br',
+        '@deliverymuch.com.br',
+        '@equals.com.br',
+        '@linkedgourmet.com.br',
+        '@mlabs.com.br',
+        '@mundipagg.com',
+        '@menew.com.br',
+        '@nodis.com.br',
+        '@pagar.me',
+        '@rhsoftware.com.br',
+        '@stone.com.br',
+        '@taginfraestrutura.com.br',
+        '@trinks.com',
+        '@vitta.me',
+        '@vhsys.com.br',
+        '@zurich.com',
+        '@br.zurich.com',
+    ];
+
+    $channel_id = get_post_meta($order_id, "bw_canal_venda", true);
+    $email = get_post_meta($order_id, '_billing_email', true);
+    $email = substr($email, strpos($email, '@'));
+
+    if ($channel_id == '' && in_array($email, $emails)) {
+        $channel_id = 95290;
+        update_post_meta($order_id, "bw_canal_venda", $channel_id);
+        update_post_meta($order_id, "bw_canal_venda_descricao", get_the_title($channel_id));
+        return true;
+    }
+    return false;
+}
+
+function woo_tiny_coupon_get_channel_by_coupon_id($coupon_id, $channel_id = '')
+{
+    if ($channel_id == '') {
+        $channel_id = get_post_meta($coupon_id, 'woo_tiny_channel_id', true) ?? $channel_id;
+        if ($channel_id == '') {
+            global $wpdb;
+            $query = "SELECT posts.ID as id FROM {$wpdb->posts} AS posts INNER JOIN {$wpdb->postmeta} AS postmeta ON (postmeta.post_id = posts.ID AND postmeta.meta_key = 'woo_tiny_channel_id') WHERE posts.post_type='shop_coupon' AND postmeta.meta_value = 95290";
+            $coupon_ids = array_map(function ($item) {
+                return absint($item->id);
+            }, $wpdb->get_results($query));
+            if(in_array($coupon_id, $coupon_ids)) {
+                $channel_id = 95290;
+            }
+        }
+    }
+    return $channel_id;
 }
