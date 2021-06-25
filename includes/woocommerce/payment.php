@@ -12,9 +12,12 @@ function woo_tiny_include_seller_pay()
     if ($bw_seller_pay) {
         $order_id = absint(get_query_var('order-pay'));
         $order = wc_get_order($order_id);
-        $available_gateways = WC()->payment_gateways->get_available_payment_gateways();
-        if (count($available_gateways)) {
-            current($available_gateways)->set_current();
+        if($payment_id = absint(get_post_meta($order_id, 'bw_forma_pagamento_id', true))) {
+            $gateway_id = get_post_meta($payment_id, 'payment_gateway', true);
+            $available_gateways = array_filter(WC()->payment_gateways->payment_gateways(), function ($gateway) use ($gateway_id) {
+                return $gateway->id == $gateway_id;
+            });
+            WC()->payment_gateways->set_current_gateway($available_gateways);
         }
         include WOO_TINY_DIR . 'templates/pages/payment-order.php';
         die;

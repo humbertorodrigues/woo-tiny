@@ -22,6 +22,18 @@
         </td>
     </tr>
     <tr>
+        <th scope="row"><label for="payment_gateways">Gateway de Pagamento</label></th>
+        <td>
+            <select name="payment_gateway" id="payment_gateways" class="regular-text" required>
+                <?php foreach ($payment_gateways as $val => $payment_gateway): ?>
+                    <option value="<?= $val ?>" <?php if($val == bw_get_meta_field('payment_gateway')): ?>selected<?php endif; ?>><?= $payment_gateway ?></option>
+                <?php endforeach; ?>
+            </select>
+            <br>
+            <small>Selecione um gateway de pagamento</small>
+        </td>
+    </tr>
+    <tr>
         <th scope="row"><label>Parcelas</label></th>
         <td>
             <div>

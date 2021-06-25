@@ -38,6 +38,9 @@ function woo_tiny_payment_options_add_meta_box()
 function woo_tiny_payment_options_meta_content()
 {
     $payment_methods = woo_tiny_get_payment_methods();
+    $payment_gateways = array_map(function ($gateway){
+        return $gateway->method_title;
+    }, WC()->payment_gateways->payment_gateways());
     include WOO_TINY_DIR . 'templates/post-types/payment-options/meta-form.php';
 }
 
@@ -53,6 +56,7 @@ function woo_tiny_payment_options_meta_save()
     $_POST['discount'] = preg_replace('/\D/', '', $_POST['discount']);
     update_post_meta($post->ID, "discount", $_POST['discount']);
     update_post_meta($post->ID, "payment_method", $_POST['payment_method']);
+    update_post_meta($post->ID, "payment_gateway", $_POST['payment_gateway']);
     update_post_meta($post->ID, "installments", $_POST['installments']);
 }
 
