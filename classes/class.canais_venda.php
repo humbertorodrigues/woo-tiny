@@ -45,6 +45,11 @@ class canaisVenda
 
     public function _meta_box_form_display()
     {
+        $payment_methods = get_posts(array(
+            'post_type' => 'bw-payment-options',
+            'numberposts' => -1
+        ));
+
         include WOO_TINY_DIR . 'templates/post-types/channel/meta-form.php';
     }
 
@@ -55,6 +60,8 @@ class canaisVenda
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
 
         if (get_post_type($post) !== 'canal_venda') return;
+        $_POST['payment_methods'] = implode(',', $_POST['payment_methods']);
+        update_post_meta($post->ID, 'payment_methods', $_POST['payment_methods']);
         update_post_meta($post->ID, 'type', $_POST['type']);
     }
 
@@ -95,7 +102,6 @@ class canaisVenda
         ));
         $dados_salvos = get_post_meta($post_id, 'canais_venda', true);
         $bonificacao = get_post_meta($post_id, 'bonificacao', true);
-
         ?>
 
         <div id="canais_venda" class="panel woocommerce_options_panel">

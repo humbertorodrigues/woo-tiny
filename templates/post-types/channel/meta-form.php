@@ -15,6 +15,18 @@
         </td>
     </tr>
     <tr>
+        <th scope="row"><label for="payment_method">Meios de Pagamento</label></th>
+        <td>
+            <select name="payment_methods[]" id="payment_method" class="regular-text" multiple>
+                <?php foreach ($payment_methods as $payment_method): ?>
+                    <option value="<?= $payment_method->ID ?>" <?php if(in_array($payment_method->ID, explode(',', bw_get_meta_field('payment_methods')))): ?>selected<?php endif; ?>><?= $payment_method->post_title ?></option>
+                <?php endforeach; ?>
+            </select>
+            <br>
+            <small>Selecione um meio de pagamento</small>
+        </td>
+    </tr>
+    <tr>
         <th scope="row"><label for="woo_tiny_goal">Meta</label></th>
         <td>
             <input id="data_meta" type="month"/>

@@ -223,10 +223,11 @@ if (!is_user_logged_in()) {
                             <div class="form-group">
                                 <label for="">Canal de venda</label>
                                 <select class="form-control" name="canal_venda" id="canal_venda">
-                                    <option value="">Escolha um canal de venda</option>
+                                    <option value="" data-bw-order-payments="">Escolha um canal de venda</option>
                                     <?php foreach ($canais_vendas as $key => $canal_venda) {
                                         ?>
-                                        <option value="<?php echo $canal_venda->ID ?>"><?php echo $canal_venda->post_title ?></option>
+                                        <option value="<?php echo $canal_venda->ID ?>"
+                                                data-bw-order-payments="<?= get_post_meta($canal_venda->ID, 'payment_methods', true) ?>"><?php echo $canal_venda->post_title ?></option>
                                         <?php
                                     } ?>
                                 </select>
@@ -542,6 +543,18 @@ if (!is_user_logged_in()) {
                 jQuery("#preco_unitario_" + id_produto).val(finalPrice);
                 jQuery("#preco_unitario_" + id_produto).attr('min', finalPrice);
             }
+        }
+        let paymentIds = jQuery(this).find('option:selected').data('bw-order-payments');
+        console.log(paymentIds);
+        let paymentMethods = jQuery('#bw_payment_option').find('option');
+        paymentMethods.prop('disabled', false);
+        if (paymentIds !== '') {
+            paymentIds = paymentIds.split(',');
+            paymentMethods.each(function (i, el) {
+                if (!paymentIds.includes($(el).val())) {
+                    $(el).prop('disabled', true);
+                }
+            })
         }
         calcula_subtotal();
     })
