@@ -18,6 +18,11 @@ function woo_tiny_include_seller_pay()
                 return $gateway->id == $gateway_id;
             });
             WC()->payment_gateways->set_current_gateway($available_gateways);
+        }else{
+            $available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+            if (count($available_gateways)) {
+                current($available_gateways)->set_current();
+            }
         }
         include WOO_TINY_DIR . 'templates/pages/payment-order.php';
         die;
