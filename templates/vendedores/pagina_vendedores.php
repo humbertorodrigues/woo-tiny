@@ -545,9 +545,8 @@ if (!is_user_logged_in()) {
             }
         }
         let paymentIds = jQuery(this).find('option:selected').data('bw-order-payments');
-        console.log(paymentIds);
         let paymentMethods = jQuery('#bw_payment_option').find('option');
-        paymentMethods.prop('disabled', false);
+        paymentMethods.prop('disabled', false).prop('selected', false);
         if (paymentIds !== '') {
             paymentIds = paymentIds.split(',');
             paymentMethods.each(function (i, el) {
@@ -556,6 +555,7 @@ if (!is_user_logged_in()) {
                 }
             })
         }
+        jQuery('#bw_payment_option').trigger('change');
         calcula_subtotal();
     })
 
