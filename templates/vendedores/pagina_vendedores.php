@@ -168,7 +168,7 @@ if (!is_user_logged_in()) {
                         <div class="row mt-3">
                             <div class="col-lg-2">
                                 <div class="form-group">
-                                    <input type="text" class="form-control" name="shipping[postcode]" id="cep"
+                                    <input type="text" class="form-control" name="shipping[postcode]"
                                            placeholder="CEP"
                                            data-load-address="" data-filled="shipping_postcode">
                                 </div>
