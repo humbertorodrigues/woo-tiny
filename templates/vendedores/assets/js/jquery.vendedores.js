@@ -3,6 +3,12 @@ jQuery(document).on("contextmenu keydown mousedown keypress", function (e) {
     if (e.keyCode === 123 || e.type === 'contextmenu') return false;
 });
 jQuery.validator.addMethod("cpfcnpj", brdocs.cpfcnpjValidator, "Informe um documento válido.");
+jQuery.validator.addMethod("same", function(value, element, param) {
+    if(jQuery(param).is(':checked')){
+       return value !== '';
+    }
+    return this.optional(element);
+});
 jQuery(document).ready(function () {
     jQuery("#telefone").mask("(99)99999-9999");
     jQuery("#celular").mask("(99)99999-9999");
@@ -24,7 +30,15 @@ jQuery(document).ready(function () {
 
             email: {required: true, email: true},
             canal_venda: {required: true},
-            bw_payment_option: {required: true}
+            bw_payment_option: {required: true},
+
+
+            "shipping[postcode]": { same: '#has-shipping'},
+            "shipping[address_1]": { same: '#has-shipping'},
+            "shipping[number]": { same: '#has-shipping'},
+            "shipping[neighborhood]": { same: '#has-shipping'},
+            "shipping[city]": { same: '#has-shipping'},
+            "shipping[state]": { same: '#has-shipping'},
         },
         messages: {
             nome: {required: "Informe o nome do cliente"},
@@ -39,8 +53,17 @@ jQuery(document).ready(function () {
             telefone: {required: "Informe o telefone"},
             celular: {required: "Informe o celular"},
             nome_contato: {required: "Informe"},
+
             email: {required: "Informe o email", email: "Informe um email válido"},
-            canal_venda: {required: "Informe um canal de venda"}
+            canal_venda: {required: "Informe um canal de venda"},
+            bw_payment_option: {required: "Informe uma forma de pagamento"},
+
+            "shipping[postcode]": { same: 'Informe o CEP'},
+            "shipping[address_1]": { same: 'Informe o endereço'},
+            "shipping[number]": { same: 'Informe o numero'},
+            "shipping[neighborhood]": { same: 'Informe o bairro'},
+            "shipping[city]": { same: 'Informe a cidade'},
+            "shipping[state]": { same: 'Informe o estado'},
         },
         submitHandler: function (form) {
             let formData = new FormData(form);
