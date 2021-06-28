@@ -69,9 +69,14 @@ function woo_tiny_ajax_get_coupon_by_code()
 function woo_tiny_save_order()
 {
     if ('POST' != $_SERVER['REQUEST_METHOD'] || !wp_verify_nonce($_POST['_wpnonce'], 'woo_tiny_shop_order')) die('Requisição Inválida');
-    $referer = 'vendedores';
+    $referer = site_url('vendedores');
     if (!is_user_logged_in()) {
-        wp_redirect(wp_login_url(site_url($referer)));
+        if(wp_doing_ajax()){
+            wp_send_json_error([
+                'redirect' => wp_login_url($referer),
+            ]);
+        }
+        wp_redirect(wp_login_url($referer));
         exit;
     }
 

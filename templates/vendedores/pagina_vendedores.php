@@ -29,7 +29,7 @@ if (!is_user_logged_in()) {
                         <div class="form-group">
                             <label for="woo-tiny-seller">Vendedor</label>
                             <select name="bw_id_vendedor" id="woo-tiny-seller" class="form-control" required>
-                                <option>Selecione um vendedor...</option>
+                                <option value="0">Selecione um vendedor...</option>
                                 <?php foreach ($sellers as $seller): ?>
                                     <option value="<?= $seller->ID ?>"><?= $seller->display_name ?></option>
                                 <?php endforeach; ?>
