@@ -6,6 +6,7 @@ add_filter('wc_order_statuses', 'woo_tiny_new_wc_order_statuses');
 add_filter('wc_order_is_editable', 'woo_tiny_wc_order_is_editable', 10, 2);
 add_action('wp_ajax_woo_tiny_get_coupon', 'woo_tiny_ajax_get_coupon_by_code');
 add_action('admin_post_woo_tiny_save_order', 'woo_tiny_save_order');
+add_action('wp_ajax_woo_tiny_save_order', 'woo_tiny_save_order');
 
 function woo_tiny_order_after_calculate_totals($and_taxes, $order)
 {
@@ -139,6 +140,11 @@ function woo_tiny_save_order()
         $customer = woo_tiny_save_customer_meta_data(woo_tiny_get_customer_data($address));
         if (!$customer) {
             $referer .= set_alert('danger', 'Falha ao processar');
+            if(wp_doing_ajax()){
+                wp_send_json_error([
+                    'redirect' => $referer,
+                ]);
+            }
             wp_redirect($referer);
             exit;
         }
@@ -244,7 +250,7 @@ function woo_tiny_save_order()
         }
         if ($order_id > 0) {
             woo_tiny_order_upload_files($order_id, $_FILES['documents']);
-            $referer .= $order_id > 0 ? set_alert('success', "Pedido #{$order_id} salvo com sucesso") : set_alert('danger', 'Falha ao processar');
+            $referer .= set_alert('success', "Pedido #{$order_id} salvo com sucesso");
             switch ($order_finish){
                 case 1:
                     $referer = $order->get_checkout_payment_url();
@@ -269,6 +275,11 @@ function woo_tiny_save_order()
         }
         if (!in_array((int) $_POST['finish'], [2, 3], true)) {
             woo_tiny_trigger_order_revision_email($order);
+        }
+        if(wp_doing_ajax()){
+            wp_send_json_success([
+                'redirect' => $referer
+            ]);
         }
         wp_redirect($referer);
     }

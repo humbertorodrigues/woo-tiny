@@ -44,11 +44,12 @@ class vendedores
             wp_enqueue_style('bootstrap', WOO_TINY_URL . 'templates/vendedores/assets/bootstrap/css/bootstrap.min.css');
             wp_enqueue_style('vendedores', WOO_TINY_URL . 'templates/vendedores/assets/css/vendedores.css', ['bootstrap']);
             wp_enqueue_script('validate', WOO_TINY_URL . 'templates/vendedores/assets/js/jquery.validate.min.js', array("jquery"));
+            wp_enqueue_script('bootstrap', WOO_TINY_URL . 'templates/vendedores/assets/bootstrap/js/bootstrap.min.js', array("jquery"));
             wp_enqueue_script('validate-cpf-cnpj', WOO_TINY_URL . 'templates/vendedores/assets/js/brdocs.cpfcnpjValidator.js', array("jquery", "validate"));
             wp_enqueue_script('mask', WOO_TINY_URL . 'templates/vendedores/assets/js/jquery.mask.min.js', array("jquery"));
             wp_enqueue_script('viacep', WOO_TINY_URL . 'templates/vendedores/assets/js/jquery.viacep.js', ['jquery']);
             wp_enqueue_script('multi-file', WOO_TINY_URL . 'templates/vendedores/assets/js/jquery.MultiFile.min.js', ['jquery']);
-            wp_enqueue_script('vendedores', WOO_TINY_URL . 'templates/vendedores/assets/js/jquery.vendedores.js', ['jquery', 'multi-file']);
+            wp_enqueue_script('vendedores', WOO_TINY_URL . 'templates/vendedores/assets/js/jquery.vendedores.js', ['jquery', 'multi-file', 'bootstrap']);
             wp_localize_script( 'vendedores', 'woo_tiny', [
                     'ajax_url' => admin_url( 'admin-ajax.php' ),
                     'nonce' => wp_create_nonce('woo-tiny-ajax')
