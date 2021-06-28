@@ -243,7 +243,6 @@ jQuery(document).on('click', '#has-shipping', function (e) {
 });
 
 jQuery(document).on('change', '#finish', function (e) {
-    console.log(jQuery(this).val())
     if (jQuery(this).val() === '2') {
         jQuery('.estimate-box').show();
         jQuery('.estimate').attr('disabled', false).prop('required', true);
