@@ -139,7 +139,7 @@ class Woo_Tiny_Order_Revision_Email extends WC_Email {
             $this->placeholders['{order_number}'] = $this->object->get_order_number();
         }
 
-        $seller_email = woo_tiny_get_seller_data_by_order_id($order->get_id(), 'user_email');
+        $seller_email = woo_tiny_get_seller_data_by_order_id($order_id, 'user_email');
         if ($seller_email) {
             if(!$this->recipient){
                 $this->recipient = $seller_email;
