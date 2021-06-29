@@ -19,7 +19,6 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
     {
         add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', [$this,'handle_custom_query_var'], 10, 2 );
 
-
         parent::__construct(
             array(
                 'singular' => 'channel',
@@ -193,6 +192,13 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                 $key++;
             }
         }
+    }
+
+    public function get_export_button()
+    {
+        ?>
+        <a href="javascript:;" id="exportPdf" class="export_pdf" data-filename="relatorio-canais">Exportar PDF</a>
+        <?php
     }
 
     private function get_tfooter()

@@ -7,6 +7,7 @@ require WOO_TINY_DIR . 'helpers.php';
 
 require WOO_TINY_DIR . 'classes/class-woo-tiny-estimate-page-content.php';
 
+require WOO_TINY_DIR . 'includes/enqueue-scripts.php';
 require WOO_TINY_DIR . 'includes/roles.php';
 require WOO_TINY_DIR . 'includes/cron.php';
 require WOO_TINY_DIR . 'includes/pages.php';

@@ -1,0 +1,11 @@
+.woocommerce-reports-wide .postbox div.stats_range .export_pdf,
+.woocommerce-reports-wide .postbox h3.stats_range .export_pdf,
+.woocommerce-reports-wrap .postbox div.stats_range .export_pdf,
+.woocommerce-reports-wrap .postbox h3.stats_range .export_pdf {
+    float: right;
+    line-height: 26px;
+    border-left: 1px solid #dfdfdf;
+    padding: 10px;
+    display: block;
+    text-decoration: none;
+}

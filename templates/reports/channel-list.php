@@ -4,6 +4,9 @@
             display: none;
         }
     }
+    #pdfContent{
+        background-color: white;
+    }
 </style>
 <div id="poststuff" class="woocommerce-reports-wide">
     <div class="postbox">
@@ -23,7 +26,7 @@
             <h3 class="screen-reader-text"><?php echo esc_html($ranges[$current_range]); ?></h3>
         <?php endif; ?>
 
-        <div class="stats_range">
+        <div class="stats_range" id="pdfIgnoreContent">
             <?php $this->get_export_button(); ?>
             <ul>
                 <?php
@@ -65,7 +68,7 @@
                 </li>
             </ul>
         </div>
-        <div class="bw-table-channel-list">
+        <div class="bw-table-channel-list" id="pdfContent">
             <?php $this->display(); ?>
         </div>
     </div>
