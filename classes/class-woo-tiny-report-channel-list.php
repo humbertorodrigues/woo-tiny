@@ -149,9 +149,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             </tbody>
 
             <tfoot>
-            <tr>
-                <?php $this->get_tfooter(); ?>
-            </tr>
+            <?php $this->get_tfooter(); ?>
             </tfoot>
 
         </table>
@@ -201,11 +199,11 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
     {
         $total_goal = $this->get_total_type('', 'goal');
         $total_fulfilled = $this->get_total_type('', 'fulfilled');
-        $total_row = '<td colspan="7"></td></tr><tr class="woo-tiny-table-separator"><th class="manage-column column-primary" data-colname="Total B2B+B2C" colspan="2">Total B2B+B2C</th>';
-        $total_row .= '<th class="manage-column" data-colname="Objetivo">' . wc_price($total_goal) . '</th>';
-        $total_row .= '<th class="manage-column" data-colname="Realizado">' . wc_price($total_fulfilled) . '</th>';
-        $total_row .= '<th class="manage-column" data-colname="Pré-venda">' . wc_price($this->get_total_type('', 'pre_sale')) . '</th>';
-        $total_row .= '<th class="manage-column" data-colname="Em carteira">' . wc_price($this->get_total_type('', 'in_wallet')) . '</th>';
+        $total_row = '<tr class="woo-tiny-table-separator" style="margin-top: 1rem !important;"><th class="manage-column column-channel column-primary" colspan="2" data-colname="Total B2B+B2C">Total B2B+B2C</th>';
+        $total_row .= '<th class="manage-column column-goal" data-colname="Objetivo">' . wc_price($total_goal) . '</th>';
+        $total_row .= '<th class="manage-column column-fulfilled" data-colname="Realizado">' . wc_price($total_fulfilled) . '</th>';
+        $total_row .= '<th class="manage-column column-pre_sale" data-colname="Pré-venda">' . wc_price($this->get_total_type('', 'pre_sale')) . '</th>';
+        $total_row .= '<th class="manage-column column-in_wallet" data-colname="Em carteira">' . wc_price($this->get_total_type('', 'in_wallet')) . '</th>';
         $total_target = $total_goal - $total_fulfilled;
         if ($total_fulfilled == 0) {
             $total_target = $total_fulfilled;
@@ -217,7 +215,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         if ($total_fulfilled > $total_goal) {
             $style = 'style="color: blue !important"';
         }
-        $total_row .= '<td class="manage-column" data-colname="Atingimento meta" ' . $style . '>' . abs($total_target) . '%</td>';
+        $total_row .= '<td class="manage-column column-target" data-colname="Atingimento meta" ' . $style . '>' . abs($total_target) . '%</td>';
         echo $total_row;
     }
 
@@ -850,7 +848,52 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         $total_pre_sale = $this->get_total_type('', 'pre_sale');
         $total_fulfilled = $this->get_total_type('', 'fulfilled');
         $total_in_wallet = $this->get_total_type('', 'in_wallet');
-        ?>
+        if(isset($_GET['conselho']) && $_GET['conselho'] == 1):
+            $pre_sale_b2c = $this->get_total_type('B2C', 'pre_sale');
+            $pre_sale_b2b = $this->get_total_type('B2B', 'pre_sale');
+            $in_wallet_b2c = $this->get_total_type('B2C', 'in_wallet');
+            $in_wallet_b2b = $this->get_total_type('B2B', 'in_wallet');
+            ?>
+            <table class="widefat">
+                <tbody>
+                <tr>
+                    <td>A faturar pré-venda b2c (recebidos)</td>
+                    <td></td>
+                    <td><?= wc_price($pre_sale_b2c) ?></td>
+                </tr>
+                <tr>
+                    <td>A faturar pré-venda b2b (recebidos)</td>
+                    <td></td>
+                    <td><?= wc_price($pre_sale_b2b) ?></td>
+                </tr>
+                <tr class="woo-tiny-table-separator">
+                    <td>Subtotal pré-venda</td>
+                    <td></td>
+                    <td><?= wc_price($total_pre_sale) ?></td>
+                </tr>
+                <tr>
+                    <td>A faturar carteira b2c (não recebidos)</td>
+                    <td></td>
+                    <td><?= wc_price($in_wallet_b2c) ?></td>
+                </tr>
+                <tr>
+                    <td>A faturar Carteira b2b (não recebidos)</td>
+                    <td></td>
+                    <td><?= wc_price($in_wallet_b2b) ?></td>
+                </tr>
+                <tr class="woo-tiny-table-separator">
+                    <td>Subtotal carteira</td>
+                    <td></td>
+                    <td><?= wc_price($total_in_wallet) ?></td>
+                </tr>
+                <tr class="woo-tiny-table-separator">
+                    <td>TOTAL B2B + B2C + PRÉ-VENDA + CARTEIRA*</td>
+                    <td></td>
+                    <td><?= wc_price($total_fulfilled + $total_pre_sale +$total_in_wallet) ?></td>
+                </tr>
+                </tbody>
+            </table>
+        <?php else: ?>
         <table class="widefat">
             <tbody>
             <tr class="woo-tiny-table-separator">
@@ -875,8 +918,9 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             </tr>
             </tbody>
         </table>
-        <?php
+        <?php endif;
     }
+
     public function handle_custom_query_var( $query, $query_vars ) {
         if ( ! empty( $query_vars['meta_query'] ) ) {
             $query['meta_query'][]=$query_vars['meta_query'];
@@ -885,6 +929,5 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
     
         return $query;
     }
-
 
 }

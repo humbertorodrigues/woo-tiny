@@ -70,3 +70,11 @@
         </div>
     </div>
 </div>
+<script>
+    jQuery(function () {
+        <?php if(isset($_GET['conselho']) && $_GET['conselho'] == 1): ?>
+       jQuery('.column-pre_sale').addClass('hidden');
+       jQuery('.column-in_wallet').addClass('hidden');
+       <?php endif; ?>
+    });
+</script>
