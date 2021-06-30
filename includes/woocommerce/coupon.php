@@ -75,7 +75,7 @@ function woo_tiny_coupon_save_extra_data_in_order($order_id, $items)
             $channel_id = woo_tiny_discount_rule_get_channel_id($order_id);
         }
         if($channel_id == '') {
-            //$channel_id = woo_tiny_coupon_get_channel_by_coupon_id($coupon_id, $channel_id);
+            $channel_id = woo_tiny_coupon_get_channel_corporate_c_id($coupon_id);
         }
         if ($channel_id != '') {
             if ($seller_id != '') {

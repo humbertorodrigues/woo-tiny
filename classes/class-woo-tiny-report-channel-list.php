@@ -94,7 +94,6 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
     {
         $this->_column_headers = [$this->get_columns(), [], $this->get_sortable_columns()];
         $this->items = [];
-        $this->items[] = $this->get_ecommerce_row();
         array_map(function ($item) {
             $channel = new stdClass();
             $channel->id = $item->ID;
@@ -118,8 +117,9 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'exclude' => [109033],
             'meta_key' => 'type',
             'orderby' => 'meta_value',
-            'order' => 'DESC'
+            'order' => 'ASC'
         ]));
+        $this->items[] = $this->get_ecommerce_row();
     }
 
     public function display()
@@ -130,6 +130,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
 
         $this->screen->render_screen_reader_content('heading_list');
         ?>
+        <h3>Controle de Vendas - B2B</h3>
         <table class="wp-list-table <?php echo implode(' ', $this->get_table_classes()); ?>">
             <thead>
             <tr>
@@ -160,7 +161,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
     public function display_rows()
     {
         $key = 1;
-        $type = 'B2C';
+        $type = 'B2B';
         foreach ($this->items as $item) {
             $this->single_row($item);
             if ($key == $this->get_count_type($type)) {
@@ -185,9 +186,22 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                 }
                 $total_row .= '<td class="target column-target" data-colname="Atingimento meta"' . $style . '>' . abs($total_target) . '%</td>';
                 $total_row .= '</tr>';
-                $key = 1;
-                $type = 'B2B';
                 echo $total_row;
+               if($type != 'B2C'){ ?>
+                    </table><h3>Controle de Vendas - B2C</h3><table class="wp-list-table <?php echo implode(' ', $this->get_table_classes()); ?>">
+            <thead>
+            <tr>
+                <?php $this->print_column_headers(); ?>
+            </tr>
+            </thead>
+            <?php
+            }else{
+               ?>
+                    </table><br><table class="wp-list-table <?php echo implode(' ', $this->get_table_classes()); ?>">
+            <?php
+            }
+            $key = 1;
+                $type = 'B2C';
             } else {
                 $key++;
             }
