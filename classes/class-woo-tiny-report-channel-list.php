@@ -708,6 +708,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
 
     private function calculate_current_range($current_range)
     {
+		date_default_timezone_set('America/Sao_Paulo');
         switch ($current_range) {
             case 'custom':
                 $this->start_date = max(strtotime('-20 years'), strtotime(sanitize_text_field($_GET['start_date'])));
@@ -727,8 +728,8 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                 $this->end_date = strtotime(date('Y-m-t', strtotime('-1 DAY', $first_day_current_month)));
                 break;
             case 'month':
-                $this->start_date = strtotime(date('Y-m-01'));
-                $this->end_date = strtotime(date('Y-m-t'));
+                $this->start_date = strtotime(date('Y-m-01 00:00:00'));
+                $this->end_date = strtotime(date('Y-m-t 23:59:59'));
                 break;
             case '7day':
             default:
