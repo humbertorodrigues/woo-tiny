@@ -719,13 +719,18 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                 }
                 break;
             case 'year':
-                $this->start_date = strtotime(date('Y-01-01', current_time('timestamp')));
-                $this->end_date = strtotime('midnight', current_time('timestamp'));
+                $this->start_date = strtotime(date('Y-01-01 00:00:00', current_time('timestamp')));
+                $this->end_date = strtotime(date('Y-12-31 23:59:59'), current_time('timestamp'));
                 break;
             case 'last_month':
+				$month_ini = new DateTime("first day of last month");
+				$month_end = new DateTime("last day of last month");
+
+				
+				
                 $first_day_current_month = strtotime(date('Y-m-01', current_time('timestamp')));
-                $this->start_date = strtotime(date('Y-m-01', strtotime('-1 DAY', $first_day_current_month)));
-                $this->end_date = strtotime(date('Y-m-t', strtotime('-1 DAY', $first_day_current_month)));
+                $this->start_date = strtotime($month_ini->format('Y-m-d 00:00:00'));
+                $this->end_date = strtotime($month_end->format('Y-m-d 23:59:59'));
                 break;
             case 'month':
                 $this->start_date = strtotime(date('Y-m-01 00:00:00'));
