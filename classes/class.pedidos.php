@@ -5,7 +5,7 @@ class pedidos
     public function __construct()
     {
         // add_action( 'woocommerce_order_status_processing', array($this,'enviar_pedido') ,1);
-        add_action("woocommerce_order_status_processing", array($this, 'separar_pedidos'), 0);
+        add_action("woocommerce_order_status_processing", [$this, 'separar_pedidos'], 0);
         add_filter('woocommerce_my_account_my_orders_query', [$this, 'exibir_pedidos_vendedor'], 10, 1);
     }
 
@@ -480,5 +480,3 @@ class pedidos
         }
     }
 }
-
-?>

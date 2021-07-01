@@ -6,6 +6,202 @@ add_action('woocommerce_admin_order_data_after_shipping_address', 'woo_tiny_orde
 add_action('woocommerce_update_order', 'woo_tiny_order_save_meta', 10, 2);
 add_action('woocommerce_update_order', 'woo_tiny_admin_channel_update', 10, 2);
 add_filter('woocommerce_admin_order_actions', 'woo_tiny_admin_order_actions', 10, 2);
+add_action('restrict_manage_posts', 'woo_tiny_shop_order_extra_tablenav', 10, 2);
+//add_action('manage_posts_extra_tablenav', 'woo_tiny_shop_order_extra_tablenav');
+add_action('disable_months_dropdown', 'woo_tiny_shop_order_disable_months_dropdown', 10, 2);
+add_filter('request', 'woo_tiny_shop_order_extra_filter');
+
+function woo_tiny_shop_order_extra_filter($query_vars)
+{
+    global $pagenow;
+
+    if ('edit.php' == $pagenow && 'shop_order' == $query_vars['post_type']) {
+        if (empty($_GET['start_date'])) {
+            $_GET['start_date'] = date('Y-m-d', strtotime('-1 month'));
+        }
+
+        if (empty($_GET['end_date'])) {
+            $_GET['end_date'] = date('Y-m-d');
+        }
+
+        $query_vars['date_query'] = [
+            'column' => 'post_date',
+            'after' => $_GET['start_date'],
+            'before' => $_GET['end_date'],
+            'inclusive' => true,
+        ];
+
+        if (!isset($query_vars['meta_query'])) {
+            $query_vars['meta_query'] = [];
+        }
+
+        if (!empty($_GET['regional'])) {
+            $seller_ids = get_users([
+                'role__in' => ['vendedores_bw'],
+                'meta_key' => 'bw_regional',
+                'meta_value' => $_GET['regional'],
+                'meta_compare' => '=',
+                'fields' => 'ID'
+            ]);
+            $_GET['seller_id'] = $seller_ids;
+        }
+
+        if (!empty($_GET['seller_id'])) {
+            $meta_seller_compare = '=';
+            if(is_array($_GET['seller_id'])){
+                $_GET['seller_id'] = implode(',', $_GET['seller_id']);
+                $meta_seller_compare = 'IN';
+            }
+            $query_vars['meta_query'][] = [
+                'relation' => 'AND',
+                [
+                    'key' => 'bw_id_vendedor',
+                    'compare' => 'EXISTS'
+                ],
+                [
+                    'key' => 'bw_id_vendedor',
+                    'compare' => $meta_seller_compare,
+                    'value' => $_GET['seller_id']
+                ]
+            ];
+        }
+
+        if (!empty($_GET['channel_id'])) {
+            $query_vars['meta_query'][] = [
+                'relation' => 'AND',
+                [
+                    'key' => 'bw_canal_venda',
+                    'compare' => 'EXISTS'
+                ],
+                [
+                    'key' => 'bw_canal_venda',
+                    'compare' => '=',
+                    'value' => $_GET['channel_id']
+                ]
+            ];
+        }
+    }
+
+    return $query_vars;
+}
+
+function woo_tiny_shop_order_disable_months_dropdown($disabled, $post_type)
+{
+    if ($post_type === 'shop_order') {
+        $disabled = true;
+    }
+    return $disabled;
+}
+
+function woo_tiny_shop_order_extra_tablenav($post_type, $which)
+{
+    global $pagenow;
+    if ('edit.php' == $pagenow && $post_type === 'shop_order' && 'top' === $which) {
+        $regionais = [
+            'REGIONAL SUL' => [
+                'PR' => 'PR',
+                'RS' => 'RS',
+                'SC' => 'SC',
+            ],
+            'REGIONAL SP' => [
+                'SPC' => 'SPC',
+                'SPI' => 'SPI',
+            ],
+            'REGIONAL SUDESTE' => [
+                'ES' => 'ES',
+                'MG' => 'MG',
+                'RJ' => 'RJ',
+            ],
+            'REGIONAL NORDESTE' => [
+                'AL' => 'AL',
+                'BA' => 'BA',
+                'CE' => 'CE',
+                'MA' => 'MA',
+                'PB' => 'PB',
+                'PE' => 'PE',
+                'PI' => 'PI',
+                'RGN' => 'RGN',
+                'SE' => 'SE',
+            ],
+            'REGIONAL CENTRO NORTE' => [
+                'AC' => 'AC',
+                'AM' => 'AM',
+                'AP' => 'AP',
+                'DF' => 'DF',
+                'GO' => 'GO',
+                'MS' => 'MS',
+                'MT' => 'MT',
+                'PA' => 'PA',
+                'RO' => 'RO',
+                'RR' => 'RR',
+                'TO' => 'TO',
+            ],
+        ];
+        $sellers = get_users([
+                'role__in' => ['vendedores_bw'],
+        ]);
+        $channels = get_posts([
+            'post_type' => 'canal_venda',
+            'numberposts' => -1,
+        ]);
+        if (empty($_GET['start_date'])) {
+            $_GET['start_date'] = date('Y-m-d', strtotime('-1 month'));
+        }
+
+        if (empty($_GET['end_date'])) {
+            $_GET['end_date'] = date('Y-m-d');
+        }
+        ?>
+        <select class="wc-enhanced-select" name="regional" data-placeholder="Selecione um vendedor..."
+                data-allow_clear="true">
+            <option value="">Selecione uma regional...</option>
+            <?php foreach ($regionais as $regional => $estados): $estados = implode(', ', $estados); ?>
+                <option value="<?= $regional ?>"
+                        <?php if ($regional == $_GET['regional']): ?>selected="selected" <?php endif; ?>><?= $regional . ' (' . $estados . ')' ?></option>
+            <?php endforeach; ?>
+        </select>
+        <select class="wc-enhanced-select" name="seller_id" data-placeholder="Selecione um vendedor..."
+                data-allow_clear="true">
+            <option value="">Selecione um vendedor...</option>
+            <?php foreach ($sellers
+
+            as $seller): ?>
+            <option value="<?php echo esc_attr($seller->ID); ?>"
+                    <?php if ($seller->ID == $_GET['seller_id']): ?>selected="selected" <?php endif; ?>><?php echo $seller->display_name; ?>
+            <option>
+                <?php endforeach; ?>
+        </select>
+        <select class="wc-enhanced-select" name="channel_id" data-placeholder="Selecione um canal..."
+                data-allow_clear="true">
+            <option value="">Selecione um canal...</option>
+            <?php foreach ($channels
+
+            as $channel): ?>
+            <option value="<?php echo esc_attr($channel->ID); ?>"
+                    <?php if ($channel->ID == $_GET['channel_id']): ?>selected="selected" <?php endif; ?>><?php echo $channel->post_title; ?>
+            <option>
+                <?php endforeach; ?>
+        </select>
+        <input type="text" size="11" placeholder="dd/mm/yyyy"
+               value="<?php echo esc_attr(wp_unslash($_GET['start_date'])) ?>"
+               name="start_date" class="range_datepicker from"
+               autocomplete="off"/>
+        <span>&ndash;</span>
+        <input type="text" size="11" placeholder="dd/mm/yyyy"
+               value="<?php echo esc_attr(wp_unslash($_GET['end_date'])); ?>"
+               name="end_date" class="range_datepicker to"
+               autocomplete="off"/>
+        <script>
+            jQuery(function ($) {
+                $('.range_datepicker').datepicker({
+                    dateFormat: 'yy-mm-dd',
+                    maxDate: new Date()
+                });
+            });
+        </script>
+        <?php
+    }
+}
 
 function woo_tiny_admin_order_actions($actions, $order)
 {

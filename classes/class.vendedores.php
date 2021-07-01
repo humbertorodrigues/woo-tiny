@@ -49,7 +49,8 @@ class vendedores
             wp_enqueue_script('mask', WOO_TINY_URL . 'templates/vendedores/assets/js/jquery.mask.min.js', array("jquery"));
             wp_enqueue_script('viacep', WOO_TINY_URL . 'templates/vendedores/assets/js/jquery.viacep.js', ['jquery']);
             wp_enqueue_script('multi-file', WOO_TINY_URL . 'templates/vendedores/assets/js/jquery.MultiFile.min.js', ['jquery']);
-            wp_enqueue_script('vendedores', WOO_TINY_URL . 'templates/vendedores/assets/js/jquery.vendedores.js', ['jquery', 'multi-file', 'bootstrap']);
+            wp_enqueue_script('file-download', WOO_TINY_URL . 'assets/modules/jquery-download/jquery.fileDownload.js', ['jquery']);
+            wp_enqueue_script('vendedores', WOO_TINY_URL . 'templates/vendedores/assets/js/jquery.vendedores.js', ['jquery', 'multi-file', 'file-download', 'bootstrap']);
             wp_localize_script( 'vendedores', 'woo_tiny', [
                     'ajax_url' => admin_url( 'admin-ajax.php' ),
                     'nonce' => wp_create_nonce('woo-tiny-ajax')
@@ -64,6 +65,7 @@ class vendedores
         wp_enqueue_style( 'jquery-ui');
         wp_enqueue_style('vendedores', WOO_TINY_URL . 'templates/vendedores/assets/admin/css/vendedores.css', ['login', 'jquery-ui']);
         wp_enqueue_script('jquery-mask-money', WOO_TINY_URL . 'templates/vendedores/assets/admin/js/jquery.maskMoney.min.js', ['jquery']);
+        wp_enqueue_script('file-download', WOO_TINY_URL . 'assets/modules/jquery-download/jquery.fileDownload.js', ['jquery']);
         wp_enqueue_script( 'jquery-ui-datepicker');
         wp_enqueue_script('vendedores', WOO_TINY_URL . 'templates/vendedores/assets/admin/js/jquery.vendedores.js', ['jquery', 'jquery-ui-datepicker', 'jquery-mask-money']);
         wp_localize_script( 'vendedores', 'woo_tiny', [
