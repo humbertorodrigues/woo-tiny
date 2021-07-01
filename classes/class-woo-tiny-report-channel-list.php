@@ -759,6 +759,10 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
                     'key' => 'tiny_nf',
                     'compare' => 'EXISTS',
                 ),
+				'codigo_tiny' => array(
+                    'key' => 'codigo_tiny',
+                    'compare' => 'EXISTS',
+                ),
                 'bw_canal_venda' => array(
                     'key' => 'bw_canal_venda',
                     'compare' => $signal,
@@ -768,14 +772,15 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'limit' => -1,
             'orderby' => 'date',
             'order' => 'DESC',
-            'date_paid' => $this->start_date."..." .$this->end_date, 
-            'status' => ['wc-processing', 'wc-completed', 'wc-shipping'],
+            'date_created' => $this->start_date."..." .$this->end_date, 
+            'status' => ['wc-processing', 'wc-completed', 'wc-shipping','wc-wallet'],
             'return' => 'ids',
         ]);
         $orders = $query->get_orders();
         $total_vendas = 0;
         foreach ($orders as $order) {
             $order_id = $order;
+            
             $total = get_post_meta ($order_id , '_order_total', true);
             
             if ($channel_id == get_post_meta($order_id, "bw_canal_venda", true)) {
@@ -845,6 +850,11 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'return' => 'ids',
             'status' => ['wc-wallet'],
             'meta_query' => array(
+                'relation' => 'AND',
+                'tiny_nf' => array(
+                    'key' => 'tiny_nf',
+                    'compare' => 'NOT EXISTS',
+                ),
                 'bw_canal_venda' => array(
                     'key' => 'bw_canal_venda',
                     'compare' => $signal,
