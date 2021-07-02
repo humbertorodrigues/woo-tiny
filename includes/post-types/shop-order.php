@@ -7,10 +7,15 @@ add_action('woocommerce_update_order', 'woo_tiny_order_save_meta', 10, 2);
 add_action('woocommerce_update_order', 'woo_tiny_admin_channel_update', 10, 2);
 add_filter('woocommerce_admin_order_actions', 'woo_tiny_admin_order_actions', 10, 2);
 add_action('restrict_manage_posts', 'woo_tiny_shop_order_extra_tablenav', 10, 2);
-//add_action('manage_posts_extra_tablenav', 'woo_tiny_shop_order_extra_tablenav');
 add_action('disable_months_dropdown', 'woo_tiny_shop_order_disable_months_dropdown', 10, 2);
 add_filter('request', 'woo_tiny_shop_order_extra_filter');
+add_filter('bulk_actions-edit-shop_order', 'woo_tiny_shop_order_bulk_actions');
 
+function woo_tiny_shop_order_bulk_actions($actions){
+    $actions['export_pdf'] = 'Exportar PDF';
+    
+    return $actions;
+}
 function woo_tiny_shop_order_extra_filter($query_vars)
 {
     global $pagenow;
@@ -152,7 +157,7 @@ function woo_tiny_shop_order_extra_tablenav($post_type, $which)
             $_GET['end_date'] = date('Y-m-d');
         }
         ?>
-        <select class="wc-enhanced-select" name="regional" data-placeholder="Selecione um vendedor..."
+        <select class="wc-enhanced-select" name="regional" data-placeholder="Selecione um regional..."
                 data-allow_clear="true">
             <option value="">Selecione uma regional...</option>
             <?php foreach ($regionais as $regional => $estados): $estados = implode(', ', $estados); ?>
