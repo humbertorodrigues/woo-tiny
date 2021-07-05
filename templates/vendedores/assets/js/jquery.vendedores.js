@@ -1,11 +1,12 @@
 'use strict';
+
 jQuery(document).on("contextmenu keydown mousedown keypress", function (e) {
     if (e.keyCode === 123 || e.type === 'contextmenu') return false;
 });
 jQuery.validator.addMethod("cpfcnpj", brdocs.cpfcnpjValidator, "Informe um documento válido.");
-jQuery.validator.addMethod("same", function(value, element, param) {
-    if(jQuery(param).is(':checked')){
-       return value !== '';
+jQuery.validator.addMethod("same", function (value, element, param) {
+    if (jQuery(param).is(':checked')) {
+        return value !== '';
     }
     return this.optional(element);
 });
@@ -33,12 +34,12 @@ jQuery(document).ready(function () {
             bw_payment_option: {required: true},
 
 
-            "shipping[postcode]": { same: '#has-shipping'},
-            "shipping[address_1]": { same: '#has-shipping'},
-            "shipping[number]": { same: '#has-shipping'},
-            "shipping[neighborhood]": { same: '#has-shipping'},
-            "shipping[city]": { same: '#has-shipping'},
-            "shipping[state]": { same: '#has-shipping'},
+            "shipping[postcode]": {same: '#has-shipping'},
+            "shipping[address_1]": {same: '#has-shipping'},
+            "shipping[number]": {same: '#has-shipping'},
+            "shipping[neighborhood]": {same: '#has-shipping'},
+            "shipping[city]": {same: '#has-shipping'},
+            "shipping[state]": {same: '#has-shipping'},
         },
         messages: {
             nome: {required: "Informe o nome do cliente"},
@@ -58,15 +59,16 @@ jQuery(document).ready(function () {
             canal_venda: {required: "Informe um canal de venda"},
             bw_payment_option: {required: "Informe uma forma de pagamento"},
 
-            "shipping[postcode]": { same: 'Informe o CEP'},
-            "shipping[address_1]": { same: 'Informe o endereço'},
-            "shipping[number]": { same: 'Informe o numero'},
-            "shipping[neighborhood]": { same: 'Informe o bairro'},
-            "shipping[city]": { same: 'Informe a cidade'},
-            "shipping[state]": { same: 'Informe o estado'},
+            "shipping[postcode]": {same: 'Informe o CEP'},
+            "shipping[address_1]": {same: 'Informe o endereço'},
+            "shipping[number]": {same: 'Informe o numero'},
+            "shipping[neighborhood]": {same: 'Informe o bairro'},
+            "shipping[city]": {same: 'Informe a cidade'},
+            "shipping[state]": {same: 'Informe o estado'},
         },
         submitHandler: function (form) {
             let formData = new FormData(form);
+            let dowmloaded = false;
             jQuery.ajax({
                 url: woo_tiny.ajax_url,
                 type: 'POST',
@@ -75,18 +77,47 @@ jQuery(document).ready(function () {
                 contentType: false,
                 cache: false,
                 processData: false,
-                beforeSend: function (){
+                beforeSend: function () {
                     jQuery('#preload').modal('show');
                 },
                 success: function (res) {
-                    if(typeof res === 'string'){
+                    if (typeof res === 'string') {
                         res = JSON.parse(res);
                     }
-                    if(res.data.redirect){
-                        location.assign(res.data.redirect)
+                    res = res.data;
+                    if (res.download) {
+                        jQuery.fileDownload(res.download, {
+                            successCallback: function (url) {
+                                if (res.redirect) {
+                                    location.assign(res.redirect)
+                                }else{
+                                    location.reload();
+                                }
+                            },
+                            abortCallback: function (url) {
+                                if (res.redirect) {
+                                    location.assign(res.redirect)
+                                }else{
+                                    location.reload();
+                                }
+                            },
+                            failCallback: function (responseHtml, url, error) {
+                                console.log(error);
+                                if (res.redirect) {
+                                    location.assign(res.redirect)
+                                }else{
+                                    location.reload();
+                                }
+                            },
+                        });
+                    }else {
+                        if (res.redirect) {
+                            location.assign(res.redirect)
+                        }
                     }
+                    dowmloaded = true;
                 },
-                complete: function () {
+                complete: function (res) {
                     jQuery('#preload').modal('hide');
                 }
             });
@@ -191,7 +222,7 @@ jQuery(document).on('click', '#adicionar_produto', function () {
 jQuery(document).on('change', '[data-product-id]', function (e) {
     e.preventDefault();
     let target = jQuery(e.target);
-    if(jQuery('#woo-tiny-seller').length === 0) {
+    if (jQuery('#woo-tiny-seller').length === 0) {
         let limitBonus = jQuery(this).limitBonus();
     }
     calcula_subtotal();
@@ -318,15 +349,15 @@ jQuery(document).on('click', '.order-installment', function (e) {
         if (inputDueDate !== undefined) {
             inputDueDate = new Date(Date.parse(inputDueDate));
             dueDate.setMonth(inputDueDate.getMonth() + 1);
-            if(dueDate.getMonth() === 0){
+            if (dueDate.getMonth() === 0) {
                 dueDate.setFullYear(inputDueDate.getFullYear() + 1)
-            }else{
+            } else {
                 dueDate.setFullYear(inputDueDate.getFullYear())
             }
         }
         dueDate.setMonth((dueDate.getMonth() + 1));
         let month = ("0" + dueDate.getMonth()).slice(-2);
-        if(month === '00'){
+        if (month === '00') {
             month = '12';
             dueDate.setFullYear(dueDate.getFullYear() - 1);
         }

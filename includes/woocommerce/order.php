@@ -253,6 +253,7 @@ function woo_tiny_save_order()
                 woo_tiny_trigger_order_revision_email($order_bonificacao);
             }
         }
+        $download = false;
         if ($order_id > 0) {
             woo_tiny_order_upload_files($order_id, $_FILES['documents']);
             $referer .= set_alert('success', "Pedido #{$order_id} salvo com sucesso");
@@ -265,7 +266,7 @@ function woo_tiny_save_order()
                     update_post_meta($order_id, 'estimate', $estimate);
                     global $wpdb;
                     $wpdb->update($wpdb->posts, ['post_status' => 'wc-estimate'], ['ID' => $order_id], ['%s'], ['%d']);
-                    $referer = admin_url(sprintf('admin.php?page=%s&action=%s&item=%d&_wpnonce=%s', 'woo_tiny_estimates', 'woo_tiny_estimate_show', $order_id, wp_create_nonce('woo_tiny_estimate_nonce')));
+                    $download = admin_url(sprintf('admin.php?page=%s&action=%s&item=%d&_wpnonce=%s', 'woo_tiny_estimates', 'woo_tiny_estimate_show', $order_id, wp_create_nonce('woo_tiny_estimate_nonce')));
                     break;
                 case 3:
                     global $wpdb;
@@ -283,6 +284,7 @@ function woo_tiny_save_order()
         }
         if(wp_doing_ajax()){
             wp_send_json_success([
+                'download' => $download,
                 'redirect' => $referer
             ]);
         }

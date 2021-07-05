@@ -1,14 +1,17 @@
-
 <?php
-class pedidos {
-    public function __construct() {
+
+class pedidos
+{
+    public function __construct()
+    {
         // add_action( 'woocommerce_order_status_processing', array($this,'enviar_pedido') ,1);
-        add_action("woocommerce_order_status_processing", array($this, 'separar_pedidos'),0);
-        add_filter( 'woocommerce_my_account_my_orders_query', [$this,'exibir_pedidos_vendedor'], 10, 1 );
-        
+        add_action("woocommerce_order_status_processing", [$this, 'separar_pedidos'], 0);
+        add_filter('woocommerce_my_account_my_orders_query', [$this, 'exibir_pedidos_vendedor'], 10, 1);
     }
-    public function separar_pedidos($order_id) {
-        $produtos_nao_separar = array(936,927);
+
+    public function separar_pedidos($order_id)
+    {
+        $produtos_nao_separar = array(936, 927);
         $produtos_com_estoque = 0;
         $produtos_sem_estoque = 0;
         $produtos_sem_estoque_juntos = 0;
@@ -17,136 +20,139 @@ class pedidos {
         $id_produtos_sem_estoque = array();
         $id_produtos_sem_estoque_nao_separar = array();
         $cupons = $order->get_items('coupon');
-        foreach( $cupons as $item_id => $item ){
-            
+        foreach ($cupons as $item_id => $item) {
+
             //Não dividimos os pedidos do kit pre venda 50% off
-            $coupon_post_obj = get_page_by_title( $item->get_name(), OBJECT, 'shop_coupon' );
+            $coupon_post_obj = get_page_by_title($item->get_name(), OBJECT, 'shop_coupon');
             $coupon_id = $coupon_post_obj->ID;
 
-            if($item->get_name()=="kit pré-venda 50% off"){
+            if ($item->get_name() == "kit pré-venda 50% off") {
                 return;
             }
         }
         foreach ($order->get_items() as $item_id => $item) {
-            
+
             $product = wc_get_product($item['product_id']);
             $estoque = $product->get_stock_quantity();
-            $pre_venda = get_post_meta($item['product_id'],"bw_pre_venda",true);
-            
+            $pre_venda = get_post_meta($item['product_id'], "bw_pre_venda", true);
+
             if ($pre_venda == "yes") {
-                if(array_search($item['product_id'],$produtos_nao_separar)===false){
-                    $id_produtos_sem_estoque[]= $item['product_id'];
+                if (array_search($item['product_id'], $produtos_nao_separar) === false) {
+                    $id_produtos_sem_estoque[] = $item['product_id'];
                     $produtos_sem_estoque++;
-                }else{
-                    $id_produtos_sem_estoque_nao_separar[]= $item['product_id'];
+                } else {
+                    $id_produtos_sem_estoque_nao_separar[] = $item['product_id'];
                     $produtos_sem_estoque_juntos++;
                 }
             } else {
-                $id_produtos_com_estoque[]= $item['product_id'];
+                $id_produtos_com_estoque[] = $item['product_id'];
                 $produtos_com_estoque++;
             }
         }
         // var_dump($produtos_com_estoque);
         // var_dump($produtos_sem_estoque);
         // var_dump($produtos_sem_estoque_juntos);
-        
-        if((($produtos_sem_estoque > 0 || $produtos_sem_estoque_juntos>0) && $produtos_com_estoque > 0) || ($produtos_sem_estoque > 1 || $produtos_sem_estoque_juntos >1) ){
-            
+
+        if ((($produtos_sem_estoque > 0 || $produtos_sem_estoque_juntos > 0) && $produtos_com_estoque > 0) || ($produtos_sem_estoque > 1 || $produtos_sem_estoque_juntos > 1)) {
+
             $order_id_sem_estoque = array();
-            $order_id_sem_estoque_nao_separar=false;
-            for ($i=0; $i < $produtos_sem_estoque ; $i++) { 
-                if($produtos_com_estoque == 0 & $i==0){
+            $order_id_sem_estoque_nao_separar = false;
+            for ($i = 0; $i < $produtos_sem_estoque; $i++) {
+                if ($produtos_com_estoque == 0 & $i == 0) {
                     $order_id_sem_estoque[$i] = $order_id;
-                    
+
                     continue;
                 }
-                $order_id_sem_estoque[$i] = $this->duplicate_order( $order );
-                
+                $order_id_sem_estoque[$i] = $this->duplicate_order($order);
+
                 $this->removerProdutosComEstoque($order_id_sem_estoque[$i]);
-                if($produtos_com_estoque > 0){
+                if ($produtos_com_estoque > 0) {
 
                     $this->removerFretePedidoSemEstoque($order_id_sem_estoque[$i]);
-                }else{
+                } else {
                     //Só temos produtos sem estoque. Logo, mantemos o frete no primeiro produto.
-                    if($i>0){                        
+                    if ($i > 0) {
                         $this->removerFretePedidoSemEstoque($order_id_sem_estoque[$i]);
                     }
                 }
             }
-            
-            if($produtos_com_estoque == 0 && $produtos_sem_estoque ==0 ){
-                $order_id_sem_estoque_nao_separar = $order_id;
-                
-                
-            }else{
 
-                $order_id_sem_estoque_nao_separar = $this->duplicate_order( $order );
-                
+            if ($produtos_com_estoque == 0 && $produtos_sem_estoque == 0) {
+                $order_id_sem_estoque_nao_separar = $order_id;
+
+
+            } else {
+
+                $order_id_sem_estoque_nao_separar = $this->duplicate_order($order);
+
                 $this->removerProdutosComEstoque($order_id_sem_estoque_nao_separar);
-                if($produtos_com_estoque > 0){
-    
+                if ($produtos_com_estoque > 0) {
+
                     $this->removerFretePedidoSemEstoque($order_id_sem_estoque_nao_separar);
-                }else{
+                } else {
                     //Só temos produtos sem estoque. Logo, mantemos o frete no primeiro produto.
-                    if($produtos_com_estoque>0){                        
+                    if ($produtos_com_estoque > 0) {
                         $this->removerFretePedidoSemEstoque($order_id_sem_estoque_nao_separar);
                     }
                 }
             }
-            
+
             $j = 0;
             foreach ($order_id_sem_estoque as $key => $sem_estoque_id) {
                 $produto_remover = false;
                 foreach ($id_produtos_sem_estoque as $key_produto_sem_estoque => $id_produto_sem_estoque) {
-                    
-                    if($j != $key_produto_sem_estoque){
-                        $this->orderRemoverProduto($sem_estoque_id,$id_produto_sem_estoque);
-                        if($order_id_sem_estoque_nao_separar>0){
+
+                    if ($j != $key_produto_sem_estoque) {
+                        $this->orderRemoverProduto($sem_estoque_id, $id_produto_sem_estoque);
+                        if ($order_id_sem_estoque_nao_separar > 0) {
                         }
                     }
                 }
-                
+
                 $j++;
-                
-                update_post_meta($sem_estoque_id,"bw_pedido_pai",$order_id);
+
+                update_post_meta($sem_estoque_id, "bw_pedido_pai", $order_id);
             }
-            if($order_id_sem_estoque_nao_separar>0){
+            if ($order_id_sem_estoque_nao_separar > 0) {
                 foreach ($id_produtos_com_estoque as $key => $id_produto_com_estoque) {
-                    $this->orderRemoverProduto($order_id_sem_estoque_nao_separar,$id_produto_com_estoque);
-                    
-                }                
+                    $this->orderRemoverProduto($order_id_sem_estoque_nao_separar, $id_produto_com_estoque);
+
+                }
             }
-            if($produtos_com_estoque > 0){
+            if ($produtos_com_estoque > 0) {
                 $this->removerProdutosSemEstoque($order_id);
             }
             var_dump($order_id_sem_estoque);
             var_dump($order_id_sem_estoque_nao_separar);
-            update_post_meta($order_id,"bw_pedido_filho",$order_id_sem_estoque);
+            update_post_meta($order_id, "bw_pedido_filho", $order_id_sem_estoque);
         }
         // exit("Pronto");
     }
-    
-    public function removerFretePedidoSemEstoque($order_id){
+
+    public function removerFretePedidoSemEstoque($order_id)
+    {
         $order = wc_get_order($order_id);
-        $items  = (array) $order->get_items('shipping');
-        
+        $items = (array)$order->get_items('shipping');
+
         foreach ($items as $key => $item) {
-            
+
             $item->set_total(0);
             $item->save();
-    
+
         }
         $order->calculate_totals();
-        
+
     }
-    public function orderRemoverProduto($order_id,$id_produto){
+
+    public function orderRemoverProduto($order_id, $id_produto)
+    {
         $order = wc_get_order($order_id);
 
         foreach ($order->get_items() as $item_id => $item) {
 
             // $product = wc_get_product($item['product_id']);
 
-            if($item['product_id']==$id_produto){
+            if ($item['product_id'] == $id_produto) {
                 $order->remove_item($item_id);
 
             }
@@ -156,16 +162,18 @@ class pedidos {
 
 
     }
-    public function removerProdutosSemEstoque($order_id){
+
+    public function removerProdutosSemEstoque($order_id)
+    {
         $order = wc_get_order($order_id);
 
         foreach ($order->get_items() as $item_id => $item) {
 
             $product = wc_get_product($item['product_id']);
             $estoque = $product->get_stock_quantity();
-            $pre_venda = get_post_meta($item['product_id'],"bw_pre_venda",true);
+            $pre_venda = get_post_meta($item['product_id'], "bw_pre_venda", true);
 
-            if ($pre_venda=="yes") {
+            if ($pre_venda == "yes") {
                 $order->remove_item($item_id);
             }
 
@@ -174,106 +182,126 @@ class pedidos {
 
 
     }
-    public function removerProdutosComEstoque($order_id){
+
+    public function removerProdutosComEstoque($order_id)
+    {
         $order = wc_get_order($order_id);
 
         foreach ($order->get_items() as $item_id => $item) {
 
             $product = wc_get_product($item['product_id']);
             $estoque = $product->get_stock_quantity();
-            $pre_venda = get_post_meta($item['product_id'],"bw_pre_venda",true);
+            $pre_venda = get_post_meta($item['product_id'], "bw_pre_venda", true);
 
-            if ($pre_venda!="yes") {
+            if ($pre_venda != "yes") {
                 $order->remove_item($item_id);
             }
 
         }
         $order->calculate_totals();
     }
-    public function duplicate_order($post) {
+
+    public function duplicate_order($post)
+    {
         global $wpdb;
 
         $original_order_id = $post->id;
         $original_order = $post;
 
-        $order_id = $this->create_order($original_order_id);
+        $order = $this->create_order($original_order_id);
+        $order_id = $order->get_id();
 
         if (is_wp_error($order_id)) {
-            $msg = 'Unable to create order: ' . $order_id->get_error_message();
+            $msg = 'Unable to create order: ' . $order->get_error_message();
             throw new Exception($msg);
         } else {
-
-            $order = new WC_Order($order_id);
-
+            //$order = new WC_Order($order_id);
             $this->duplicate_order_header($original_order_id, $order_id);
             $this->duplicate_billing_fieds($original_order_id, $order_id);
             $this->duplicate_shipping_fieds($original_order_id, $order_id);
-
             $this->duplicate_line_items($original_order, $order_id);
             $this->duplicate_shipping_items($original_order, $order_id);
             $this->duplicate_coupons($original_order, $order_id);
             $this->duplicate_payment_info($original_order_id, $order_id, $order);
             $order->calculate_taxes();
             $this->add_order_note($original_order_id, $order);
-
             return $order_id;
         }
     }
-    private function duplicate_order_header($original_order_id, $order_id) {
-        update_post_meta($order_id, '_order_shipping',         get_post_meta($original_order_id, '_order_shipping', true));
-        update_post_meta($order_id, '_order_discount',         get_post_meta($original_order_id, '_order_discount', true));
-        update_post_meta($order_id, '_cart_discount',          get_post_meta($original_order_id, '_cart_discount', true));
-        update_post_meta($order_id, '_order_tax',              get_post_meta($original_order_id, '_order_tax', true));
-        update_post_meta($order_id, '_order_shipping_tax',     get_post_meta($original_order_id, '_order_shipping_tax', true));
-        update_post_meta($order_id, '_order_total',            get_post_meta($original_order_id, '_order_total', true));
 
-        update_post_meta($order_id, '_order_key',              'wc_' . apply_filters('woocommerce_generate_order_key', uniqid('order_')));
-        update_post_meta($order_id, '_customer_user',          get_post_meta($original_order_id, '_customer_user', true));
-        update_post_meta($order_id, '_order_currency',         get_post_meta($original_order_id, '_order_currency', true));
-        update_post_meta($order_id, '_prices_include_tax',     get_post_meta($original_order_id, '_prices_include_tax', true));
-        update_post_meta($order_id, '_customer_ip_address',    get_post_meta($original_order_id, '_customer_ip_address', true));
-        update_post_meta($order_id, '_customer_user_agent',    get_post_meta($original_order_id, '_customer_user_agent', true));
+    public function _remove_action_emails_new_order($email_class)
+    {
+        remove_action('woocommerce_order_status_pending_to_processing_notification', [$email_class->emails['WC_Email_New_Order'], 'trigger']);
+        remove_action('woocommerce_order_status_pending_to_completed_notification', [$email_class->emails['WC_Email_New_Order'], 'trigger']);
+        remove_action('woocommerce_order_status_pending_to_on-hold_notification', [$email_class->emails['WC_Email_New_Order'], 'trigger']);
+        remove_action('woocommerce_order_status_failed_to_processing_notification', [$email_class->emails['WC_Email_New_Order'], 'trigger']);
+        remove_action('woocommerce_order_status_failed_to_completed_notification', [$email_class->emails['WC_Email_New_Order'], 'trigger']);
+        remove_action('woocommerce_order_status_failed_to_on-hold_notification', [$email_class->emails['WC_Email_New_Order'], 'trigger']);
+        remove_action('woocommerce_order_status_cancelled_to_processing_notification', [$email_class->emails['WC_Email_New_Order'], 'trigger']);
+        remove_action('woocommerce_order_status_cancelled_to_completed_notification', [$email_class->emails['WC_Email_New_Order'], 'trigger']);
+        remove_action('woocommerce_order_status_cancelled_to_on-hold_notification', [$email_class->emails['WC_Email_New_Order'], 'trigger']);
     }
 
-    private function duplicate_billing_fieds($original_order_id, $order_id) {
-        update_post_meta($order_id, '_billing_city',           get_post_meta($original_order_id, '_billing_city', true));
-        update_post_meta($order_id, '_billing_state',          get_post_meta($original_order_id, '_billing_state', true));
-        update_post_meta($order_id, '_billing_postcode',       get_post_meta($original_order_id, '_billing_postcode', true));
-        update_post_meta($order_id, '_billing_email',          get_post_meta($original_order_id, '_billing_email', true));
-        update_post_meta($order_id, '_billing_phone',          get_post_meta($original_order_id, '_billing_phone', true));
-        update_post_meta($order_id, '_billing_address_1',      get_post_meta($original_order_id, '_billing_address_1', true));
-        update_post_meta($order_id, '_billing_address_2',      get_post_meta($original_order_id, '_billing_address_2', true));
-        update_post_meta($order_id, '_billing_country',        get_post_meta($original_order_id, '_billing_country', true));
-        update_post_meta($order_id, '_billing_first_name',     get_post_meta($original_order_id, '_billing_first_name', true));
-        update_post_meta($order_id, '_billing_last_name',      get_post_meta($original_order_id, '_billing_last_name', true));
-        update_post_meta($order_id, '_billing_company',        get_post_meta($original_order_id, '_billing_company', true));
-        update_post_meta($order_id, '_billing_cpf',            get_post_meta($original_order_id, '_billing_cpf', true));
-        update_post_meta($order_id, '_billing_cnpj',           get_post_meta($original_order_id, '_billing_cnpj', true));
-        update_post_meta($order_id, '_billing_persontype',     get_post_meta($original_order_id, '_billing_persontype', true));
-        
-        update_post_meta($order_id, 'bw_canal_venda',     get_post_meta($original_order_id, 'bw_canal_venda', true));
-        update_post_meta($order_id, 'bw_canal_venda_descricao',     get_post_meta($original_order_id, 'bw_canal_venda_descricao', true));
-        update_post_meta($order_id, 'bw_codigo',     get_post_meta($original_order_id, 'bw_codigo', true));
-        update_post_meta($order_id, 'bw_forma_pagamento_descricao',     get_post_meta($original_order_id, 'bw_forma_pagamento_descricao', true));
-        update_post_meta($order_id, 'bw_forma_pagamento_id',     get_post_meta($original_order_id, 'bw_forma_pagamento_id', true));
-        update_post_meta($order_id, 'bw_id_vendedor',     get_post_meta($original_order_id, 'bw_id_vendedor', true));
-        update_post_meta($order_id, 'bw_nome_contato',     get_post_meta($original_order_id, 'bw_nome_contato', true));
-        update_post_meta($order_id, 'bw_obs',     get_post_meta($original_order_id, 'bw_obs', true));
-        update_post_meta($order_id, 'bw_rg_inscricao',     get_post_meta($original_order_id, 'bw_rg_inscricao', true));
+    private function duplicate_order_header($original_order_id, $order_id)
+    {
+        update_post_meta($order_id, '_order_shipping', get_post_meta($original_order_id, '_order_shipping', true));
+        update_post_meta($order_id, '_order_discount', get_post_meta($original_order_id, '_order_discount', true));
+        update_post_meta($order_id, '_cart_discount', get_post_meta($original_order_id, '_cart_discount', true));
+        update_post_meta($order_id, '_order_tax', get_post_meta($original_order_id, '_order_tax', true));
+        update_post_meta($order_id, '_order_shipping_tax', get_post_meta($original_order_id, '_order_shipping_tax', true));
+        update_post_meta($order_id, '_order_total', get_post_meta($original_order_id, '_order_total', true));
+
+        update_post_meta($order_id, '_order_key', 'wc_' . apply_filters('woocommerce_generate_order_key', uniqid('order_')));
+        update_post_meta($order_id, '_customer_user', get_post_meta($original_order_id, '_customer_user', true));
+        update_post_meta($order_id, '_order_currency', get_post_meta($original_order_id, '_order_currency', true));
+        update_post_meta($order_id, '_prices_include_tax', get_post_meta($original_order_id, '_prices_include_tax', true));
+        update_post_meta($order_id, '_customer_ip_address', get_post_meta($original_order_id, '_customer_ip_address', true));
+        update_post_meta($order_id, '_customer_user_agent', get_post_meta($original_order_id, '_customer_user_agent', true));
     }
 
-    private function duplicate_shipping_fieds($original_order_id, $order_id) {
-        update_post_meta($order_id, '_shipping_country',       get_post_meta($original_order_id, '_shipping_country', true));
-        update_post_meta($order_id, '_shipping_first_name',    get_post_meta($original_order_id, '_shipping_first_name', true));
-        update_post_meta($order_id, '_shipping_last_name',     get_post_meta($original_order_id, '_shipping_last_name', true));
-        update_post_meta($order_id, '_shipping_company',       get_post_meta($original_order_id, '_shipping_company', true));
-        update_post_meta($order_id, '_shipping_address_1',     get_post_meta($original_order_id, '_shipping_address_1', true));
-        update_post_meta($order_id, '_shipping_address_2',     get_post_meta($original_order_id, '_shipping_address_2', true));
-        update_post_meta($order_id, '_shipping_city',          get_post_meta($original_order_id, '_shipping_city', true));
-        update_post_meta($order_id, '_shipping_state',         get_post_meta($original_order_id, '_shipping_state', true));
-        update_post_meta($order_id, '_shipping_postcode',      get_post_meta($original_order_id, '_shipping_postcode', true));
+    private function duplicate_billing_fieds($original_order_id, $order_id)
+    {
+        update_post_meta($order_id, '_billing_city', get_post_meta($original_order_id, '_billing_city', true));
+        update_post_meta($order_id, '_billing_state', get_post_meta($original_order_id, '_billing_state', true));
+        update_post_meta($order_id, '_billing_postcode', get_post_meta($original_order_id, '_billing_postcode', true));
+        update_post_meta($order_id, '_billing_email', get_post_meta($original_order_id, '_billing_email', true));
+        update_post_meta($order_id, '_billing_phone', get_post_meta($original_order_id, '_billing_phone', true));
+        update_post_meta($order_id, '_billing_address_1', get_post_meta($original_order_id, '_billing_address_1', true));
+        update_post_meta($order_id, '_billing_address_2', get_post_meta($original_order_id, '_billing_address_2', true));
+        update_post_meta($order_id, '_billing_country', get_post_meta($original_order_id, '_billing_country', true));
+        update_post_meta($order_id, '_billing_first_name', get_post_meta($original_order_id, '_billing_first_name', true));
+        update_post_meta($order_id, '_billing_last_name', get_post_meta($original_order_id, '_billing_last_name', true));
+        update_post_meta($order_id, '_billing_company', get_post_meta($original_order_id, '_billing_company', true));
+        update_post_meta($order_id, '_billing_cpf', get_post_meta($original_order_id, '_billing_cpf', true));
+        update_post_meta($order_id, '_billing_cnpj', get_post_meta($original_order_id, '_billing_cnpj', true));
+        update_post_meta($order_id, '_billing_persontype', get_post_meta($original_order_id, '_billing_persontype', true));
+
+        update_post_meta($order_id, 'bw_canal_venda', get_post_meta($original_order_id, 'bw_canal_venda', true));
+        update_post_meta($order_id, 'bw_canal_venda_descricao', get_post_meta($original_order_id, 'bw_canal_venda_descricao', true));
+        update_post_meta($order_id, 'bw_codigo', get_post_meta($original_order_id, 'bw_codigo', true));
+        update_post_meta($order_id, 'bw_forma_pagamento_descricao', get_post_meta($original_order_id, 'bw_forma_pagamento_descricao', true));
+        update_post_meta($order_id, 'bw_forma_pagamento_id', get_post_meta($original_order_id, 'bw_forma_pagamento_id', true));
+        update_post_meta($order_id, 'bw_id_vendedor', get_post_meta($original_order_id, 'bw_id_vendedor', true));
+        update_post_meta($order_id, 'bw_nome_contato', get_post_meta($original_order_id, 'bw_nome_contato', true));
+        update_post_meta($order_id, 'bw_obs', get_post_meta($original_order_id, 'bw_obs', true));
+        update_post_meta($order_id, 'bw_rg_inscricao', get_post_meta($original_order_id, 'bw_rg_inscricao', true));
     }
-    private function duplicate_line_items($original_order, $order_id) {
+
+    private function duplicate_shipping_fieds($original_order_id, $order_id)
+    {
+        update_post_meta($order_id, '_shipping_country', get_post_meta($original_order_id, '_shipping_country', true));
+        update_post_meta($order_id, '_shipping_first_name', get_post_meta($original_order_id, '_shipping_first_name', true));
+        update_post_meta($order_id, '_shipping_last_name', get_post_meta($original_order_id, '_shipping_last_name', true));
+        update_post_meta($order_id, '_shipping_company', get_post_meta($original_order_id, '_shipping_company', true));
+        update_post_meta($order_id, '_shipping_address_1', get_post_meta($original_order_id, '_shipping_address_1', true));
+        update_post_meta($order_id, '_shipping_address_2', get_post_meta($original_order_id, '_shipping_address_2', true));
+        update_post_meta($order_id, '_shipping_city', get_post_meta($original_order_id, '_shipping_city', true));
+        update_post_meta($order_id, '_shipping_state', get_post_meta($original_order_id, '_shipping_state', true));
+        update_post_meta($order_id, '_shipping_postcode', get_post_meta($original_order_id, '_shipping_postcode', true));
+    }
+
+    private function duplicate_line_items($original_order, $order_id)
+    {
         foreach ($original_order->get_items() as $originalOrderItem) {
             $itemName = $originalOrderItem['name'];
             $qty = $originalOrderItem['qty'];
@@ -282,8 +310,8 @@ class pedidos {
             $productID = $originalOrderItem['product_id'];
 
             $item_id = wc_add_order_item($order_id, array(
-                'order_item_name'       => $itemName,
-                'order_item_type'       => 'line_item'
+                'order_item_name' => $itemName,
+                'order_item_type' => 'line_item'
             ));
 
             wc_add_order_item_meta($item_id, '_qty', $qty);
@@ -319,13 +347,14 @@ class pedidos {
         /* 	} */
     }
 
-    private function duplicate_shipping_items($original_order, $order_id) {
+    private function duplicate_shipping_items($original_order, $order_id)
+    {
         $original_order_shipping_items = $original_order->get_items('shipping');
 
         foreach ($original_order_shipping_items as $original_order_shipping_item) {
             $item_id = wc_add_order_item($order_id, array(
-                'order_item_name'       => $original_order_shipping_item['name'],
-                'order_item_type'       => 'shipping'
+                'order_item_name' => $original_order_shipping_item['name'],
+                'order_item_type' => 'shipping'
             ));
             if ($item_id) {
                 wc_add_order_item_meta($item_id, 'method_id', $original_order_shipping_item['method_id']);
@@ -336,12 +365,13 @@ class pedidos {
         }
     }
 
-    private function duplicate_coupons($original_order, $order_id) {
+    private function duplicate_coupons($original_order, $order_id)
+    {
         $original_order_coupons = $original_order->get_items('coupon');
         foreach ($original_order_coupons as $original_order_coupon) {
             $item_id = wc_add_order_item($order_id, array(
-                'order_item_name'       => $original_order_coupon['name'],
-                'order_item_type'       => 'coupon'
+                'order_item_name' => $original_order_coupon['name'],
+                'order_item_type' => 'coupon'
             ));
             // Add line item meta
             if ($item_id) {
@@ -350,16 +380,19 @@ class pedidos {
         }
     }
 
-    private function duplicate_payment_info($original_order_id, $order_id, $order) {
-        update_post_meta($order_id, '_payment_method',         get_post_meta($original_order_id, '_payment_method', true));
-        update_post_meta($order_id, '_payment_method_title',   get_post_meta($original_order_id, '_payment_method_title', true));
+    private function duplicate_payment_info($original_order_id, $order_id, $order)
+    {
+        update_post_meta($order_id, '_payment_method', get_post_meta($original_order_id, '_payment_method', true));
+        update_post_meta($order_id, '_payment_method_title', get_post_meta($original_order_id, '_payment_method_title', true));
         /* update_post_meta( $order->id, 'Transaction ID',         get_post_meta($original_order_id, 'Transaction ID', true) ); */
         /* $order->payment_complete(); */
     }
-    private function create_order($original_order_id) {
-        $new_post_author    = wp_get_current_user();
-        $new_post_date      = current_time('mysql');
-        $new_post_date_gmt  = get_gmt_from_date($new_post_date);
+
+    private function create_order($original_order_id)
+    {
+        $new_post_author = wp_get_current_user();
+        $new_post_date = current_time('mysql');
+        $new_post_date_gmt = get_gmt_from_date($new_post_date);
 
         $original_order = wc_get_order($original_order_id);
         $original_order_status = $original_order->get_status();
@@ -377,16 +410,19 @@ class pedidos {
         //     'post_modified'             => $new_post_date,
         //     'post_modified_gmt'         => $new_post_date_gmt
         // );
-        
+
         // $new_post_id = wp_insert_post($order_data, true);
+        add_action('woocommerce_email', [$this, '_remove_action_emails_new_order']);
         $new_order = wc_create_order();
-        
-        $r = $new_order->update_status($original_order_status);
-        
-        return $new_order->get_id();
-        
+
+        $new_order->update_status($original_order_status);
+
+        return $new_order;
+
     }
-    public function enviar_pedido($order_id) {
+
+    public function enviar_pedido($order_id)
+    {
         global $wpdb;
         $dados['acao'] = "enviar_pedido";
         $dados['id_pedido'] = $order_id;
@@ -394,49 +430,53 @@ class pedidos {
 
         $wpdb->insert($wpdb->prefix . "acoes_tiny", $dados);
     }
-    private function add_order_note($original_order_id, $order) {
+
+    private function add_order_note($original_order_id, $order)
+    {
         $updateNote = 'This order was duplicated from order ' . $original_order_id . '.';
         /* $order->update_status('processing'); */
         $order->add_order_note($updateNote);
     }
-    
-    public function exibir_pedidos_vendedor( $args ) {
-        
+
+    public function exibir_pedidos_vendedor($args)
+    {
+
         $user = wp_get_current_user();
-        
-        if ( in_array( 'vendedores_bw', (array) $user->roles ) ) {
-            
-                unset($args['customer']);            
-                $args['meta_key'] = 'bw_id_vendedor';
-                $args['meta_value'] = get_current_user_id();  
+
+        if (in_array('vendedores_bw', (array)$user->roles)) {
+
+            unset($args['customer']);
+            $args['meta_key'] = 'bw_id_vendedor';
+            $args['meta_value'] = get_current_user_id();
         }
-        
+
         return $args;
     }
-    public function atualizarRastreio($id_pedido){
+
+    public function atualizarRastreio($id_pedido)
+    {
         global $tiny;
-        
+
         $url = 'https://api.tiny.com.br/api2/cadastrar.codigo.rastreamento.pedido.php';
         $tiny->setEmpresa($id_pedido);
         $token = $tiny->getToken();
-        $tracking_code = (wc_get_order_item_meta($id_pedido, 'freterapido_shippings',true)?:[]);
+        $tracking_code = (wc_get_order_item_meta($id_pedido, 'freterapido_shippings', true) ?: []);
         $codigoRastreamento = $tracking_code[0];
-        $id_tiny = get_post_meta($id_pedido,"codigo_tiny",true);
-        $urlRastreamento = urlencode("https://ondeestameupedido.com.br/".$codigoRastreamento);
-        
+        $id_tiny = get_post_meta($id_pedido, "codigo_tiny", true);
+        $urlRastreamento = urlencode("https://ondeestameupedido.com.br/" . $codigoRastreamento);
+
         $data = "token=$token&id=$id_tiny&codigoRastreamento=$codigoRastreamento&urlRastreamento=$urlRastreamento";
 
-        
+
         $retorno = $tiny->enviarREST($url, $data);
-        
-        
-        $xml = simplexml_load_string($retorno); 
-        
-        if($xml->status_processamento=="3"){
+
+
+        $xml = simplexml_load_string($retorno);
+
+        if ($xml->status_processamento == "3") {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 }
-?>
