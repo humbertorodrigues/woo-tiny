@@ -286,76 +286,76 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
     }
 
 
-    private function get_fulfilled($channel_id)
-    {
-        global $wpdb;
-        $args = [
-            'filter_range' => true,
-            'order_status' => ['completed', 'processing', 'shipping'],
-            'meta_key' => 'tiny_nf', // The postmeta key field
-            'meta_compare' => 'EXISTS',
-            'where_meta' => $this->get_where_meta($channel_id),
-            'data' => [
-                '_order_total' => [
-                    'type' => 'meta',
-                    'function' => 'SUM',
-                    'name' => 'fulfilled',
-                ],
-            ],
-        ];
-        $query = $this->prepare_query($args);
-        $query = implode(' ', $query);
-        self::enable_big_selects();
-        $result = $wpdb->get_row($query);
-        return $result->fulfilled;
-    }
+    // private function get_fulfilled($channel_id)
+    // {
+    //     global $wpdb;
+    //     $args = [
+    //         'filter_range' => true,
+    //         'order_status' => ['completed', 'processing', 'shipping'],
+    //         'meta_key' => 'tiny_nf', // The postmeta key field
+    //         'meta_compare' => 'EXISTS',
+    //         'where_meta' => $this->get_where_meta($channel_id),
+    //         'data' => [
+    //             '_order_total' => [
+    //                 'type' => 'meta',
+    //                 'function' => 'SUM',
+    //                 'name' => 'fulfilled',
+    //             ],
+    //         ],
+    //     ];
+    //     $query = $this->prepare_query($args);
+    //     $query = implode(' ', $query);
+    //     self::enable_big_selects();
+    //     $result = $wpdb->get_row($query);
+    //     return $result->fulfilled;
+    // }
 
-    private function get_in_wallet($channel_id)
-    {
-        global $wpdb;
-        $args = [
-            'filter_range' => true,
-            'order_status' => ['wallet'],
-            'where_meta' => $this->get_where_meta($channel_id),
-            'data' => [
-                '_order_total' => [
-                    'type' => 'meta',
-                    'function' => 'SUM',
-                    'name' => 'in_wallet',
-                ]
-            ],
-        ];
-        $query = $this->prepare_query($args);
-        $query = implode(' ', $query);
-        self::enable_big_selects();
-        $result = $wpdb->get_row($query);
-        return $result->in_wallet;
-    }
+    // private function get_in_wallet($channel_id)
+    // {
+    //     global $wpdb;
+    //     $args = [
+    //         'filter_range' => true,
+    //         'order_status' => ['wallet'],
+    //         'where_meta' => $this->get_where_meta($channel_id),
+    //         'data' => [
+    //             '_order_total' => [
+    //                 'type' => 'meta',
+    //                 'function' => 'SUM',
+    //                 'name' => 'in_wallet',
+    //             ]
+    //         ],
+    //     ];
+    //     $query = $this->prepare_query($args);
+    //     $query = implode(' ', $query);
+    //     self::enable_big_selects();
+    //     $result = $wpdb->get_row($query);
+    //     return $result->in_wallet;
+    // }
 
-    private function get_pre_sale($channel_id)
-    {
-        global $wpdb;
-        $args = [
-            'filter_range' => true,
-            'order_status' => ['completed', 'processing', 'shipping'],
-            'where_meta' => $this->get_where_meta($channel_id),
-            'meta_key' => 'tiny_nf', // The postmeta key field
-            'meta_compare' => 'NOT EXISTS',
-            'data' => [
-                '_order_total' => [
-                    'type' => 'meta',
-                    'function' => 'SUM',
-                    'name' => 'pre_sale',
-                ]
-            ],
-        ];
-        $query = $this->prepare_query($args);
-        $query = implode(' ', $query);
-        self::enable_big_selects();
-        $result = $wpdb->get_row($query);
+    // private function get_pre_sale($channel_id)
+    // {
+    //     global $wpdb;
+    //     $args = [
+    //         'filter_range' => true,
+    //         'order_status' => ['completed', 'processing', 'shipping'],
+    //         'where_meta' => $this->get_where_meta($channel_id),
+    //         'meta_key' => 'tiny_nf', // The postmeta key field
+    //         'meta_compare' => 'NOT EXISTS',
+    //         'data' => [
+    //             '_order_total' => [
+    //                 'type' => 'meta',
+    //                 'function' => 'SUM',
+    //                 'name' => 'pre_sale',
+    //             ]
+    //         ],
+    //     ];
+    //     $query = $this->prepare_query($args);
+    //     $query = implode(' ', $query);
+    //     self::enable_big_selects();
+    //     $result = $wpdb->get_row($query);
 
-        return $result->pre_sale;
-    }
+    //     return $result->pre_sale;
+    // }
 
     private function get_total_type($type, $field = 'fulfilled')
     {
@@ -428,267 +428,267 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
         return round($goal / 100, 2);
     }
 
-    private function prepare_query($args = [])
-    {
-        global $wpdb;
+    // private function prepare_query($args = [])
+    // {
+    //     global $wpdb;
 
-        $default_args = [
-            'data' => [],
-            'where' => [],
-            'where_meta' => [],
-            'group_by' => '',
-            'order_by' => '',
-            'limit' => '',
-            'filter_range' => false,
-            'order_types' => wc_get_order_types('reports'),
-            'order_status' => ['completed', 'processing'],
-            'parent_order_status' => false,
-        ];
-        $args = wp_parse_args($args, $default_args);
+    //     $default_args = [
+    //         'data' => [],
+    //         'where' => [],
+    //         'where_meta' => [],
+    //         'group_by' => '',
+    //         'order_by' => '',
+    //         'limit' => '',
+    //         'filter_range' => false,
+    //         'order_types' => wc_get_order_types('reports'),
+    //         'order_status' => ['completed', 'processing'],
+    //         'parent_order_status' => false,
+    //     ];
+    //     $args = wp_parse_args($args, $default_args);
 
-        extract($args);
+    //     extract($args);
 
-        if (empty($data)) {
-            return '';
-        }
+    //     if (empty($data)) {
+    //         return '';
+    //     }
 
-        $query = [];
-        $select = [];
+    //     $query = [];
+    //     $select = [];
 
-        foreach ($data as $raw_key => $value) {
-            $key = sanitize_key($raw_key);
-            $distinct = '';
+    //     foreach ($data as $raw_key => $value) {
+    //         $key = sanitize_key($raw_key);
+    //         $distinct = '';
 
-            if (isset($value['distinct'])) {
-                $distinct = 'DISTINCT';
-            }
+    //         if (isset($value['distinct'])) {
+    //             $distinct = 'DISTINCT';
+    //         }
 
-            switch ($value['type']) {
-                case 'meta':
-                    $get_key = "meta_{$key}.meta_value";
-                    break;
-                case 'parent_meta':
-                    $get_key = "parent_meta_{$key}.meta_value";
-                    break;
-                case 'post_data':
-                    $get_key = "posts.{$key}";
-                    break;
-                case 'order_item_meta':
-                    $get_key = "order_item_meta_{$key}.meta_value";
-                    break;
-                case 'order_item':
-                    $get_key = "order_items.{$key}";
-                    break;
-            }
+    //         switch ($value['type']) {
+    //             case 'meta':
+    //                 $get_key = "meta_{$key}.meta_value";
+    //                 break;
+    //             case 'parent_meta':
+    //                 $get_key = "parent_meta_{$key}.meta_value";
+    //                 break;
+    //             case 'post_data':
+    //                 $get_key = "posts.{$key}";
+    //                 break;
+    //             case 'order_item_meta':
+    //                 $get_key = "order_item_meta_{$key}.meta_value";
+    //                 break;
+    //             case 'order_item':
+    //                 $get_key = "order_items.{$key}";
+    //                 break;
+    //         }
 
-            if (empty($get_key)) {
-                // Skip to the next foreach iteration else the query will be invalid.
-                continue;
-            }
+    //         if (empty($get_key)) {
+    //             // Skip to the next foreach iteration else the query will be invalid.
+    //             continue;
+    //         }
 
-            if ($value['function']) {
-                $get = "{$value['function']}({$distinct} {$get_key})";
-            } else {
-                $get = "{$distinct} {$get_key}";
-            }
+    //         if ($value['function']) {
+    //             $get = "{$value['function']}({$distinct} {$get_key})";
+    //         } else {
+    //             $get = "{$distinct} {$get_key}";
+    //         }
 
-            $select[] = "{$get} as {$value['name']}";
-        }
+    //         $select[] = "{$get} as {$value['name']}";
+    //     }
 
-        $query['select'] = 'SELECT ' . implode(',', $select);
-        $query['from'] = "FROM {$wpdb->posts} AS posts";
+    //     $query['select'] = 'SELECT ' . implode(',', $select);
+    //     $query['from'] = "FROM {$wpdb->posts} AS posts";
 
-        // Joins
-        $joins = array();
+    //     // Joins
+    //     $joins = array();
 
-        foreach (($data + $where) as $raw_key => $value) {
-            $join_type = isset($value['join_type']) ? $value['join_type'] : 'INNER';
-            $type = isset($value['type']) ? $value['type'] : false;
-            $key = sanitize_key($raw_key);
+    //     foreach (($data + $where) as $raw_key => $value) {
+    //         $join_type = isset($value['join_type']) ? $value['join_type'] : 'INNER';
+    //         $type = isset($value['type']) ? $value['type'] : false;
+    //         $key = sanitize_key($raw_key);
 
-            switch ($type) {
-                case 'meta':
-                    $joins["meta_{$key}"] = "{$join_type} JOIN {$wpdb->postmeta} AS meta_{$key} ON ( posts.ID = meta_{$key}.post_id AND meta_{$key}.meta_key = '{$raw_key}' )";
-                    break;
-                case 'parent_meta':
-                    $joins["parent_meta_{$key}"] = "{$join_type} JOIN {$wpdb->postmeta} AS parent_meta_{$key} ON (posts.post_parent = parent_meta_{$key}.post_id) AND (parent_meta_{$key}.meta_key = '{$raw_key}')";
-                    break;
-                case 'order_item_meta':
-                    $joins['order_items'] = "{$join_type} JOIN {$wpdb->prefix}woocommerce_order_items AS order_items ON (posts.ID = order_items.order_id)";
+    //         switch ($type) {
+    //             case 'meta':
+    //                 $joins["meta_{$key}"] = "{$join_type} JOIN {$wpdb->postmeta} AS meta_{$key} ON ( posts.ID = meta_{$key}.post_id AND meta_{$key}.meta_key = '{$raw_key}' )";
+    //                 break;
+    //             case 'parent_meta':
+    //                 $joins["parent_meta_{$key}"] = "{$join_type} JOIN {$wpdb->postmeta} AS parent_meta_{$key} ON (posts.post_parent = parent_meta_{$key}.post_id) AND (parent_meta_{$key}.meta_key = '{$raw_key}')";
+    //                 break;
+    //             case 'order_item_meta':
+    //                 $joins['order_items'] = "{$join_type} JOIN {$wpdb->prefix}woocommerce_order_items AS order_items ON (posts.ID = order_items.order_id)";
 
-                    if (!empty($value['order_item_type'])) {
-                        $joins['order_items'] .= " AND (order_items.order_item_type = '{$value['order_item_type']}')";
-                    }
+    //                 if (!empty($value['order_item_type'])) {
+    //                     $joins['order_items'] .= " AND (order_items.order_item_type = '{$value['order_item_type']}')";
+    //                 }
 
-                    $joins["order_item_meta_{$key}"] = "{$join_type} JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS order_item_meta_{$key} ON " .
-                        "(order_items.order_item_id = order_item_meta_{$key}.order_item_id) " .
-                        " AND (order_item_meta_{$key}.meta_key = '{$raw_key}')";
-                    break;
-                case 'order_item':
-                    $joins['order_items'] = "{$join_type} JOIN {$wpdb->prefix}woocommerce_order_items AS order_items ON posts.ID = order_items.order_id";
-                    break;
-            }
-        }
+    //                 $joins["order_item_meta_{$key}"] = "{$join_type} JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS order_item_meta_{$key} ON " .
+    //                     "(order_items.order_item_id = order_item_meta_{$key}.order_item_id) " .
+    //                     " AND (order_item_meta_{$key}.meta_key = '{$raw_key}')";
+    //                 break;
+    //             case 'order_item':
+    //                 $joins['order_items'] = "{$join_type} JOIN {$wpdb->prefix}woocommerce_order_items AS order_items ON posts.ID = order_items.order_id";
+    //                 break;
+    //         }
+    //     }
 
-        if (!empty($where_meta)) {
-            foreach ($where_meta as $value) {
-                if (!is_array($value)) {
-                    continue;
-                }
-                $join_type = isset($value['join_type']) ? $value['join_type'] : 'INNER';
-                $type = isset($value['type']) ? $value['type'] : false;
-                $key = sanitize_key(is_array($value['meta_key']) ? $value['meta_key'][0] . '_array' : $value['meta_key']);
+    //     if (!empty($where_meta)) {
+    //         foreach ($where_meta as $value) {
+    //             if (!is_array($value)) {
+    //                 continue;
+    //             }
+    //             $join_type = isset($value['join_type']) ? $value['join_type'] : 'INNER';
+    //             $type = isset($value['type']) ? $value['type'] : false;
+    //             $key = sanitize_key(is_array($value['meta_key']) ? $value['meta_key'][0] . '_array' : $value['meta_key']);
 
-                if ('order_item_meta' === $type) {
+    //             if ('order_item_meta' === $type) {
 
-                    $joins['order_items'] = "{$join_type} JOIN {$wpdb->prefix}woocommerce_order_items AS order_items ON posts.ID = order_items.order_id";
-                    $joins["order_item_meta_{$key}"] = "{$join_type} JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS order_item_meta_{$key} ON order_items.order_item_id = order_item_meta_{$key}.order_item_id";
+    //                 $joins['order_items'] = "{$join_type} JOIN {$wpdb->prefix}woocommerce_order_items AS order_items ON posts.ID = order_items.order_id";
+    //                 $joins["order_item_meta_{$key}"] = "{$join_type} JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS order_item_meta_{$key} ON order_items.order_item_id = order_item_meta_{$key}.order_item_id";
 
-                } else {
-                    // If we have a where clause for meta, join the postmeta table
-                    $joins["meta_{$key}"] = "{$join_type} JOIN {$wpdb->postmeta} AS meta_{$key} ON posts.ID = meta_{$key}.post_id";
-                }
-            }
-        }
+    //             } else {
+    //                 // If we have a where clause for meta, join the postmeta table
+    //                 $joins["meta_{$key}"] = "{$join_type} JOIN {$wpdb->postmeta} AS meta_{$key} ON posts.ID = meta_{$key}.post_id";
+    //             }
+    //         }
+    //     }
 
-        if (!empty($parent_order_status)) {
-            $joins['parent'] = "LEFT JOIN {$wpdb->posts} AS parent ON posts.post_parent = parent.ID";
-        }
+    //     if (!empty($parent_order_status)) {
+    //         $joins['parent'] = "LEFT JOIN {$wpdb->posts} AS parent ON posts.post_parent = parent.ID";
+    //     }
 
-        $query['join'] = implode(' ', $joins);
+    //     $query['join'] = implode(' ', $joins);
 
-        $query['where'] = "
-			WHERE 	posts.post_type 	IN ( '" . implode("','", $order_types) . "' )
-			";
+    //     $query['where'] = "
+	// 		WHERE 	posts.post_type 	IN ( '" . implode("','", $order_types) . "' )
+	// 		";
 
-        if (!empty($order_status)) {
-            $query['where'] .= "
-				AND 	posts.post_status 	IN ( 'wc-" . implode("','wc-", $order_status) . "')
-			";
-        }
+    //     if (!empty($order_status)) {
+    //         $query['where'] .= "
+	// 			AND 	posts.post_status 	IN ( 'wc-" . implode("','wc-", $order_status) . "')
+	// 		";
+    //     }
 
-        if (!empty($parent_order_status)) {
-            if (!empty($order_status)) {
-                $query['where'] .= " AND ( parent.post_status IN ( 'wc-" . implode("','wc-", $parent_order_status) . "') OR parent.ID IS NULL ) ";
-            } else {
-                $query['where'] .= " AND parent.post_status IN ( 'wc-" . implode("','wc-", $parent_order_status) . "') ";
-            }
-        }
+    //     if (!empty($parent_order_status)) {
+    //         if (!empty($order_status)) {
+    //             $query['where'] .= " AND ( parent.post_status IN ( 'wc-" . implode("','wc-", $parent_order_status) . "') OR parent.ID IS NULL ) ";
+    //         } else {
+    //             $query['where'] .= " AND parent.post_status IN ( 'wc-" . implode("','wc-", $parent_order_status) . "') ";
+    //         }
+    //     }
 
-        if ($filter_range) {
-            $query['where'] .= "
-				AND 	posts.post_date >= '" . date('Y-m-d H:i:s', $this->start_date) . "'
-				AND 	posts.post_date < '" . date('Y-m-d H:i:s', strtotime('+1 DAY', $this->end_date)) . "'
-			";
-        }
+    //     if ($filter_range) {
+    //         $query['where'] .= "
+	// 			AND 	posts.post_date >= '" . date('Y-m-d H:i:s', $this->start_date) . "'
+	// 			AND 	posts.post_date < '" . date('Y-m-d H:i:s', strtotime('+1 DAY', $this->end_date)) . "'
+	// 		";
+    //     }
 
-        if (!empty($where_meta)) {
+    //     if (!empty($where_meta)) {
 
-            $relation = isset($where_meta['relation']) ? $where_meta['relation'] : 'AND';
+    //         $relation = isset($where_meta['relation']) ? $where_meta['relation'] : 'AND';
 
-            $query['where'] .= ' AND (';
+    //         $query['where'] .= ' AND (';
 
-            foreach ($where_meta as $index => $value) {
+    //         foreach ($where_meta as $index => $value) {
 
-                if (!is_array($value)) {
-                    continue;
-                }
+    //             if (!is_array($value)) {
+    //                 continue;
+    //             }
 
-                $key = sanitize_key(is_array($value['meta_key']) ? $value['meta_key'][0] . '_array' : $value['meta_key']);
+    //             $key = sanitize_key(is_array($value['meta_key']) ? $value['meta_key'][0] . '_array' : $value['meta_key']);
 
-                if (strtolower($value['operator']) == 'in' || strtolower($value['operator']) == 'not in') {
+    //             if (strtolower($value['operator']) == 'in' || strtolower($value['operator']) == 'not in') {
 
-                    if (is_array($value['meta_value'])) {
-                        $value['meta_value'] = implode("','", $value['meta_value']);
-                    }
+    //                 if (is_array($value['meta_value'])) {
+    //                     $value['meta_value'] = implode("','", $value['meta_value']);
+    //                 }
 
-                    if (!empty($value['meta_value'])) {
-                        $where_value = "{$value['operator']} ('{$value['meta_value']}')";
-                    }
-                } else {
-                    $where_value = "{$value['operator']} '{$value['meta_value']}'";
-                }
+    //                 if (!empty($value['meta_value'])) {
+    //                     $where_value = "{$value['operator']} ('{$value['meta_value']}')";
+    //                 }
+    //             } else {
+    //                 $where_value = "{$value['operator']} '{$value['meta_value']}'";
+    //             }
 
-                if (!empty($where_value)) {
-                    if ($index > 0) {
-                        $query['where'] .= ' ' . $relation;
-                    }
+    //             if (!empty($where_value)) {
+    //                 if ($index > 0) {
+    //                     $query['where'] .= ' ' . $relation;
+    //                 }
 
-                    if (isset($value['type']) && 'order_item_meta' === $value['type']) {
+    //                 if (isset($value['type']) && 'order_item_meta' === $value['type']) {
 
-                        if (is_array($value['meta_key'])) {
-                            $query['where'] .= " ( order_item_meta_{$key}.meta_key   IN ('" . implode("','", $value['meta_key']) . "')";
-                        } else {
-                            $query['where'] .= " ( order_item_meta_{$key}.meta_key   = '{$value['meta_key']}'";
-                        }
+    //                     if (is_array($value['meta_key'])) {
+    //                         $query['where'] .= " ( order_item_meta_{$key}.meta_key   IN ('" . implode("','", $value['meta_key']) . "')";
+    //                     } else {
+    //                         $query['where'] .= " ( order_item_meta_{$key}.meta_key   = '{$value['meta_key']}'";
+    //                     }
 
-                        $query['where'] .= " AND order_item_meta_{$key}.meta_value {$where_value} )";
-                    } else {
+    //                     $query['where'] .= " AND order_item_meta_{$key}.meta_value {$where_value} )";
+    //                 } else {
 
-                        if (is_array($value['meta_key'])) {
-                            $query['where'] .= " ( meta_{$key}.meta_key   IN ('" . implode("','", $value['meta_key']) . "')";
-                        } else {
-                            $query['where'] .= " ( meta_{$key}.meta_key   = '{$value['meta_key']}'";
-                        }
+    //                     if (is_array($value['meta_key'])) {
+    //                         $query['where'] .= " ( meta_{$key}.meta_key   IN ('" . implode("','", $value['meta_key']) . "')";
+    //                     } else {
+    //                         $query['where'] .= " ( meta_{$key}.meta_key   = '{$value['meta_key']}'";
+    //                     }
 
-                        $query['where'] .= " AND meta_{$key}.meta_value {$where_value} )";
-                    }
-                }
-            }
+    //                     $query['where'] .= " AND meta_{$key}.meta_value {$where_value} )";
+    //                 }
+    //             }
+    //         }
 
-            $query['where'] .= ')';
-        }
+    //         $query['where'] .= ')';
+    //     }
 
-        if (!empty($where)) {
+    //     if (!empty($where)) {
 
-            foreach ($where as $value) {
+    //         foreach ($where as $value) {
 
-                if (strtolower($value['operator']) == 'in' || strtolower($value['operator']) == 'not in') {
+    //             if (strtolower($value['operator']) == 'in' || strtolower($value['operator']) == 'not in') {
 
-                    if (is_array($value['value'])) {
-                        $value['value'] = implode("','", $value['value']);
-                    }
+    //                 if (is_array($value['value'])) {
+    //                     $value['value'] = implode("','", $value['value']);
+    //                 }
 
-                    if (!empty($value['value'])) {
-                        $where_value = "{$value['operator']} ('{$value['value']}')";
-                    }
-                } else {
-                    $where_value = "{$value['operator']} '{$value['value']}'";
-                }
+    //                 if (!empty($value['value'])) {
+    //                     $where_value = "{$value['operator']} ('{$value['value']}')";
+    //                 }
+    //             } else {
+    //                 $where_value = "{$value['operator']} '{$value['value']}'";
+    //             }
 
-                if (!empty($where_value)) {
-                    $query['where'] .= " AND {$value['key']} {$where_value}";
-                }
-            }
-        }
+    //             if (!empty($where_value)) {
+    //                 $query['where'] .= " AND {$value['key']} {$where_value}";
+    //             }
+    //         }
+    //     }
 
-        if ($group_by) {
-            $query['group_by'] = "GROUP BY {$group_by}";
-        }
+    //     if ($group_by) {
+    //         $query['group_by'] = "GROUP BY {$group_by}";
+    //     }
 
-        if ($order_by) {
-            $query['order_by'] = "ORDER BY {$order_by}";
-        }
+    //     if ($order_by) {
+    //         $query['order_by'] = "ORDER BY {$order_by}";
+    //     }
 
-        if ($limit) {
-            $query['limit'] = "LIMIT {$limit}";
-        }
+    //     if ($limit) {
+    //         $query['limit'] = "LIMIT {$limit}";
+    //     }
 
 
-        return $query;
-    }
+    //     return $query;
+    // }
 
-    private static function enable_big_selects()
-    {
-        static $big_selects = false;
+    // private static function enable_big_selects()
+    // {
+    //     static $big_selects = false;
 
-        global $wpdb;
+    //     global $wpdb;
 
-        if (!$big_selects) {
-            $wpdb->query('SET SESSION SQL_BIG_SELECTS=1');
-            $big_selects = true;
-        }
-    }
+    //     if (!$big_selects) {
+    //         $wpdb->query('SET SESSION SQL_BIG_SELECTS=1');
+    //         $big_selects = true;
+    //     }
+    // }
 
     private function check_current_range_nonce($current_range)
     {
@@ -772,7 +772,7 @@ class WC_Report_Woo_Tiny_Channel_List extends WP_List_Table
             'limit' => -1,
             'orderby' => 'date',
             'order' => 'DESC',
-            'date_created' => $this->start_date."..." .$this->end_date, 
+            'date_paid' => $this->start_date."..." .$this->end_date, 
             'status' => ['wc-processing', 'wc-completed', 'wc-shipping','wc-wallet'],
             'return' => 'ids',
         ]);
