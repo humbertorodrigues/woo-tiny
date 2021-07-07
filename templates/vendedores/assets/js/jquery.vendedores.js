@@ -361,7 +361,7 @@ jQuery(document).on('click', '.order-installment', function (e) {
             month = '12';
             dueDate.setFullYear(dueDate.getFullYear() - 1);
         }
-        dueDate = dueDate.getFullYear() + '-' + month + '-' + dueDate.getDate();
+        dueDate = dueDate.getFullYear() + '-' + month + '-' + ("0" + dueDate.getDate()).slice(-2);
         jQuery('#input-order-installments').append('<div class="text-right">' +
             '<label>Parcela ' + qtdInputsInstallments + ': </label>' +
             '<input type="date" name="bw_order_installments[' + qtdInputsInstallments + '][duedate]" value="' + dueDate + '" required>' +
