@@ -205,7 +205,7 @@ function woo_tiny_save_customer_extra_meta($customer, $customer_data)
     }
 
     if (is_int($customer) && $customer > 0) {
-        update_user_meta($customer, $vat_key, format_cpf_or_cnpj($customer_data['vat']));
+        update_user_meta($customer, $vat_key, format_cpf_or_cnpj($vat));
         update_user_meta($customer, $doc_key, $doc_value);
         update_user_meta($customer, 'billing_cellphone', $customer_data['billing']['cellphone']);
         update_user_meta($customer, 'billing_persontype', $person_type);

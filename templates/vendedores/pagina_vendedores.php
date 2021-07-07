@@ -158,7 +158,7 @@ if (!is_user_logged_in()) {
                         <div class="col-lg-12">
                             <div class="form-check">
                                 <label class="form-check-label">
-                                    <input type="checkbox" class="form-check-input" id="has-shipping">
+                                    <input type="checkbox" class="form-check-input" id="has-shipping" name="has_shipping_address">
                                     Entregar em um endereço diferente
                                 </label>
                             </div>

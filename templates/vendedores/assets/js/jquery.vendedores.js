@@ -11,8 +11,8 @@ jQuery.validator.addMethod("same", function (value, element, param) {
     return this.optional(element);
 });
 jQuery(document).ready(function () {
-    jQuery("#telefone").mask("(99)99999-9999");
-    jQuery("#celular").mask("(99)99999-9999");
+    jQuery("#telefone").mask("(99) 99999-9999");
+    jQuery("#celular").mask("(99) 99999-9999");
     jQuery("#cep").mask("99999-999");
     jQuery("#form_pedido_venda").validate({
         rules: {
