@@ -212,7 +212,10 @@ function woo_tiny_save_order()
         if (empty($order_id)) $order_id = 0;
         //Temos bonificacao, vamos montar um pedido à parte
         if (array_sum($qtd_bonificacao) > 0) {
-            $order_bonificacao = wc_create_order(['status' => 'wc-revision']);
+            $order_bonificacao = wc_create_order([
+                'status' => 'wc-revision',
+                'customer_id' => $customer->get_id()
+            ]);
             $order_bonificacao_id = $order_bonificacao->get_id();
 
             update_post_meta($order_bonificacao_id, "bw_codigo", $codigo);
