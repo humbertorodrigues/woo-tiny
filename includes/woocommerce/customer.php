@@ -140,7 +140,7 @@ function woo_tiny_get_user_id_by_cpf_cnpj($cpf_cnpj)
     global $wpdb;
     $meta_value = only_numbers($cpf_cnpj);
     $meta_key = strlen($meta_value) > 11 ? 'billing_cnpj' : 'billing_cpf';
-    $wp_sql_prepare = $wpdb->prepare("SELECT user_id FROM {$wpdb->prefix}usermeta WHERE meta_key='%s' AND (meta_value='%s' OR meta_value='%s')", $meta_key, $meta_value, format_cpf_or_cnpj($cpf_cnpj));
+    $wp_sql_prepare = $wpdb->prepare("SELECT user_id FROM {$wpdb->prefix}usermeta WHERE meta_key='%s' AND (meta_value='%s' OR meta_value='%s')", $meta_key, $meta_value, format_cpf_or_cnpj($meta_value));
     $user_row = $wpdb->get_results($wp_sql_prepare);
     if (empty($user_row)) return false;
     return $user_row[0]->user_id;
