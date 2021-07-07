@@ -6,7 +6,7 @@ function woo_tiny_estimate_register_page()
         'woocommerce',
         'Orçamentos',
         'Orçamentos',
-        'manage_options',
+        'read',
         'woo_tiny_estimates',
         'woo_tiny_estimate_display_page',
         2

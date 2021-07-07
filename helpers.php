@@ -394,7 +394,8 @@ if(!function_exists('generate_pdf_by_html')){
         }
         $pdf->WriteHTML(minify_html($html), 2);
 
-        $pdf->Output($filename, $output)->setContentType('application/pdf');
+        $r = $pdf->Output($filename, $output);
+        // $pdf->setContentType('application/pdf');
         ob_end_flush();
         header('Set-Cookie: fileDownload=true; path=/');
         exit;
