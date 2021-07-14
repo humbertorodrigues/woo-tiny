@@ -273,7 +273,7 @@ function woo_tiny_order_data_seller($order)
     if ($order->has_status(['pending', 'on-hold', 'revision', 'wallet'])) {
         include WOO_TINY_DIR . 'templates/post-types/shop-order/button-order-processing.php';
     }
-    if (in_array('bw_supervisor', $user->roles)) {
+    if (in_array('bw_supervisor', $user->roles) || in_array('administrator', $user->roles)) {
         $sellers = get_users(['role__in' => ['vendedores_bw']]);
         $channels = get_posts(array(
             'post_type' => 'canal_venda',
