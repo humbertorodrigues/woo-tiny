@@ -29,6 +29,10 @@ function woo_tiny_order_item($item_id, $item, $order_id)
         $price = $customer_discount;
         $subtotal = $customer_discount * $qtd;
         $total = $customer_discount * $qtd;
+
+    }else{
+        $subtotal = $price * $qtd;
+        $total = $price * $qtd;
     }
 
     $product->set_price($price);
@@ -37,6 +41,7 @@ function woo_tiny_order_item($item_id, $item, $order_id)
     $item->set_total($total);
     $item->save_meta_data();
     $item->apply_changes();
+
 }
 
 function woo_tiny_order_after_calculate_totals($and_taxes, $order)
