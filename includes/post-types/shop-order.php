@@ -296,11 +296,11 @@ function woo_tiny_order_save_meta($order_id, $order)
 {
     $user = wp_get_current_user();
 
-    if (in_array('bw_supervisor', $user->roles)) {
+    if (in_array('bw_supervisor', $user->roles) || in_array('administrator', $user->roles)) {
         $default_fields = [
-            'bw_id_vendedor' => '',
-            'bw_canal_venda' => '',
-            'bw_forma_pagamento_id' => '',
+            'bw_id_vendedor' => get_post_meta($order_id, 'bw_id_vendedor', true),
+            'bw_canal_venda' => get_post_meta($order_id, 'bw_canal_venda', true),
+            'bw_forma_pagamento_id' => get_post_meta($order_id, 'bw_forma_pagamento_id', true),
         ];
 
         if (array_key_exists('canal_venda', $_POST)) {

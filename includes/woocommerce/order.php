@@ -7,14 +7,52 @@ add_filter('wc_order_is_editable', 'woo_tiny_wc_order_is_editable', 10, 2);
 add_action('wp_ajax_woo_tiny_get_coupon', 'woo_tiny_ajax_get_coupon_by_code');
 add_action('admin_post_woo_tiny_save_order', 'woo_tiny_save_order');
 add_action('wp_ajax_woo_tiny_save_order', 'woo_tiny_save_order');
+add_action('woocommerce_new_order_item', 'woo_tiny_order_item', 10, 3);
+add_action('woocommerce_update_order_item', 'woo_tiny_order_item', 10, 3);
+
+function woo_tiny_order_item($item_id, $item, $order_id)
+{
+    $product = $item->get_product();
+    $total = $item->get_total();
+    $subtotal = $item->get_subtotal();
+    $qtd = $item->get_quantity();
+    $price = $product->get_price();
+    $channel_id = get_post_meta($order_id, 'bw_canal_venda', true);
+    $customer_id = get_post_meta($order_id, '_customer_user', true);
+    //$payment_option_id = get_post_meta($order_id, 'bw_forma_pagamento_id', true);
+
+    $customer_discount = get_custom_product_price_by_user_id($customer_id, $product->get_id(), $channel_id);
+    //$channel_discount = get_post_meta($channel_id, '', true);
+    //$payment_option_discount = (int)get_post_meta($payment_option_id, 'discount', true);
+    $bonus = get_post_meta($order_id, 'bw_bonificacao_pedido_pai', true);
+    if ($customer_discount && $bonus == '') {
+        $price = $customer_discount;
+        $subtotal = $customer_discount * $qtd;
+        $total = $customer_discount * $qtd;
+    }
+
+    $product->set_price($price);
+    $item->set_product($product);
+    $item->set_subtotal($subtotal);
+    $item->set_total($total);
+    $item->save_meta_data();
+    $item->apply_changes();
+}
 
 function woo_tiny_order_after_calculate_totals($and_taxes, $order)
 {
+    // Calculate discount by payment option
     $payment_option_id = (int)bw_get_meta_field('discount', (int)get_post_meta($order->get_id(), 'bw_forma_pagamento_id', true));
     $discount = (float)$payment_option_id * $order->get_subtotal() / 100;
     $discount += $order->get_discount_total();
+
+    // Calculate discount by channel
+    // Calculate discount by customer
+
     $order->set_discount_total(round($discount, wc_get_price_decimals()));
     $order->set_total(round($order->get_subtotal() - $discount, wc_get_price_decimals()));
+    //$order->save_meta_data();
+    //$order->apply_changes();
 }
 
 function woo_tiny_register_new_order_statuses()
@@ -71,7 +109,7 @@ function woo_tiny_save_order()
     if ('POST' != $_SERVER['REQUEST_METHOD'] || !wp_verify_nonce($_POST['_wpnonce'], 'woo_tiny_shop_order')) die('Requisição Inválida');
     $referer = site_url('vendedores');
     if (!is_user_logged_in()) {
-        if(wp_doing_ajax()){
+        if (wp_doing_ajax()) {
             wp_send_json_error([
                 'redirect' => wp_login_url($referer),
             ]);
@@ -112,7 +150,7 @@ function woo_tiny_save_order()
 
         $user_id = $_POST['bw_id_vendedor'];
 
-        $order_finish = (int) $_POST['finish'];
+        $order_finish = (int)$_POST['finish'];
 
         $address = array(
             'first_name' => $nome,
@@ -138,9 +176,9 @@ function woo_tiny_save_order()
             $address['persontype'] = 2;
         }
         $address['billing'] = wc_serialize_br_address($address, 'billing');
-        if(isset($_POST['has_shipping_address'])){
+        if (isset($_POST['has_shipping_address'])) {
             $address['shipping'] = wc_serialize_br_address($_POST['shipping'], 'shipping');
-        }else{
+        } else {
             $address['shipping'] = wc_serialize_br_address($address['billing'], 'shipping');
         }
         $address['shipping']['first_name'] = $address['billing']['first_name'];
@@ -149,7 +187,7 @@ function woo_tiny_save_order()
         $customer = woo_tiny_save_customer_meta_data(woo_tiny_get_customer_data($address));
         if (!$customer) {
             $referer .= set_alert('danger', 'Falha ao processar');
-            if(wp_doing_ajax()){
+            if (wp_doing_ajax()) {
                 wp_send_json_error([
                     'redirect' => $referer,
                 ]);
@@ -264,7 +302,7 @@ function woo_tiny_save_order()
         if ($order_id > 0) {
             woo_tiny_order_upload_files($order_id, $_FILES['documents']);
             $referer .= set_alert('success', "Pedido #{$order_id} salvo com sucesso");
-            switch ($order_finish){
+            switch ($order_finish) {
                 case 1:
                     $referer = $order->get_checkout_payment_url();
                     break;
@@ -286,10 +324,10 @@ function woo_tiny_save_order()
         } else {
             $referer .= $order_bonificacao_id > 0 ? set_alert('success', "Bonificação #{$order_bonificacao_id} salvo com sucesso") : set_alert('danger', 'Falha ao processar');
         }
-        if (!in_array((int) $_POST['finish'], [2, 3], true)) {
+        if (!in_array((int)$_POST['finish'], [2, 3], true)) {
             woo_tiny_trigger_order_revision_email($order);
         }
-        if(wp_doing_ajax()){
+        if (wp_doing_ajax()) {
             wp_send_json_success([
                 'download' => $download,
                 'redirect' => $referer
