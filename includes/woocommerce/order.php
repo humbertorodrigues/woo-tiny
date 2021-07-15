@@ -12,36 +12,37 @@ add_action('woocommerce_update_order_item', 'woo_tiny_order_item', 10, 3);
 
 function woo_tiny_order_item($item_id, $item, $order_id)
 {
-    $product = $item->get_product();
-    $total = $item->get_total();
-    $subtotal = $item->get_subtotal();
-    $qtd = $item->get_quantity();
-    $price = $product->get_price();
-    $channel_id = get_post_meta($order_id, 'bw_canal_venda', true);
-    $customer_id = get_post_meta($order_id, '_customer_user', true);
-    //$payment_option_id = get_post_meta($order_id, 'bw_forma_pagamento_id', true);
+    if(is_a($item, 'WC_Order_Item_Product')) {
+        $product = $item->get_product();
+        $total = $item->get_total();
+        $subtotal = $item->get_subtotal();
+        $qtd = $item->get_quantity();
+        $price = $product->get_price();
+        $channel_id = get_post_meta($order_id, 'bw_canal_venda', true);
+        $customer_id = get_post_meta($order_id, '_customer_user', true);
+        //$payment_option_id = get_post_meta($order_id, 'bw_forma_pagamento_id', true);
 
-    $customer_discount = get_custom_product_price_by_user_id($customer_id, $product->get_id(), $channel_id);
-    //$channel_discount = get_post_meta($channel_id, '', true);
-    //$payment_option_discount = (int)get_post_meta($payment_option_id, 'discount', true);
-    $bonus = get_post_meta($order_id, 'bw_bonificacao_pedido_pai', true);
-    if ($customer_discount && $bonus == '') {
-        $price = $customer_discount;
-        $subtotal = $customer_discount * $qtd;
-        $total = $customer_discount * $qtd;
+        $customer_discount = get_custom_product_price_by_user_id($customer_id, $product->get_id(), $channel_id);
+        //$channel_discount = get_post_meta($channel_id, '', true);
+        //$payment_option_discount = (int)get_post_meta($payment_option_id, 'discount', true);
+        $bonus = get_post_meta($order_id, 'bw_bonificacao_pedido_pai', true);
+        if ($customer_discount && $bonus == '') {
+            $price = $customer_discount;
+            $subtotal = $customer_discount * $qtd;
+            $total = $customer_discount * $qtd;
 
-    }else{
-        $subtotal = $price * $qtd;
-        $total = $price * $qtd;
+        } else {
+            $subtotal = $price * $qtd;
+            $total = $price * $qtd;
+        }
+
+        $product->set_price($price);
+        $item->set_product($product);
+        $item->set_subtotal($subtotal);
+        $item->set_total($total);
+        $item->save_meta_data();
+        $item->apply_changes();
     }
-
-    $product->set_price($price);
-    $item->set_product($product);
-    $item->set_subtotal($subtotal);
-    $item->set_total($total);
-    $item->save_meta_data();
-    $item->apply_changes();
-
 }
 
 function woo_tiny_order_after_calculate_totals($and_taxes, $order)
