@@ -310,6 +310,19 @@ if(!function_exists('wc_serialize_br_address')){
         return wp_parse_args($address, $field_defaults[$type]);
     }
 }
+if(!function_exists('get_custom_product_price_by_channel_id')){
+    function get_custom_product_price_by_channel_id($product_id, $channel_id){
+        $data = get_post_meta($product_id, 'canais_venda', true);
+        if(is_array($data)) {
+            foreach ($data as $key => $item) {
+                if ($key == $channel_id) {
+                    return $item;
+                }
+            }
+        }
+        return false;
+    }
+}
 
 if(!function_exists('get_custom_product_price_by_user_id')){
     function get_custom_product_price_by_user_id($user_id, $product_id, $channel_id){

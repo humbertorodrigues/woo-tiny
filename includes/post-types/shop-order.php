@@ -10,6 +10,48 @@ add_action('restrict_manage_posts', 'woo_tiny_shop_order_extra_tablenav', 10, 2)
 add_action('disable_months_dropdown', 'woo_tiny_shop_order_disable_months_dropdown', 10, 2);
 add_filter('request', 'woo_tiny_shop_order_extra_filter');
 add_filter('bulk_actions-edit-shop_order', 'woo_tiny_shop_order_bulk_actions');
+add_action('woocommerce_new_order_item', 'woo_tiny_order_item', 10, 3);
+add_action('woocommerce_update_order_item', 'woo_tiny_order_item', 10, 3);
+
+function woo_tiny_order_item($item_id, $item, $order_id)
+{
+    if(is_a($item, 'WC_Order_Item_Product')) {
+        $product = $item->get_product();
+        $total = $item->get_total();
+        $subtotal = $item->get_subtotal();
+        $qtd = $item->get_quantity();
+        $price = $product->get_price();
+        $channel_id = get_post_meta($order_id, 'bw_canal_venda', true);
+        $customer_id = get_post_meta($order_id, '_customer_user', true);
+        $product_id = $product->get_id();
+        //$payment_option_id = get_post_meta($order_id, 'bw_forma_pagamento_id', true);
+
+        $customer_discount = get_custom_product_price_by_user_id($customer_id, $product_id, $channel_id);
+        $channel_discount = get_custom_product_price_by_channel_id($product_id, $channel_id);
+        //$payment_option_discount = (int)get_post_meta($payment_option_id, 'discount', true);
+        $bonus = get_post_meta($order_id, 'bw_bonificacao_pedido_pai', true);
+
+        if ($customer_discount && $bonus == '') {
+            $price = $customer_discount;
+            $subtotal = $customer_discount * $qtd;
+            $total = $customer_discount * $qtd;
+        }elseif ($channel_discount && $bonus == ''){
+            $price = $channel_discount;
+            $subtotal = $channel_discount * $qtd;
+            $total = $channel_discount * $qtd;
+        } else {
+            $subtotal = $price * $qtd;
+            $total = $price * $qtd;
+        }
+
+        $product->set_price($price);
+        $item->set_product($product);
+        $item->set_subtotal($subtotal);
+        $item->set_total($total);
+        $item->save_meta_data();
+        $item->apply_changes();
+    }
+}
 
 function woo_tiny_shop_order_bulk_actions($actions){
     $actions['export_pdf'] = 'Exportar PDF';
