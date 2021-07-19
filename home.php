@@ -3,7 +3,7 @@ defined('ABSPATH') or die('No script kiddies please!');
 /**
   * Plugin Name: Integração Tiny
  * Description: Integra o woocommerce ao Tiny
- * Version:     1.0.0
+ * Version:     1.1.1
  * Author:      Humberto Rodrigues
  * Author URI:  http://humbertorodrigues.com 
  * License:     GPL v2 or later

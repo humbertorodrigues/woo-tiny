@@ -10,13 +10,7 @@ jQuery.validator.addMethod("same", function (value, element, param) {
     }
     return this.optional(element);
 });
-jQuery.validator.addMethod("reqMinInstallment", function (value, element, param) {
-    if (jQuery(element).data('bw-order-installments') > 0) {
-        console.log(jQuery('#input-order-installments>div').length)
-        return jQuery('#input-order-installments>div').length > 0;
-    }
-    return this.optional(element);
-});
+
 jQuery(document).ready(function () {
     jQuery("#telefone").mask("(99) 99999-9999");
     jQuery("#celular").mask("(99) 99999-9999");
@@ -66,7 +60,7 @@ jQuery(document).ready(function () {
 
             email: {required: "Informe o email", email: "Informe um email válido"},
             canal_venda: {required: "Informe um canal de venda"},
-            bw_payment_option: {required: "Informe uma forma de pagamento", reqMinInstallment: 'Informe no mínimo uma parcela'},
+            bw_payment_option: {required: "Informe uma forma de pagamento"},
 
             "shipping[postcode]": {same: 'Informe o CEP'},
             "shipping[address_1]": {same: 'Informe o endereço'},
@@ -386,7 +380,9 @@ jQuery(document).on('click', '.order-installment', function (e) {
                 '</div>');
         }
     } else if (jQuery(this).hasClass('remove')) {
-        jQuery('#input-order-installments>div:last-child').remove();
+        if(qtdInputsInstallments > 1) {
+            jQuery('#input-order-installments>div:last-child').remove();
+        }
     } else {
     }
 });
