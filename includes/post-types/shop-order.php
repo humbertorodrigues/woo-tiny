@@ -32,10 +32,12 @@ function woo_tiny_order_item($item_id, $item, $order_id)
         $bonus = get_post_meta($order_id, 'bw_bonificacao_pedido_pai', true);
 
         if ($customer_discount && $bonus == '') {
+            $customer_discount = bw_parse_price($customer_discount);
             $price = $customer_discount;
             $subtotal = $customer_discount * $qtd;
             $total = $customer_discount * $qtd;
         }elseif ($channel_discount && $bonus == ''){
+            $channel_discount = bw_parse_price($channel_discount);
             $price = $channel_discount;
             $subtotal = $channel_discount * $qtd;
             $total = $channel_discount * $qtd;

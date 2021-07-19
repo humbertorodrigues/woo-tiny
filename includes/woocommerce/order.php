@@ -107,13 +107,13 @@ function woo_tiny_save_order()
         $canal_venda = $_POST["canal_venda"];
         $obs = $_POST["obs"];
 
-        $id_produto = $_POST["id_produto"];
-        $qtd = $_POST["qtd"];
-        $preco_unitario = $_POST["preco_unitario"];
-        $subtotal = $_POST["subtotal"];
+        $id_produto = $_POST["id_produto"] ?? [];
+        $qtd = $_POST["qtd"] ?? [];
+        $preco_unitario = $_POST["preco_unitario"] ?? [];
+        $subtotal = $_POST["subtotal"] ?? [];
 
-        $qtd_bonificacao = $_POST["qtd_bonificacao"];
-        $preco_unitario_bonificacao = $_POST["preco_unitario_bonificacao"];
+        $qtd_bonificacao = $_POST["qtd_bonificacao"] ?? [];
+        $preco_unitario_bonificacao = $_POST["preco_unitario_bonificacao"] ?? [];
 
         $payment_option_id = $_POST['bw_payment_option'];
 

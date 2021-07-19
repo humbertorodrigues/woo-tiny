@@ -5,8 +5,15 @@ jQuery(document).on("contextmenu keydown mousedown keypress", function (e) {
 });
 jQuery.validator.addMethod("cpfcnpj", brdocs.cpfcnpjValidator, "Informe um documento válido.");
 jQuery.validator.addMethod("same", function (value, element, param) {
-    if (jQuery(param).is(':checked')) {
+    if (jQuery(param).is(':checked') || jQuery(param).is(':selected')) {
         return value !== '';
+    }
+    return this.optional(element);
+});
+jQuery.validator.addMethod("reqMinInstallment", function (value, element, param) {
+    if (jQuery(element).data('bw-order-installments') > 0) {
+        console.log(jQuery('#input-order-installments>div').length)
+        return jQuery('#input-order-installments>div').length > 0;
     }
     return this.optional(element);
 });
@@ -40,6 +47,8 @@ jQuery(document).ready(function () {
             "shipping[neighborhood]": {same: '#has-shipping'},
             "shipping[city]": {same: '#has-shipping'},
             "shipping[state]": {same: '#has-shipping'},
+
+            bw_order_installments: {same: '#bw_payment_option'},
         },
         messages: {
             nome: {required: "Informe o nome do cliente"},
@@ -57,14 +66,14 @@ jQuery(document).ready(function () {
 
             email: {required: "Informe o email", email: "Informe um email válido"},
             canal_venda: {required: "Informe um canal de venda"},
-            bw_payment_option: {required: "Informe uma forma de pagamento"},
+            bw_payment_option: {required: "Informe uma forma de pagamento", reqMinInstallment: 'Informe no mínimo uma parcela'},
 
             "shipping[postcode]": {same: 'Informe o CEP'},
             "shipping[address_1]": {same: 'Informe o endereço'},
             "shipping[number]": {same: 'Informe o numero'},
             "shipping[neighborhood]": {same: 'Informe o bairro'},
             "shipping[city]": {same: 'Informe a cidade'},
-            "shipping[state]": {same: 'Informe o estado'},
+            "shipping[state]": {same: 'Informe o estado'}
         },
         submitHandler: function (form) {
             let formData = new FormData(form);
@@ -168,8 +177,13 @@ jQuery(document).on('change', '#canal_venda', function (e) {
     let paymentIds = jQuery(this).find('option:selected').data('bw-order-payments');
     let paymentMethods = jQuery('#bw_payment_option').find('option');
     paymentMethods.prop('disabled', false).prop('selected', false);
-    if (paymentIds !== '') {
-        paymentIds = paymentIds.split(',');
+    if (paymentIds) {
+        if(typeof paymentIds == 'string') {
+            paymentIds = paymentIds.split(',');
+        }
+        if(typeof paymentIds == 'number'){
+            paymentIds = [paymentIds];
+        }
         paymentMethods.each(function (i, el) {
             if (!paymentIds.includes($(el).val())) {
                 $(el).prop('disabled', true);
@@ -331,11 +345,12 @@ jQuery.fn.extend({
 
 jQuery(document).on('change', '#bw_payment_option', function (e) {
     let installmentValue = jQuery('#bw_payment_option>option:selected').data('bw-order-installments');
+    jQuery('#input-order-installments').html('');
     if (installmentValue === 0) {
         jQuery('#set-order-installments').hide();
-        jQuery('#input-order-installments').html('');
     } else {
         jQuery('#set-order-installments').show();
+        jQuery('.order-installment.add').trigger('click');
     }
     calcula_subtotal();
 });
@@ -362,10 +377,14 @@ jQuery(document).on('click', '.order-installment', function (e) {
             dueDate.setFullYear(dueDate.getFullYear() - 1);
         }
         dueDate = dueDate.getFullYear() + '-' + month + '-' + ("0" + dueDate.getDate()).slice(-2);
-        jQuery('#input-order-installments').append('<div class="text-right">' +
-            '<label>Parcela ' + qtdInputsInstallments + ': </label>' +
-            '<input type="date" name="bw_order_installments[' + qtdInputsInstallments + '][duedate]" value="' + dueDate + '" required>' +
-            '</div>');
+
+        let installmentQuantity = jQuery('#bw_payment_option>option:selected').data('bw-order-installments');
+        if(qtdInputsInstallments <= installmentQuantity) {
+            jQuery('#input-order-installments').append('<div class="text-right">' +
+                '<label>Parcela ' + qtdInputsInstallments + ': </label>' +
+                '<input type="date" name="bw_order_installments[' + qtdInputsInstallments + '][duedate]" value="' + dueDate + '" required>' +
+                '</div>');
+        }
     } else if (jQuery(this).hasClass('remove')) {
         jQuery('#input-order-installments>div:last-child').remove();
     } else {

@@ -257,6 +257,13 @@ if(!function_exists('set_alert')){
     }
 }
 
+if(!function_exists('bw_parse_price')){
+    function bw_parse_price($price){
+        $price = only_numbers($price);
+        return round(((int) $price / 100), 2);
+    }
+}
+
 if(!function_exists('wc_serialize_br_address')){
     function wc_serialize_br_address($address, $type = '')
     {

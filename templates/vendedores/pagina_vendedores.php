@@ -158,7 +158,8 @@ if (!is_user_logged_in()) {
                         <div class="col-lg-12">
                             <div class="form-check">
                                 <label class="form-check-label">
-                                    <input type="checkbox" class="form-check-input" id="has-shipping" name="has_shipping_address">
+                                    <input type="checkbox" class="form-check-input" id="has-shipping"
+                                           name="has_shipping_address">
                                     Entregar em um endereço diferente
                                 </label>
                             </div>
@@ -241,9 +242,15 @@ if (!is_user_logged_in()) {
                                         Escolha uma forma de
                                         pagamento
                                     </option>
-                                    <?php foreach ($payment_options as $payment_option): $payment_option_discount = bw_get_meta_field('discount', $payment_option->ID); ?>
+                                    <?php foreach ($payment_options as $payment_option):
+                                        $payment_option_discount = bw_get_meta_field('discount', $payment_option->ID);
+                                        $payment_option_installments = bw_get_meta_field('installments', $payment_option->ID);
+                                        if($payment_option_installments == '' || $payment_option_installments == 0){
+                                            $payment_option_installments = 1;
+                                        }
+                                        ?>
                                         <option value="<?php echo $payment_option->ID ?>"
-                                                data-bw-order-installments="<?= bw_get_meta_field('installments', $payment_option->ID) ?>"
+                                                data-bw-order-installments="<?= $payment_option_installments ?>"
                                                 data-bw-order-discount="<?= $payment_option_discount ?>">
                                             <?= $payment_option->post_title . ' (Desconto de ' . $payment_option_discount . '%)' ?></option>
                                     <?php endforeach; ?>
