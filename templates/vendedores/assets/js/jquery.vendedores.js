@@ -351,8 +351,9 @@ jQuery(document).on('change', '#bw_payment_option', function (e) {
 
 jQuery(document).on('click', '.order-installment', function (e) {
     e.preventDefault();
+    let qtdInputsInstallments = jQuery('#input-order-installments>div').length;
     if (jQuery(this).hasClass('add')) {
-        let qtdInputsInstallments = jQuery('#input-order-installments>div').length + 1;
+        qtdInputsInstallments += 1;
         let inputDueDate = jQuery('#input-order-installments>div:last-child input').val();
         let dueDate = new Date();
         if (inputDueDate !== undefined) {
@@ -380,6 +381,7 @@ jQuery(document).on('click', '.order-installment', function (e) {
                 '</div>');
         }
     } else if (jQuery(this).hasClass('remove')) {
+        console.log(qtdInputsInstallments)
         if(qtdInputsInstallments > 1) {
             jQuery('#input-order-installments>div:last-child').remove();
         }
